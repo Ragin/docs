@@ -1,0 +1,99 @@
+To call a GraphQL service from a React application, you can use the Apollo Client library, which provides a simple and efficient way to interact with GraphQL APIs in a React application. Here are the steps to call the GraphQL service you set up in your React application:
+
+**1. Create a New React Application:**
+
+If you don't have a React application already, create a new one using `create-react-app` or your preferred method.
+
+```bash
+npx create-react-app graphql-client
+cd graphql-client
+```
+
+**2. Install Apollo Client:**
+
+In your React project, install the Apollo Client and related dependencies:
+
+```bash
+npm install @apollo/client graphql
+```
+
+**3. Set Up Apollo Client:**
+
+Create a configuration file to set up Apollo Client. This file will provide the necessary connection details to your GraphQL server. In this example, you can create a file named `apollo.js`:
+
+```javascript
+import { ApolloClient, InMemoryCache } from '@apollo/client';
+
+const client = new ApolloClient({
+  uri: 'http://localhost:8080/graphql', // Your GraphQL server endpoint
+  cache: new InMemoryCache(),
+});
+
+export default client;
+```
+
+**4. Create a Component:**
+
+Create a React component where you want to make GraphQL queries. For this example, let's create a component called `Hello.js`:
+
+```javascript
+import React from 'react';
+import { useQuery, gql } from '@apollo/client';
+
+const GET_HELLO = gql`
+  query {
+    hello
+  }
+`;
+
+function Hello() {
+  const { loading, error, data } = useQuery(GET_HELLO);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error.message}</p>;
+
+  return <p>{data.hello}</p>;
+}
+
+export default Hello;
+```
+
+In this component, we use the `useQuery` hook from Apollo Client to fetch the data.
+
+**5. Use the Component in Your App:**
+
+Now, use the `Hello` component in your main application. You can replace the content of `src/App.js` with the following:
+
+```javascript
+import React from 'react';
+import './App.css';
+import ApolloClient from './apollo'; // Import your Apollo Client configuration
+import { ApolloProvider } from '@apollo/client';
+import Hello from './Hello';
+
+function App() {
+  return (
+    <ApolloProvider client={ApolloClient}>
+      <div className="App">
+        <header className="App-header">
+          <Hello />
+        </header>
+      </div>
+    </ApolloProvider>
+  );
+}
+
+export default App;
+```
+
+**6. Start Your React App:**
+
+Start your React application:
+
+```bash
+npm start
+```
+
+This will launch your React app, and the `Hello` component will make a GraphQL query to the server you set up in your Spring Boot application.
+
+Your React application should now display the "Hello, World!" message received from the GraphQL service. This is a basic example of how to call a GraphQL service from a React application using Apollo Client. You can expand this pattern to make more complex queries, mutations, and handle real-time updates if needed.
