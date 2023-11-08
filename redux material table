@@ -158,4 +158,20 @@ package.json
 }
 
 
+--- proxy.config.ts
+
+
+const { createProxyMiddleware } = require('http-proxy-middleware');
+
+module.exports = function (app) {
+  app.use(
+    '/test/data', // Define the API endpoint you want to proxy
+    createProxyMiddleware({
+      target: 'http://localhost:3001', // Replace with your local server's address
+      changeOrigin: true,
+    })
+  );
+};
+
+
 
