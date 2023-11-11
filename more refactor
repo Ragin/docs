@@ -1,4 +1,4 @@
-Sure, here's the updated code for all the files:
+Certainly! Here's the full code for the three files: `Claims.tsx`, `use-medications-table.tsx`, and `testService.ts`.
 
 **`Claims.tsx`:**
 ```tsx
@@ -12,22 +12,22 @@ import { useMedicationsTable } from '../useMedicationsTable/use-medications-tabl
 
 export const Claims = forwardRef((props: ClaimsProps, ref: React.Ref<HTMLDivElement>) => {
   const { text, onClickLink } = props;
+  const { setSearchState, reloadTable } = useMedicationsTable();
 
   const memberIdRef = useRef<HTMLInputElement | null>(null);
   const fillDtFromRef = useRef<HTMLInputElement | null>(null);
   const fillDtThruRef = useRef<HTMLInputElement | null>(null);
   const tenantIdRef = useRef<HTMLInputElement | null>(null);
 
-  const { fetchData, reloadTable } = useMedicationsTable();
-
   const handleSearchClick = () => {
-    fetchData({
-      memberId: memberIdRef.current?.value,
-      fillDtFrom: fillDtFromRef.current?.value,
-      fillDtThru: fillDtThruRef.current?.value,
-      tenantId: tenantIdRef.current?.value,
-    });
+    const newSearchState = {
+      memberId: memberIdRef.current?.value || '',
+      fillDtFrom: fillDtFromRef.current?.value || '',
+      fillDtThru: fillDtThruRef.current?.value || '',
+      tenantId: tenantIdRef.current?.value || '',
+    };
 
+    setSearchState(newSearchState);
     reloadTable();
   };
 
@@ -62,11 +62,11 @@ export function useMedicationsTable(): UseMedicationsTableReturn {
   const headers = ['Seq', 'Submitted Date', 'First Name', 'RxNumber', 'Refill Number', 'Claim Status', 'RX Claim Nbr'];
   const [rows, setRows] = useState<Array<ClaimsRecord>>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [searchState, setSearchState] = useState<number>(0);
+  const [searchState, setSearchState] = useState<{ memberId?: string, fillDtFrom?: string, fillDtThru?: string, tenantId?: string }>({});
 
   const fetchData = async () => {
     try {
-      const response = await getData('/sdd', '/dss', null);
+      const response = await getData('/sdd', '/dss', null, searchState);
       const data = response.data.memberSrchInfoResp;
       console.log(data);
       setRows(data);
@@ -85,6 +85,7 @@ export function useMedicationsTable(): UseMedicationsTableReturn {
     headers,
     loading,
     rows,
+    setSearchState,
     reloadTable: () => setSearchState((prev) => prev + 1),
   };
 }
@@ -136,4 +137,4 @@ export function getData(basePath: string, feature: string, headers: any, userSel
 }
 ```
 
-Make sure to adjust the paths and adapt the code according to your specific requirements and configurations.
+Please adjust the code according to your specific project structure and requirements.
