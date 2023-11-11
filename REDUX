@@ -1,0 +1,212 @@
+{
+  "name": "your-app-name",
+  "version": "1.0.0",
+  "description": "Your application description",
+  "main": "index.js",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "dependencies": {
+    "axios": "^0.21.4",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-redux": "^7.2.4",
+    "react-scripts": "4.0.3",
+    "redux": "^4.1.0",
+    "redux-thunk": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "^17.0.33",
+    "@types/react-dom": "^17.0.10",
+    "@types/react-redux": "^7.1.16",
+    "typescript": "^4.4.4"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
+
+
+Absolutely, you can integrate Redux into your application to manage the state and dispatch actions when a search is triggered. Below is an example of how you can modify your code to incorporate Redux.
+
+First, you'll need to set up Redux in your project. If you haven't already installed `redux` and `react-redux`, you can do so by running:
+
+```bash
+npm install redux react-redux
+```
+
+Now, let's create a Redux store, actions, and a reducer.
+
+**1. Create a Redux store:**
+
+**`store.js`:**
+```javascript
+import { createStore, applyMiddleware } from 'redux';
+import thunk from 'redux-thunk';
+import rootReducer from './reducers'; // Create a rootReducer file
+
+const store = createStore(rootReducer, applyMiddleware(thunk));
+
+export default store;
+```
+
+**2. Create a Redux reducer:**
+
+**`reducers/index.js`:**
+```javascript
+import { combineReducers } from 'redux';
+
+const initialState = {
+  searchParams: {},
+};
+
+const rootReducer = (state = initialState, action) => {
+  switch (action.type) {
+    case 'SET_SEARCH_PARAMS':
+      return {
+        ...state,
+        searchParams: action.payload,
+      };
+    default:
+      return state;
+  }
+};
+
+export default combineReducers({
+  app: rootReducer,
+});
+```
+
+**3. Create Redux actions:**
+
+**`actions/index.js`:**
+```javascript
+export const setSearchParams = (params) => ({
+  type: 'SET_SEARCH_PARAMS',
+  payload: params,
+});
+```
+
+**4. Update the `use-medications-table.tsx` file to use Redux:**
+
+**`use-medications-table.tsx`:**
+```tsx
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { ClaimsRecord, UseMedicationsTableReturn } from './use-medications-table.types';
+import { getData } from '../../model/service/testService';
+import { setSearchParams } from '../../actions'; // Adjust the path based on your project structure
+
+export function useMedicationsTable(): UseMedicationsTableReturn {
+  const dispatch = useDispatch();
+  const searchParams = useSelector((state) => state.app.searchParams);
+
+  const headers = ['Seq', 'Submitted Date', 'First Name', 'RxNumber', 'Refill Number', 'Claim Status', 'RX Claim Nbr'];
+  const [rows, setRows] = useState<Array<ClaimsRecord>>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  const fetchData = async () => {
+    try {
+      const response = await getData('/sdd', '/dss', null, searchParams);
+      const data = response.data.memberSrchInfoResp;
+      console.log(data);
+      setRows(data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [searchParams]);
+
+  return {
+    headers,
+    loading,
+    rows,
+    setSearchState: (newSearchParams) => dispatch(setSearchParams(newSearchParams)),
+    reloadTable: fetchData,
+  };
+}
+
+export default useMedicationsTable;
+```
+
+**5. Update the `Claims.tsx` file to dispatch the search action:**
+
+**`Claims.tsx`:**
+```tsx
+import React, { forwardRef, useRef } from 'react';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import { MedicationsTable } from '../medications-table/MedicationsTable/medications-table';
+import { ClaimsProps } from './claims.types';
+import { Button, TextField } from "@mui/material";
+import { useMedicationsTable } from '../useMedicationsTable/use-medications-table';
+import { setSearchParams } from '../../actions'; // Adjust the path based on your project structure
+import { useDispatch } from 'react-redux';
+
+export const Claims = forwardRef((props: ClaimsProps, ref: React.Ref<HTMLDivElement>) => {
+  const { text, onClickLink } = props;
+  const { setSearchState, reloadTable } = useMedicationsTable();
+  const dispatch = useDispatch();
+
+  const memberIdRef = useRef<HTMLInputElement | null>(null);
+  const fillDtFromRef = useRef<HTMLInputElement | null>(null);
+  const fillDtThruRef = useRef<HTMLInputElement | null>(null);
+  const tenantIdRef = useRef<HTMLInputElement | null>(null);
+
+  const handleSearchClick = () => {
+    const newSearchParams = {
+      memberId: memberIdRef.current?.value || '',
+      fillDtFrom: fillDtFromRef.current?.value || '',
+      fillDtThru: fillDtThruRef.current?.value || '',
+      tenantId: tenantIdRef.current?.value || '',
+    };
+
+    dispatch(setSearchParams(newSearchParams));
+    reloadTable();
+  };
+
+  return (
+    <Grid container ref={ref}>
+      <Grid item xs={12}>
+        <Typography variant="h2">{text}-Search</Typography>
+
+        <TextField label="Member ID" inputRef={memberIdRef} />
+        <TextField label="Fill Date From" type="date" inputRef={fillDtFromRef} />
+        <TextField label="Fill Date Thru" type="date" inputRef={fillDtThruRef} />
+        <TextField label="Tenant ID" inputRef={tenantIdRef} />
+
+        <Button onClick={handleSearchClick}>Search</Button>
+
+        <MedicationsTable title="Claim Result" />
+      </Grid>
+    </Grid>
+  );
+});
+
+export default Claims;
+```
+
+This example demonstrates the integration of Redux into your application. Ensure to adjust the paths and structure based on your project requirements.
