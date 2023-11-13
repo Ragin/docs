@@ -1,111 +1,62 @@
-{
-  "name": "your-app-name",
-  "version": "1.0.0",
-  "description": "Your application description",
-  "main": "index.js",
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "dependencies": {
-    "axios": "^0.21.4",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "react-redux": "^7.2.4",
-    "react-scripts": "4.0.3",
-    "redux": "^4.1.0",
-    "redux-thunk": "^2.3.0"
-  },
-  "devDependencies": {
-    "@types/react": "^17.0.33",
-    "@types/react-dom": "^17.0.10",
-    "@types/react-redux": "^7.1.16",
-    "typescript": "^4.4.4"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  }
-}
+Certainly! Redux Toolkit simplifies the process of setting up a Redux store and working with slices. Below is a refactored version of your code using Redux Toolkit.
 
-
-Absolutely, you can integrate Redux into your application to manage the state and dispatch actions when a search is triggered. Below is an example of how you can modify your code to incorporate Redux.
-
-First, you'll need to set up Redux in your project. If you haven't already installed `redux` and `react-redux`, you can do so by running:
+**1. Install necessary packages:**
 
 ```bash
-npm install redux react-redux
+npm install @reduxjs/toolkit react-redux axios
 ```
 
-Now, let's create a Redux store, actions, and a reducer.
-
-**1. Create a Redux store:**
+**2. Create a Redux store, actions, and reducer using Redux Toolkit:**
 
 **`store.js`:**
 ```javascript
-import { createStore, applyMiddleware } from 'redux';
+import { configureStore } from '@reduxjs/toolkit';
 import thunk from 'redux-thunk';
-import rootReducer from './reducers'; // Create a rootReducer file
+import rootReducer from './reducers';
 
-const store = createStore(rootReducer, applyMiddleware(thunk));
+const store = configureStore({
+  reducer: rootReducer,
+  middleware: [thunk],
+});
 
 export default store;
 ```
 
-**2. Create a Redux reducer:**
-
 **`reducers/index.js`:**
 ```javascript
 import { combineReducers } from 'redux';
+import searchParamsReducer from './searchParamsSlice'; // Create searchParamsSlice.js file
+
+const rootReducer = combineReducers({
+  app: searchParamsReducer,
+});
+
+export default rootReducer;
+```
+
+**`reducers/searchParamsSlice.js`:**
+```javascript
+import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   searchParams: {},
 };
 
-const rootReducer = (state = initialState, action) => {
-  switch (action.type) {
-    case 'SET_SEARCH_PARAMS':
-      return {
-        ...state,
-        searchParams: action.payload,
-      };
-    default:
-      return state;
-  }
-};
-
-export default combineReducers({
-  app: rootReducer,
+const searchParamsSlice = createSlice({
+  name: 'app',
+  initialState,
+  reducers: {
+    setSearchParams: (state, action) => {
+      state.searchParams = action.payload;
+    },
+  },
 });
+
+export const { setSearchParams } = searchParamsSlice.actions;
+export default searchParamsSlice.reducer;
 ```
 
-**3. Create Redux actions:**
-
-**`actions/index.js`:**
-```javascript
-export const setSearchParams = (params) => ({
-  type: 'SET_SEARCH_PARAMS',
-  payload: params,
-});
-```
-
-**4. Update the `use-medications-table.tsx` file to use Redux:**
+**3. Update `use-medications-table.tsx` to use Redux Toolkit:**
 
 **`use-medications-table.tsx`:**
 ```tsx
@@ -113,7 +64,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { ClaimsRecord, UseMedicationsTableReturn } from './use-medications-table.types';
 import { getData } from '../../model/service/testService';
-import { setSearchParams } from '../../actions'; // Adjust the path based on your project structure
+import { setSearchParams } from '../../reducers/searchParamsSlice';
 
 export function useMedicationsTable(): UseMedicationsTableReturn {
   const dispatch = useDispatch();
@@ -152,7 +103,7 @@ export function useMedicationsTable(): UseMedicationsTableReturn {
 export default useMedicationsTable;
 ```
 
-**5. Update the `Claims.tsx` file to dispatch the search action:**
+**4. Update `Claims.tsx` to dispatch the search action:**
 
 **`Claims.tsx`:**
 ```tsx
@@ -163,7 +114,7 @@ import { MedicationsTable } from '../medications-table/MedicationsTable/medicati
 import { ClaimsProps } from './claims.types';
 import { Button, TextField } from "@mui/material";
 import { useMedicationsTable } from '../useMedicationsTable/use-medications-table';
-import { setSearchParams } from '../../actions'; // Adjust the path based on your project structure
+import { setSearchParams } from '../../reducers/searchParamsSlice';
 import { useDispatch } from 'react-redux';
 
 export const Claims = forwardRef((props: ClaimsProps, ref: React.Ref<HTMLDivElement>) => {
@@ -209,4 +160,4 @@ export const Claims = forwardRef((props: ClaimsProps, ref: React.Ref<HTMLDivElem
 export default Claims;
 ```
 
-This example demonstrates the integration of Redux into your application. Ensure to adjust the paths and structure based on your project requirements.
+These changes make use of Redux Toolkit for state management, creating slices and actions in a more concise and structured way. Adjust the paths based on your project structure.
