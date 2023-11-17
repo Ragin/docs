@@ -1,0 +1,27 @@
+ <Grid container ref={ref} spacing={2}>
+      <Grid item xs={12}>
+        <Typography variant="h2">{text}-Search</Typography>
+      </Grid>
+      <Grid item xs={12} container spacing={2}>
+        <Grid item xs={3}>
+          <TextField label="Member ID" fullWidth inputRef={memberIdRef} />
+        </Grid>
+        <Grid item xs={3}>
+          <TextField label="Fill Date From" fullWidth type="date" inputRef={fillDtFromRef} />
+        </Grid>
+        <Grid item xs={3}>
+          <TextField label="Fill Date Thru" fullWidth type="date" inputRef={fillDtThruRef} />
+        </Grid>
+        <Grid item xs={3}>
+          <TextField label="Tenant ID" fullWidth inputRef={tenantIdRef} />
+        </Grid>
+      </Grid>
+      <Grid item xs={12}>
+        <Button onClick={handleSearchClick} variant="contained" color="primary">
+          Search
+        </Button>
+      </Grid>
+      <Grid item xs={12}>
+        <MedicationsTable title="Claim Result" />
+      </Grid>
+    </Grid>
