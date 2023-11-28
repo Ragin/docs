@@ -15,22 +15,23 @@ import { useTheme } from '@mui/material/styles';
 export function MedicationsTable(props: MedicationsTableProps) {
   const { title, rows, headers } = props;
 
+  const [order, setOrder] = React.useState<'asc' | 'desc'>('asc');
+  const [orderBy, setOrderBy] = React.useState<keyof typeof rows[0] | ''>('');
+  const [selected, setSelected] = React.useState<readonly number[]>([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
-  const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+  const handleRequestSort = (property: keyof typeof rows[0]) => {
+    const isAsc = orderBy === property && order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
+    setOrderBy(property);
   };
 
   const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
       backgroundColor: theme.palette.common.black,
       color: theme.palette.common.white,
+      cursor: 'pointer',
     },
     [`&.${tableCellClasses.body}`]: {
       fontSize: 14,
@@ -47,13 +48,17 @@ export function MedicationsTable(props: MedicationsTableProps) {
     },
   }));
 
-  const headersMap = (header: string) => (
-    <StyledTableCell key={header} align="left">
+  const headersMap = (header: keyof typeof rows[0]) => (
+    <StyledTableCell
+      key={header}
+      align="left"
+      onClick={() => handleRequestSort(header)}
+    >
       {header}
     </StyledTableCell>
   );
 
-  const rowsMap = (row: any) => (
+  const rowsMap = (row: typeof rows[0]) => (
     <StyledTableRow key={row.rxSeq}>
       <StyledTableCell>{row.memberId}</StyledTableCell>
       <StyledTableCell>{row.lastName}</StyledTableCell>
@@ -75,7 +80,11 @@ export function MedicationsTable(props: MedicationsTableProps) {
           <TableHead>
             <StyledTableRow>{headers.map(headersMap)}</StyledTableRow>
           </TableHead>
-          <TableBody>{rows?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(rowsMap)}</TableBody>
+          <TableBody>
+            {rows
+              ?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              .map(rowsMap)}
+          </TableBody>
         </Table>
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
@@ -83,8 +92,11 @@ export function MedicationsTable(props: MedicationsTableProps) {
           count={rows.length}
           rowsPerPage={rowsPerPage}
           page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
+          onPageChange={(_, newPage) => setPage(newPage)}
+          onRowsPerPageChange={(event) => {
+            setRowsPerPage(parseInt(event.target.value, 10));
+            setPage(0);
+          }}
         />
       </TableContainer>
     </>
