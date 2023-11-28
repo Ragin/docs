@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
 import TablePagination from '@mui/material/TablePagination';
+import TableSortLabel from '@mui/material/TableSortLabel';
 import { MedicationsTableProps } from './medications-table.types';
 import { useTheme } from '@mui/material/styles';
 
@@ -17,15 +18,27 @@ export function MedicationsTable(props: MedicationsTableProps) {
 
   const [order, setOrder] = React.useState<'asc' | 'desc'>('asc');
   const [orderBy, setOrderBy] = React.useState<keyof typeof rows[0] | ''>('');
-  const [selected, setSelected] = React.useState<readonly number[]>([]);
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
   const handleRequestSort = (property: keyof typeof rows[0]) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
   };
+
+  const sortedRows = React.useMemo(() => {
+    if (orderBy === '') {
+      return rows;
+    }
+    return [...rows].sort((a, b) => {
+      const valueA = a[orderBy];
+      const valueB = b[orderBy];
+      if (typeof valueA === 'string' && typeof valueB === 'string') {
+        return order === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+      } else {
+        return order === 'asc' ? (valueA as number) - (valueB as number) : (valueB as number) - (valueA as number);
+      }
+    });
+  }, [rows, orderBy, order]);
 
   const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
@@ -54,7 +67,12 @@ export function MedicationsTable(props: MedicationsTableProps) {
       align="left"
       onClick={() => handleRequestSort(header)}
     >
-      {header}
+      <TableSortLabel
+        active={orderBy === header}
+        direction={orderBy === header ? order : 'asc'}
+      >
+        {header}
+      </TableSortLabel>
     </StyledTableCell>
   );
 
@@ -81,7 +99,7 @@ export function MedicationsTable(props: MedicationsTableProps) {
             <StyledTableRow>{headers.map(headersMap)}</StyledTableRow>
           </TableHead>
           <TableBody>
-            {rows
+            {sortedRows
               ?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map(rowsMap)}
           </TableBody>
