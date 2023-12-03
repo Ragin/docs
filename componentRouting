@@ -195,13 +195,11 @@ export function MedicationsTable(props: MedicationsTableProps) {
 
         <StyledTableCell>{row.rxSeq}</StyledTableCell>
         <StyledTableCell>
-          <Link
-            onClick={() => history.push(`/claims/${row.rxSeq}`)}
+           <Link
+            to={`/claim-detail`} // Update the link based on your route structure
             className="account-table-link"
             id={`account-details-link-${row.rxSeq}`}
           >
-            {row.rxSeq}
-          </Link>
         </StyledTableCell>
       </StyledTableRow>
     );
@@ -446,6 +444,78 @@ export function getData(feature: string, headers: any, userSelectedValues: any):
       });
   });
 }
+=======index.tsx====
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import Claims from './Claims/claims';
+import ClaimDetail from "./Claims/claimDetail";
+
+const App = () => (
+  <Router>
+    <Switch>
+      <Route path="/claims" component={Claims} />
+      <Route path="/claim-detail" component={ClaimDetail} />
+      {/* Add more routes as needed */}
+    </Switch>
+  </Router>
+);
+
+export default  App;
+
+===end===
+
+===claimdetail.tsx====
+import React, { useState } from 'react';
+import Claims from "./claims";
+
+interface ClaimDetailProps {
+  claimNumber: string;
+  sequenceNumber: string;
+  // You can define any additional props needed for the component
+}
+
+const ClaimDetail: React.FC<ClaimDetailProps> = () => {
+  // State for storing claim number and sequence number
+  const [claimNumber, setClaimNumber] = useState<string>('');
+  const [sequenceNumber, setSequenceNumber] = useState<string>('');
+
+  // Function to handle changes in the claim number input
+  const handleClaimNumberChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setClaimNumber(event.target.value);
+  };
+
+  // Function to handle changes in the sequence number input
+  const handleSequenceNumberChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    // Validate that the input is a valid number
+   // setSequenceNumber(isNaN(Number(value)) ? undefined : Number(value));
+    setSequenceNumber(value);
+  };
+
+  return (
+    <div>
+      <h2>Claim Detail</h2>
+      <div>
+        <label htmlFor="claimNumber">Claim Number:</label>
+        <input
+          type="text"
+          id="claimNumber"
+          value={claimNumber}
+          onChange={handleClaimNumberChange}
+        />
+      </div>
+      <div>
+        <label htmlFor="sequenceNumber">Sequence Number:</label>
+        <input
+          type="text"
+          id="sequenceNumber"
+          value={sequenceNumber === undefined ? '' : sequenceNumber}
+          onChange={handleSequenceNumberChange}
+        />
+      </div>
+    </div>
+  );
+};
+export default ClaimDetail;
 
 ===end===
 ==package.json===
