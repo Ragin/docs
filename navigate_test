@@ -1,0 +1,222 @@
+======application-wrapper.tsx=====
+import React from 'react';
+import {Claims, useClaims} from '@optum-rx-claim-modern/claims';
+import ThemeProvider from '@mui/system/ThemeProvider';
+import {Theme} from '@mui/material/styles/createTheme';
+//import {createUniversalTheme, OptumDefault, OptumTokens} from "@skyline/themes";
+import {defaultTheme, supportedThemes} from '../supported-themes/supported-themes';
+import {ApplicationWrapperProps} from '../application-wrapper/application-wrapper.types';
+import {useGlobalEvents} from '../use-global-events/use-global-events';
+//import {CacheProvider} from "@emotion/react";
+//import createCache from "@emotion/cache";
+export const getTheme = (theme = defaultTheme) => {
+  return supportedThemes[theme] ? supportedThemes[theme] : supportedThemes[defaultTheme];
+};
+
+export const ApplicationWrapper = (props: ApplicationWrapperProps) => {
+  const {container, context, theme, routeAction, analyticsAction} = props;
+  console.log('session_id in wrapper =', context);
+  const ref = React.useRef<HTMLDivElement>(container);
+  useGlobalEvents({ref, routeAction, analyticsAction});
+
+  const selectedTheme = getTheme(theme) as Theme;
+  console.log('selectedTheme=', selectedTheme);
+/*
+
+  const rootContainer = document.querySelector('claims-micro-product');
+  const emotionRoot = document.createElement('style');
+  const shadowRootElement = document.createElement('div');
+  rootContainer?.appendChild(emotionRoot);
+  rootContainer?.appendChild(shadowRootElement);
+
+
+  const cache = createCache({
+    key: 'css',
+    prepend: true,
+    container: emotionRoot,
+  });*/
+
+  return (
+
+      <ThemeProvider theme={selectedTheme}>
+        <Claims {...props} ref={ref} {...useClaims({ref})} context={context}/>
+      </ThemeProvider>
+
+
+  );
+};
+
+export default ApplicationWrapper;
+
+
+
+
+
+=====supported-themes.tsx====
+import {OptumDefault} from '@skyline/themes/themes/OptumDefault';
+import {MuiDefault} from '@skyline/themes/themes/MuiDefault';
+import {AHATheme} from '@skyline/themes/themes/AHATheme';
+import {Theme} from '@mui/material/styles/createTheme';
+import BetterUi from '../theme';
+interface Themes {
+  [index: string]: Theme;
+}
+
+export const defaultTheme = 'OptumDefault';
+export const supportedThemes: Themes = {
+  OptumDefault,
+  MuiDefault,
+  AHATheme,
+  BetterUi
+};
+
+
+=====index.tsx=====
+import r2wc from '@r2wc/react-to-web-component';
+
+import {ApplicationWrapper} from './application-wrapper/application-wrapper';
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+// for adding shadow - commented as not working -  shadow: 'open',
+const Claims = r2wc<any>(ApplicationWrapper, {
+  props: {
+    text: 'string',
+    context: 'string',
+    routeAction: 'function',
+    analyticsAction: 'function',
+    theme: 'string'
+  }
+});
+// test commit 9
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+customElements.define('claims-micro-product', Claims);
+
+
+
+====index.html
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Microproduct Runtime Wrapper</title>
+  </head>
+  <body>
+    <script>
+      window.goToRoute = (routeDetails) => {
+        console.log('goToRoute', routeDetails);
+        // window.location.href = routeDetails.path;
+      };
+
+      window.trackAnalytics = (data) => {
+        console.log('trackAnalytics', data);
+      };
+    </script>
+
+    <claims-micro-product id="claims-webcomponent" text="Hello World" route-action="goToRoute" analytics-action="trackAnalytics"></claims-micro-product>
+    <script type="module" src="/src/index.tsx"></script>
+
+    <script>
+      const element = document.getElementById('claims-webcomponent');
+      element.addEventListener('event', (e) => {
+        console.log('event', e);
+        e.preventDefault();
+      });
+    </script>
+  </body>
+</html>
+
+
+
+===package.json
+
+{
+  "name": "@optum-rx-claim-modern/claims-webcomponent",
+  "version": "0.1.0-next.15",
+  "description": "This is a micro-product to show the features of rx claims.",
+  "repository": "https://github.com/optum-rx-pbm/rxclaim-lite-ui",
+  "license": "UNLICENSED",
+  "sideEffects": false,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview",
+    "postpublish": "../../.github/preparePackageForCdnDeployment.sh",
+    "prepack": "yarn build"
+  },
+  "type": "module",
+  "main": "./dist/claims-webcomponent.umd.js",
+  "module": "./dist/claims-webcomponent.es.js",
+  "exports": {
+    ".": {
+      "import": "./dist/claims-webcomponent.es.js",
+      "require": "./dist/claims-webcomponent.umd.js"
+    }
+  },
+  "files": [
+    "tsconfig.json",
+    "*.js",
+    "*.js.map",
+    "*.d.ts",
+    "**/*.js",
+    "**/*.js.map",
+    "**/*.d.ts"
+  ],
+  "devDependencies": {
+    "@jest/globals": "^27.2.1",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/react": "^18.0.25",
+    "@vitejs/plugin-react": "^4.1.0",
+    "eslint": "^8.28.0",
+    "jest": "^27.2.1",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.8.8",
+    "react-dom": "^18.2.0",
+    "ts-jest": "^27.0.5",
+    "typescript": "^5.1.3",
+    "vite": "^4.3.3"
+  },
+  "dependencies": {
+    "@mui/material": "^5.10.0",
+    "@mui/system": "^5.10.0",
+    "@optum-rx-claim-modern/claims": "workspace:^",
+    "@r2wc/core": "^1.0.0",
+    "@r2wc/react-to-web-component": "2.0.0",
+    "@skyline/themes": "^1.26.0",
+    "next": "13.4.19",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tslib": "^2.3.1"
+  },
+  "stableVersion": "0.1.0"
+}
+
+
+vite.config.ts
+====
+// eslint-disable-next-line import/no-extraneous-dependencies
+import {defineConfig, loadEnv} from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig(({command, mode}) => {
+  const env = loadEnv(mode, process.cwd(), '');
+
+  return {
+    mode: 'production',
+    build: {
+      target: ['es2015'],
+      lib: {
+        entry: 'src/index.tsx',
+        name: 'claims-webcomponent',
+        fileName: (format) => `claims-webcomponent.${format}.js`
+      }
+    },
+    plugins: [react({jsxRuntime: 'classic'})],
+    define: {
+      __APP_ENV__: JSON.stringify(env['APP_ENV']),
+      'process.env.NODE_ENV': `"${process.env.NODE_ENV}"`
+    }
+  };
+});
