@@ -224,6 +224,72 @@ export default defineConfig(({command, mode}) => {
 
 ====fix===
 
+define new component
+
+Certainly! Below is an example of a new component named `ClaimDetail` with fields for "Claim Number" and "Sequence Number" in TypeScript and React:
+
+```tsx
+// ClaimDetail.tsx
+import React, { useState } from 'react';
+
+interface ClaimDetailProps {
+  // You can define any additional props needed for the component
+}
+
+const ClaimDetail: React.FC<ClaimDetailProps> = () => {
+  // State for storing claim number and sequence number
+  const [claimNumber, setClaimNumber] = useState<string>('');
+  const [sequenceNumber, setSequenceNumber] = useState<number | undefined>(undefined);
+
+  // Function to handle changes in the claim number input
+  const handleClaimNumberChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setClaimNumber(event.target.value);
+  };
+
+  // Function to handle changes in the sequence number input
+  const handleSequenceNumberChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    // Validate that the input is a valid number
+    setSequenceNumber(isNaN(Number(value)) ? undefined : Number(value));
+  };
+
+  return (
+    <div>
+      <h2>Claim Detail</h2>
+      <div>
+        <label htmlFor="claimNumber">Claim Number:</label>
+        <input
+          type="text"
+          id="claimNumber"
+          value={claimNumber}
+          onChange={handleClaimNumberChange}
+        />
+      </div>
+      <div>
+        <label htmlFor="sequenceNumber">Sequence Number:</label>
+        <input
+          type="text"
+          id="sequenceNumber"
+          value={sequenceNumber === undefined ? '' : sequenceNumber}
+          onChange={handleSequenceNumberChange}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default ClaimDetail;
+```
+
+You can use this component in your application by importing it where needed. If you have a route set up for it, you can navigate to the route to see and interact with the `ClaimDetail` component.
+
+Remember to integrate this component into your routing structure or any other part of your application where you want to display claim details.
+
+
+
+Navigation
+==========
+
 ```tsx
 // Navigation component or wherever your navigation is defined
 import React from 'react';
