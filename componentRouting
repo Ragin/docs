@@ -511,4 +511,86 @@ export function getData(feature: string, headers: any, userSelectedValues: any):
   },
   "stableVersion": "0.1.0"
 }
+implement routing
 
+To implement navigation on click in the table to route to a different component, you can follow these steps:
+
+1. **Define Routes:**
+   Ensure you have defined routes for the components you want to navigate to. This typically involves setting up routes in your application's routing configuration. If you're using React Router, you might have a `<BrowserRouter>` or `<HashRouter>` in your main `index.tsx` file.
+
+   ```jsx
+   // Example using React Router
+   import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+   import Claims from './Claims/claims';
+   import OtherComponent from './OtherComponent/other-component';
+
+   const App = () => (
+     <Router>
+       <Switch>
+         <Route path="/claims" component={Claims} />
+         <Route path="/other" component={OtherComponent} />
+         {/* Add more routes as needed */}
+       </Switch>
+     </Router>
+   );
+
+   // Render your App component
+   ```
+
+2. **Update the Link in `MedicationsTable` Component:**
+   In your `MedicationsTable` component, update the `Link` component to use the appropriate route for each row. Modify the `rowsMap` function to include the correct link for each row.
+
+   ```jsx
+   const rowsMap = (row: typeof rows[0]) => {
+     console.log('row rendered', row);
+     return (
+       <StyledTableRow key={row.rxSeq}>
+         {/* ... other cells */}
+         <StyledTableCell>
+           <Link
+             to={`/claims/${row.rxSeq}`} // Update the link based on your route structure
+             className="account-table-link"
+             id={`account-details-link-${row.rxSeq}`}
+           >
+             {row.rxSeq}
+           </Link>
+         </StyledTableCell>
+       </StyledTableRow>
+     );
+   };
+   ```
+
+3. **Handle Navigation in the Component:**
+   If you want to navigate programmatically within your component, you can use the `useHistory` hook from React Router. Import it at the beginning of your `MedicationsTable` component.
+
+   ```jsx
+   import { useHistory } from 'react-router-dom';
+
+   export function MedicationsTable(props: MedicationsTableProps) {
+     const history = useHistory();
+
+     // ... rest of the component
+
+     const rowsMap = (row: typeof rows[0]) => {
+       console.log('row rendered', row);
+       return (
+         <StyledTableRow key={row.rxSeq}>
+           {/* ... other cells */}
+           <StyledTableCell>
+             <Link
+               onClick={() => history.push(`/claims/${row.rxSeq}`)}
+               className="account-table-link"
+               id={`account-details-link-${row.rxSeq}`}
+             >
+               {row.rxSeq}
+             </Link>
+           </StyledTableCell>
+         </StyledTableRow>
+       );
+     };
+
+     // ... rest of the component
+   }
+   ```
+
+Now, when a user clicks on a link in the table, it will navigate to the specified route, either using the `<Link>` component or programmatically with the `history.push` method. Adjust the routes and link structure according to your application's needs.
