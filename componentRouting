@@ -194,13 +194,15 @@ export function MedicationsTable(props: MedicationsTableProps) {
         <StyledTableCell>{row.rxClaimNbr}</StyledTableCell>
 
         <StyledTableCell>{row.rxSeq}</StyledTableCell>
-        <StyledTableCell>
-           <Link
-            to={`/claim-detail`} // Update the link based on your route structure
-            className="account-table-link"
-            id={`account-details-link-${row.rxSeq}`}
-          >
-        </StyledTableCell>
+         <StyledTableCell>
+        <Link
+          to={`/claim-detail/${row.rxSeq}`} // Add the parameter for the claim detail
+          className="account-table-link"
+          id={`account-details-link-${row.rxSeq}`}
+        >
+          {/* Content for the link */}
+        </Link>
+      </StyledTableCell>
       </StyledTableRow>
     );
   };
