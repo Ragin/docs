@@ -1,0 +1,10 @@
+ <Link
+            to={`/claim-detail/${row.rxSeq}`} // Update the link based on your route structure
+            onClick={() => history.push(`/claim-detail/${row.rxSeq}`)}
+            className="account-table-link"
+            id={`account-details-link-${row.rxSeq}`}
+          >
+            {row.rxSeq}
+          </Link>
+
+Uncaught TypeError: Cannot read properties of undefined (reading 'push')
