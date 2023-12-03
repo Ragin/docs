@@ -223,81 +223,60 @@ export default defineConfig(({command, mode}) => {
 
 
 ====fix===
-To define another component and route to it within your existing setup, you can follow these general steps:
 
-1. **Create a New Component:**
-   Create a new React component similar to how you created the `ApplicationWrapper`. You can place this component in a separate file, for example, `NewComponent.tsx`. Make sure to export the component.
+```tsx
+// Navigation component or wherever your navigation is defined
+import React from 'react';
+import { Link } from 'react-router-dom';
 
-   ```tsx
-   // NewComponent.tsx
-   import React from 'react';
+const Navigation: React.FC = () => {
+  return (
+    <nav>
+      <ul>
+        <li>
+          <Link to="/claims-micro-product">Claims Micro Product</Link>
+        </li>
+        <li>
+          <Link to="/new-component">New Component</Link>
+        </li>
+        <li>
+          <Link to="/claim-detail">Claim Detail</Link>
+        </li>
+        {/* Add other navigation links as needed */}
+      </ul>
+    </nav>
+  );
+};
 
-   const NewComponent: React.FC = () => {
-     return (
-       <div>
-         <h1>New Component Content</h1>
-         {/* Add your component content here */}
-       </div>
-     );
-   };
+export default Navigation;
+```
 
-   export default NewComponent;
-   ```
+In the above code, a new `Link` component is added for the "Claim Detail" route with the `to` prop set to "/claim-detail". This assumes you have set up the route for `ClaimDetail` in your routing configuration.
 
-2. **Define a Route for the New Component:**
-   If you're using a routing library (e.g., React Router), you'll need to define a new route for your `NewComponent`. If you don't have a routing library, you may need to set up one based on your project requirements.
+Now, make sure you've updated your routing configuration (in `index.tsx` or your routing file) to include a route for the `ClaimDetail` component:
 
-   Assuming you're using React Router, you can define a route in your `index.tsx` or any other routing file.
+```tsx
+// index.tsx (or your routing file)
+import React from 'react';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import ApplicationWrapper from './application-wrapper/application-wrapper';
+import NewComponent from './path-to/NewComponent';
+import ClaimDetail from './path-to/ClaimDetail';
 
-   ```tsx
-   // index.tsx (or your routing file)
-   import React from 'react';
-   import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-   import ApplicationWrapper from './application-wrapper/application-wrapper';
-   import NewComponent from './path-to/NewComponent';
+const App: React.FC = () => {
+  return (
+    <Router>
+      <Switch>
+        <Route path="/claims-micro-product" component={ApplicationWrapper} />
+        <Route path="/new-component" component={NewComponent} />
+        <Route path="/claim-detail" component={ClaimDetail} />
+        {/* Add other routes as needed */}
+      </Switch>
+    </Router>
+  );
+};
 
-   const App: React.FC = () => {
-     return (
-       <Router>
-         <Switch>
-           <Route path="/claims-micro-product" component={ApplicationWrapper} />
-           <Route path="/new-component" component={NewComponent} />
-           {/* Add other routes as needed */}
-         </Switch>
-       </Router>
-     );
-   };
+export default App;
+```
 
-   export default App;
-   ```
-
-3. **Update Navigation:**
-   If you have a navigation component or any mechanism for navigation, make sure to update it to include a link to the new route.
-
-   ```tsx
-   // Navigation component or wherever your navigation is defined
-   import React from 'react';
-   import { Link } from 'react-router-dom';
-
-   const Navigation: React.FC = () => {
-     return (
-       <nav>
-         <ul>
-           <li>
-             <Link to="/claims-micro-product">Claims Micro Product</Link>
-           </li>
-           <li>
-             <Link to="/new-component">New Component</Link>
-           </li>
-           {/* Add other navigation links as needed */}
-         </ul>
-       </nav>
-     );
-   };
-
-   export default Navigation;
-   ```
-
-   Ensure that you've included this navigation component or navigation links appropriately in your application.
-
-Remember to adapt these examples based on your project structure, routing library, and any other specific configurations you may have.
+With these changes, clicking on the "Claim Detail" link in your navigation should now navigate to the `ClaimDetail` component. Adjust the paths and component import paths based on your project structure.
