@@ -104,3 +104,21 @@ const YourComponent = () => {
 };
 
 export default YourComponent;
+
+
+ import React from 'react';
+import { Paper, Typography } from '@mui/material';
+
+const DetailsScreen = ({ data, labels }) => {
+  return (
+    <Paper elevation={3} style={{ padding: '20px' }}>
+      {Object.entries(data).map(([key, value]) => (
+        <div key={key} style={{ marginBottom: '15px' }}>
+          <Typography variant="subtitle1">{labels[key]}</Typography>
+          <Typography variant="body1">{value}</Typography>
+        </div>
+      ))}
+    </Paper>
+  );
+};
+
