@@ -30,3 +30,52 @@
     "priorAuthNumber": "           ",
     "message": null
 }
+===
+
+npm install @mui/material @emotion/react @emotion/styled
+
+{
+  "carrier": "Carrier",
+  "account": "Account",
+  "group": "Group",
+  "planCode": "Plan Code",
+  // ... other labels
+}
+
+
+import React from 'react';
+import { Grid, Paper, Typography } from '@mui/material';
+
+const DetailsScreen = ({ data, labels }) => {
+  return (
+    <Grid container spacing={2}>
+      {Object.entries(data).map(([key, value]) => (
+        <Grid key={key} item xs={12} sm={6} md={4}>
+          <Paper elevation={3} style={{ padding: '20px' }}>
+            <Typography variant="subtitle1">{labels[key]}</Typography>
+            <Typography variant="body1">{value}</Typography>
+          </Paper>
+        </Grid>
+      ))}
+    </Grid>
+  );
+};
+
+export default DetailsScreen;
+
+
+import React from 'react';
+import DetailsScreen from './DetailsScreen';
+import data from './yourData.json'; // Adjust the path
+import labels from './labels.json'; // Adjust the path
+
+const YourComponent = () => {
+  return (
+    <div>
+      <h1>Your Details Screen</h1>
+      <DetailsScreen data={data} labels={labels} />
+    </div>
+  );
+};
+
+export default YourComponent;
