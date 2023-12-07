@@ -39,7 +39,32 @@ npm install @mui/material @emotion/react @emotion/styled
   "account": "Account",
   "group": "Group",
   "planCode": "Plan Code",
-  // ... other labels
+  "memberId": "Member ID",
+  "mbrLastName": "Last Name",
+  "mbrFirstName": "First Name",
+  "dob": "Date of Birth",
+  "eligFrmDate": "Eligibility From Date",
+  "eligThruDate": "Eligibility Through Date",
+  "pharmacyId": "Pharmacy ID",
+  "pharmacyName": "Pharmacy Name",
+  "rxNumber": "RX Number",
+  "refillNumber": "Refill Number",
+  "fillDate": "Fill Date",
+  "phaPhone": "Pharmacy Phone",
+  "drugName": "Drug Name",
+  "productId": "Product ID",
+  "gpi": "GPI",
+  "msc": "MSC",
+  "qtyDispensed": "Quantity Dispensed",
+  "daySupply": "Day Supply",
+  "compoundCode": "Compound Code",
+  "psc": "PSC",
+  "prescriberNpi": "Prescriber NPI",
+  "prescriberName": "Prescriber Name",
+  "claimStatus": "Claim Status",
+  "priorAuthCd": "Prior Auth Code",
+  "priorAuthNumber": "Prior Auth Number",
+  "message": "Message"
 }
 
 
