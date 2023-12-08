@@ -1,0 +1,106 @@
+import * as React from 'react';
+
+const initialState = {
+  accountName: undefined,
+  aggregator: undefined,
+  contractEndDate: undefined,
+  effectiveDate: undefined,
+  filterBy: undefined,
+  page: 0,
+  offset: 0,
+  rowsPerPage: 20,
+  total: 0,
+  content: undefined,
+  filters: {},
+};
+
+const AccountSearchContext = React.createContext(initialState);
+
+function accountSearchReducer(state, action) {
+  switch (action.type) {
+    case 'ACCOUNT_NAME': {
+      return { ...state, accountName: action.data };
+    }
+    case 'FILTER': {
+      return { ...state, filterBy: action.data };
+    }
+    case 'PAGE': {
+      return { ...state, page: action.data };
+    }
+    case 'OFFSET': {
+      return { ...state, offset: action.data };
+    }
+    case 'COUNT': {
+      return { ...state, count: action.data };
+    }
+    case 'ROWS_PER_PAGE': {
+      return { ...state, rowsPerPage: action.data };
+    }
+    case 'TOTAL': {
+      return { ...state, total: action.data };
+    }
+    case 'CONTENT': {
+      return { ...state, content: action.data };
+    }
+    case 'ADD_FILTER': {
+      return { ...state, filters: { ...state.filters, ...action.data } };
+    }
+    case 'REMOVE_FILTER': {
+      const filters = { ...state.filters };
+      // a removed filter needs to be undefined, otherwise refetch will use the previous value
+      filters[action.data] = undefined;
+      return { ...state, filters };
+    }
+    default: {
+      throw new Error(`Unsupported action type: ${action.type}`);
+    }
+  }
+}
+
+function useAccountSearch() {
+  const context = React.useContext(AccountSearchContext);
+  if (!context) {
+    throw new Error('useAccountSearch must be used with AccountSearchProvider');
+  }
+  const [state, dispatch] = context;
+
+  const updateAccountName = (data) => dispatch({ type: 'ACCOUNT_NAME', data });
+  const updateFilterBy = (data) => dispatch({ type: 'FILTER', data });
+  const updatePage = (data) => dispatch({ type: 'PAGE', data });
+  const updateOffset = (data) => dispatch({ type: 'OFFSET', data });
+  const updateRowsPerPage = (data) => dispatch({ type: 'ROWS_PER_PAGE', data });
+  const updateTotal = (data) => dispatch({ type: 'TOTAL', data });
+  const updateContent = (data) => dispatch({ type: 'CONTENT', data });
+  const addFilter = (data) => dispatch({ type: 'ADD_FILTER', data });
+  const removeFilter = (data) => dispatch({ type: 'REMOVE_FILTER', data });
+  const clearFilters = () => dispatch({ type: 'CLEAR_FILTERS' });
+
+  return {
+    state,
+    dispatch,
+    updateAccountName,
+    updateFilterBy,
+    updatePage,
+    updateOffset,
+    updateRowsPerPage,
+    updateTotal,
+    updateContent,
+    addFilter,
+    removeFilter,
+    clearFilters,
+  };
+}
+
+function AccountSearchProvider(props) {
+  const [AccountSearch, setAccountSearch] = React.useReducer(
+    accountSearchReducer,
+    initialState
+  );
+  const value = React.useMemo(
+    () => [AccountSearch, setAccountSearch],
+    [AccountSearch]
+  );
+  return <AccountSearchContext.Provider value={value} {...props} />;
+}
+
+export { AccountSearchProvider, useAccountSearch };
