@@ -1,0 +1,73 @@
+// Import necessary dependencies
+import React, { useState } from 'react';
+import { useHistory } from 'react-router-dom';
+import MaterialTable from 'material-table';
+import { TextField, Button, Grid } from '@material-ui/core';
+
+const FilterPage = () => {
+  const history = useHistory();
+  const [filters, setFilters] = useState({ filter1: '', filter2: '' });
+  const [filteredData, setFilteredData] = useState([]);
+
+  // Mock data, replace with your actual data fetching logic
+  const data = [
+    { id: 1, name: 'Item 1', category: 'Category A' },
+    { id: 2, name: 'Item 2', category: 'Category B' },
+    // ... other data
+  ];
+
+  const handleFilter = () => {
+    // Implement your filtering logic here based on filters state
+    const filteredResults = data.filter(item =>
+      item.name.toLowerCase().includes(filters.filter1.toLowerCase()) &&
+      item.category.toLowerCase().includes(filters.filter2.toLowerCase())
+    );
+    setFilteredData(filteredResults);
+  };
+
+  const handleRowClick = (event, rowData) => {
+    // Navigate to detail page and retain filteredData
+    history.push('/detail', { selectedRow: rowData, filteredData });
+  };
+
+  const columns = [
+    { title: 'ID', field: 'id' },
+    { title: 'Name', field: 'name' },
+    { title: 'Category', field: 'category' },
+  ];
+
+  return (
+    <div>
+      <Grid container spacing={2} alignItems="center">
+        <Grid item>
+          <TextField
+            label="Filter Name"
+            value={filters.filter1}
+            onChange={(e) => setFilters({ ...filters, filter1: e.target.value })}
+          />
+        </Grid>
+        <Grid item>
+          <TextField
+            label="Filter Category"
+            value={filters.filter2}
+            onChange={(e) => setFilters({ ...filters, filter2: e.target.value })}
+          />
+        </Grid>
+        <Grid item>
+          <Button variant="contained" color="primary" onClick={handleFilter}>
+            Apply Filters
+          </Button>
+        </Grid>
+      </Grid>
+
+      <MaterialTable
+        title="Filtered Results"
+        columns={columns}
+        data={filteredData.length > 0 ? filteredData : data}
+        onRowClick={handleRowClick}
+      />
+    </div>
+  );
+};
+
+export default FilterPage;
