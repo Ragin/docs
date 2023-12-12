@@ -1,0 +1,1998 @@
+import React, { useState, Component } from "react";
+import ReactDOM from "react-dom";
+import "./AppHeader.css";
+import AppFooter from "./app-footer/AppFooter";
+import { getProgramUrl } from "../utils/OptumPrograms";
+import { NavigationMessage } from "../utils/Iframes";
+import { Menu } from "primereact/menu";
+import { Button } from "primereact/button";
+import { TieredMenu } from "primereact/tieredmenu";
+import * as AuthProxy from "../security/AuthProxy";
+import Logout from "../layout/logout/Logout";
+import InvalidSessionModal from "../layout/modal/InvalidSessionModal";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import parse from 'html-react-parser';
+import { Stack } from 'stack-typescript';
+import PricingList from '../utils/pricinglist';
+import { Card } from "@better-ui/react";
+import * as RxClaimWebTools from '../utils/RxClaimWebTools';
+import * as PortunusTools from '../utils/PortunusTools';
+import {
+  Header,
+  Toolkit
+} from "@uitk/react";
+import Logo from "../assets/optum-logo.svg";
+import ProviderLanding from "../layout/pages/ProviderLanding";
+import PricingLanding from "../layout/pages/PricingLanding";
+import OperationsLanding from "../layout/pages/OperationsLanding";
+import RxLiteLanding from "../layout/pages/RxLiteLanding";
+import { ajax } from "jquery";
+import { toHaveStyle } from "@testing-library/jest-dom/matchers";
+
+
+
+interface IFramesProps { }
+
+interface IframeState {
+  frame: any;
+  isHome: boolean;
+  isProviderHome: boolean;
+  isPricingHome: boolean;
+  isOperationsHome: boolean;
+  isProvFrame: boolean;
+  isRxLiteHome: boolean;
+  isRxLiteFrame: boolean;
+  subMenu: string;
+  isOpFrame: boolean;
+  isPriceFrame: boolean;
+  modalUrl?: string;
+  abilities: string[];
+  providerMenu: any[];
+  prescriberSubMenu: any[];
+  pharmacySubMenu: any[]
+  pricingMenu: any[];
+  operationsMenu: any[];
+  rxLiteMenu: any[],
+  tenantMenu: any[];
+  showHideMenu: boolean;
+  isOpen: boolean;
+  isClaims: boolean;
+  showHidePrescriberSubMenu: boolean;
+  showHidePharmacySubMenu: boolean;
+  showHideOperationsMenu: boolean;
+  showHideEligibility: boolean;
+  showHideRxClaimLite: boolean;
+  showHideProvider: boolean;
+  showHideRxLiteSubMenu: boolean;
+  businessObjectMap: Map<string, string>;
+  tenantId: string;
+  currentTenant: string;
+  currentProgram: string;
+  prestoWindow: any;
+  tenantIds: string[];
+  failedTenants: string[];
+  tenantStack: Stack<string>;
+  userProfile: undefined;
+  displayUser: String;
+  confProfile: undefined;
+  logoSrc: String;
+  userAliasName: String;
+  card1: String;
+  card1Desc: String;
+  card1Func: String;
+  card2: String;
+  card2Desc: String;
+  card2Func: String;
+  card3: String;
+  card3Desc: String;
+  card3Func: String;
+  defaultTenant: string;
+  providerResults: any;
+  operationResults: any;
+}
+
+class AppHeader extends Component<IFramesProps, IframeState> {
+  private providerMenu: React.RefObject<Menu>;
+  private prescriberSubMenu: React.RefObject<Menu>;
+  private pharmacySubMenu: React.RefObject<Menu>;
+  private pricingMenu: React.RefObject<Menu>;
+  private rxLiteMenu: React.RefObject<Menu>;
+  private operationsMenu: React.RefObject<Menu>;
+  private tenantMenu: React.RefObject<Menu>;
+  private backendUrl: string;
+  public pricingList: any;
+  private loginImgSrc = './images/login.png';
+  private clipboardIcon='./images/clipboard.png';
+  private stethoscopeIcon='./images/stethoscope.png'
+  private rxclaimIcon='./images/rxclaimicon.png'
+  private logoSrc = './images/Optum-Rx-ora-RGB.png';
+  constructor(props: IFramesProps) {
+    super(props);
+    this.state = {
+      frame: "",
+      isHome: true,
+      isProviderHome: false,
+      isPricingHome: false,
+      isRxLiteHome: false,
+      isRxLiteFrame: false, 
+      isOperationsHome: false,
+      isProvFrame: false,
+      isClaims: false,
+      subMenu: "",
+      isOpFrame: false,
+      isPriceFrame: false,
+      modalUrl: undefined,
+      abilities: [],
+      providerMenu: [],
+      prescriberSubMenu: [],
+      pharmacySubMenu: [],
+      pricingMenu: [],
+      rxLiteMenu: [],
+      operationsMenu: [],
+      tenantMenu: [],
+      showHideMenu: false,
+      isOpen: false,
+      showHideOperationsMenu: false,
+      showHidePrescriberSubMenu: false,
+      showHidePharmacySubMenu: false,
+      showHideRxLiteSubMenu: false,
+      showHideEligibility: false,
+      showHideRxClaimLite: false,
+      showHideProvider: false,
+      businessObjectMap: new Map(),
+      tenantId: "   ",
+      currentProgram: "",
+      prestoWindow: {},
+      tenantIds: [],
+      failedTenants: [],
+      currentTenant: "",
+      tenantStack: new Stack<any>([]),
+      displayUser: "",
+      userProfile: undefined,
+      confProfile: undefined,
+      logoSrc: "./images/Optum-Rx-ora-RGB.png",
+      userAliasName: "",
+      card1: "Eligibility",
+      card1Desc : "Add, maintain, and query member data and load files",
+      card1Func:  "()=> this.updateFrame(env.eligibility)",
+      card2: "Provider",
+      card2Desc: "Prescriber, pharmacy networks and super networks",
+      card2Func:  "this.setPrescriberHome.bind(this)",
+      card3: "RxClaim Web",
+      card3Desc: "Modernized RxClaim for setting up and adjudicating claims",
+      card3Func: "()=>this.openPresto(env)",
+      defaultTenant: "",
+      providerResults: {},
+      operationResults: {}
+    };
+    this.providerMenu = React.createRef();
+    this.prescriberSubMenu = React.createRef();
+    this.pharmacySubMenu = React.createRef();
+    this.pricingMenu = React.createRef();
+    this.rxLiteMenu=React.createRef();
+    this.operationsMenu = React.createRef();
+    this.tenantMenu = React.createRef();
+    this.backendUrl = "";
+    this.pricingList = new PricingList();
+  }
+
+  updateFrameFromChild(url?: string) {
+ 
+    
+    this.updateFrame(url);
+  }
+
+  updateRxLiteFrame(url?: string){
+    console.log("trying to call microfrontend")
+    console.log(url)
+    this.setState({isClaims: true});
+
+  }
+
+  validateSessionId() {
+    AuthProxy.validateSession()
+      .then((res: any) => res.json())
+      .then((data) => {
+        if (data !== undefined && data === false) {
+          return ReactDOM.render(
+            <React.StrictMode>
+              <InvalidSessionModal />
+            </React.StrictMode>,
+            document.getElementById("root")
+          );
+        } else return true;
+      });
+  }
+
+  getUserProfile() {
+    if (AuthProxy.getSessionId()) {
+      AuthProxy.getUserProfile()
+        .then((res: any) => res.json())
+        .then((data) => {
+          console.log(data);
+          var result = data['decodedIdToken'];
+          this.setState({ userProfile: data['decodedIdToken'] });
+          this.setState({ displayUser: result['given_name'] + " " + result['family_name'] })
+          AuthProxy.getTenantIds().then((res: any) =>
+            res.json()).then((data) => {
+              if (data && data.roles && data.roles.length > 0) {
+                console.log(data);
+                AuthProxy.portunusAbilities()
+                  .then(response => response.json())
+                  .then(data2 => {
+                    console.log(data2);
+                    AuthProxy.callUserAlias(this.state.userProfile, data2.roles)
+                    .then(response => response.json())
+                    .then(data3 => {
+                      this.setState({ userAliasName: data3['userAliasName'] });
+                      this.getUserPref(2, this.state.userAliasName);
+                      this.getSplunkData(this.state.userProfile);
+                    })
+                  })
+                }
+              })
+          })
+        };
+    }
+
+    send(payload:any) { 
+      // TODO: ADD SERVER ORIGIN TO EACH SPLUNK LOG
+      // HIGH PRIORITY: SPLUNK ERRORS, SERVER ORIGIN
+      // TODO: LOG WHAT DATA CENTER, AND WHAT POD IN THAT DATA CENTER
+      var data = JSON.stringify({
+        // TODO: HOST TO SERVER POD NAME
+        host: process.env.REACT_APP_API_ENV,
+        sourcetype: "_json",
+        source: "RxClaimNextGenUI",
+        event: payload,
+      });
+  
+      console.log(process.env.REACT_APP_API_ENV)
+      if(process.env.REACT_APP_API_ENV == 'qa' || process.env.REACT_APP_API_ENV == 'stg' || process.env.REACT_APP_API_ENV == 'prd'){
+  
+        ajax({
+          type: 'POST',
+          url: "/services/collector/event",
+          timeout: 2000,
+          headers: {
+            Authorization:
+              "Splunk 05e0fe91-9653-4a3c-b6f1-47aae7256a66",
+          },
+          data: data,          
+          global:false,
+          dataType: "json",
+          // function when ajax call return errors        
+        });
+      } 
+    }
+
+    getSplunkData(userProfile: any){
+      // Splunk logging on what the user chooses
+      let splkUser = userProfile.msid;
+      let splkAuthType = "msid";
+      if(!(AuthProxy.getAuthType() == 'msid')) {        
+        splkUser = userProfile.preferred_username;
+        splkAuthType = "ohid";        
+      }
+      var splunklog1 = {
+        message: "User details",
+        userid: splkUser,
+        authtype: splkAuthType,
+        tenant: this.state.currentTenant,                      
+        };
+      this.send(JSON.stringify(splunklog1));
+    } 
+
+  getConfProfile(screenId: any){
+    AuthProxy.callConfService(screenId)
+      .then((res: any) => res.json())
+      .then((data) => {
+        console.log(data);
+        var parsable = "";
+        if(data[0].screenConfiguration){
+          parsable = data[0].screenConfiguration;
+        }
+        this.setState({confProfile: JSON.parse(parsable)});
+        this.setState({logoSrc: JSON.parse(parsable).logoShow.logoPath});
+        this.setState({card1: JSON.parse(parsable).cards.titles.card1});
+        this.setState({card1Desc: JSON.parse(parsable).cards.descriptions.card1});
+        this.setState({card1Func: JSON.parse(parsable).cards.functionality.card1});
+        this.setState({card2: JSON.parse(parsable).cards.titles.card2});
+        this.setState({card2Desc: JSON.parse(parsable).cards.descriptions.card2});
+        this.setState({card2Func: JSON.parse(parsable).cards.functionality.card2});
+        this.setState({card3: JSON.parse(parsable).cards.titles.card3});
+        this.setState({card3Desc: JSON.parse(parsable).cards.descriptions.card3});
+        this.setState({card3Func: JSON.parse(parsable).cards.functionality.card3});
+    })
+  }
+
+  getUserPref(screenId: any, userAliasName: any){
+    AuthProxy.callUserPrefService(screenId, userAliasName)
+    .then((res: any) => res.json())
+    .then((data) => {
+      console.log(data);
+        this.setState({defaultTenant: data["default"]});
+        var defaultPresent = false;
+        for(let i=0; i<this.state.tenantIds.length; i++) {
+            if(this.state.tenantIds[i] === this.state.defaultTenant){
+              // check for default tenant in user's tenant list
+              defaultPresent = true;
+            }
+        }
+        if(defaultPresent){
+          this.setState({tenantId: this.state.defaultTenant})
+        }
+        this.updateTenant(this.state.tenantId)
+    })
+  }
+
+  componentDidMount() {
+
+    this.state.rxLiteMenu.push("Claims Search by Member ID");
+    console.log("HEY" + this.state.rxLiteMenu)
+    this.getUserProfile();
+    this.getConfProfile(2);
+    type option = { label: string; command: any };
+let option: Option;
+  // /*
+  
+  //   */
+
+    this.getFailedTenants();
+    if (
+      window.performance &&
+      performance.navigation &&
+      performance.navigation.type == 1
+    ) {
+      this.validateSessionId();
+    }
+
+    if (this.operationsMenu.current) {
+      this.operationsMenu.current.componentDidUpdate = function () {
+        document.getElementById("popup_menu")?.addEventListener(
+          "mouseleave",
+          function (e: any) {
+            // @ts-ignore
+            this.hide(e);
+          }.bind(this)
+        );
+      };
+    }
+
+    if (this.providerMenu.current) {
+      this.providerMenu.current.componentDidUpdate = function () {
+        document.getElementById("popup_menu")?.addEventListener(
+          "mouseleave",
+          function (e: any) {
+            // @ts-ignore
+            this.hide(e);
+          }.bind(this)
+        );
+      };
+    }
+
+    if (this.prescriberSubMenu.current) {
+      this.prescriberSubMenu.current.componentDidUpdate = function () {
+        document.getElementById("popup_menu")?.addEventListener(
+            "mouseleave",
+            function (e: any) {
+              // @ts-ignore
+              this.hide(e);
+            }.bind(this)
+        );
+      };
+    }
+    if (this.pharmacySubMenu.current) {
+      this.pharmacySubMenu.current.componentDidUpdate = function () {
+        document.getElementById("popup_menu")?.addEventListener(
+            "mouseleave",
+            function (e: any) {
+              // @ts-ignore
+              this.hide(e);
+            }.bind(this)
+        );
+      };
+    }
+
+    if (this.pricingMenu.current) {
+      this.pricingMenu.current.componentDidUpdate = function () {
+        ["click", "mouseleave"].forEach((event) => {
+          document.getElementById("popup_menu")?.addEventListener(
+            event,
+            function (e: any) {
+              // @ts-ignore
+              this.hide(e);
+            }.bind(this)
+          );
+        });
+      };
+    }
+
+    if (this.rxLiteMenu.current) {
+      console.log("MENU2" + this.state.rxLiteMenu)
+      this.rxLiteMenu.current.componentDidUpdate = function () {
+        ["click", "mouseleave"].forEach((event) => {
+          document.getElementById("popup_menu")?.addEventListener(
+            event,
+            function (e: any) {
+              // @ts-ignore
+              this.hide(e);
+            }.bind(this)
+          );
+        });
+      };
+    }
+
+    if (this.tenantMenu.current) {
+      this.tenantMenu.current.componentDidUpdate = function () {
+        ["click", "mouseleave"].forEach((event) => {
+          document.getElementById("popup_menu")?.addEventListener(
+            event,
+            function (e: any) {
+              // @ts-ignore
+              this.hide(e);
+            }.bind(this)
+          );
+        });
+      };
+    }
+    
+    const manageNavigationMessage = function (e: MessageEvent) {
+      // @ts-ignore
+      const currentState = this.state;
+      if (e.data === "close-iframe") {
+        const previousIframe = document.getElementById("iframe-provider");
+        if (previousIframe) {
+          previousIframe.style.display = "none";
+        }
+        // @ts-ignore
+        this.setHome();
+      }
+      if (e.data === "logout") {
+        console.log(" in logout ");
+        return ReactDOM.render(
+          <React.StrictMode>
+            <Logout />
+          </React.StrictMode>,
+          document.getElementById("root")
+        );
+      }
+
+      // Presto sign out button clicked
+      if (e.data === "presto-signout") {
+        console.log(" Presto sign out button clicked ");
+        currentState.prestoWindow.close();
+        return;
+      }
+
+       // Respond to Presto testing if UI is logged in and open 
+       if (e.data === "is-unified-ui-online") {
+        console.log(" Presto testing if UI active");
+        // @ts-ignore
+        currentState.prestoWindow.postMessage(
+          {
+            event: "is-unified-ui-online",
+            response: "active",
+            program: "",
+          },
+          "*" // TODO: replace this with CONST and more specific origin
+        );
+        return;
+      }
+
+      // respond if program paramters are requested
+      if (e.data === "request-pgm-parameters") {
+        // Send Parms via post message so they do not need to be in the URL
+        currentState.prestoWindow.postMessage(
+        {
+          event: "setProgramJumpParameters",
+          parameters: window.sharedParameters // TODO: Change to state variable
+        },
+          "*" // TODO: replace this with CONST and more specific origin
+        );
+        return;
+      }
+
+      // Handle message from Presto trying to jump to program
+      /*const sampleMessage = {
+                "message": "navigate-to-program",
+                "programCode": "RCPHY010I",
+                "parameters" : ["@000010754","1881701787","*","01"]
+            }*/
+      const navigationMessage = e.data as NavigationMessage;
+      if (
+        navigationMessage !== null &&
+        navigationMessage.message === "navigate-to-program"
+      ) {
+        if (navigationMessage.programCode) {
+
+          // Give parent window a name so Presto tab can reference it (used to click message and navigate back)
+          window.name = "UI-parent";
+          // @ts-ignore
+          this.setState({ currentProgram: navigationMessage.programCode });
+          // @ts-ignore 
+          this.updateFrame(
+            getProgramUrl(
+              navigationMessage.programCode,
+              navigationMessage.parameters,
+              navigationMessage.tenantId
+            )
+          );
+        }
+
+        // @ts-ignore
+        console.log(this.state.prestoWindow);
+        
+      } else if(navigationMessage !== null &&
+        navigationMessage.message === "navigate-to-program-internal") {
+          if (navigationMessage.programCode) {
+            this.updateFrame(getProgramUrl(navigationMessage.programCode, navigationMessage.parameters, this.state.tenantId));
+          }
+        }
+        else if (navigationMessage.message === 'navigate-to-presto' ) {
+          let environment = window["environments"];
+
+          // Set current program to state
+          this.setState({ "currentProgram": this.formatProgramNameForRxClaimWeb(navigationMessage.programCode)});
+          
+          let pgmParams = navigationMessage.parameters;
+
+          // Check parameter data structure (order of parms and some paramters need to be combined for synon call)
+          // set param data if current program is included in pgmParameters (set via config file)
+          var paramData = window.pgmParameters[this.state.currentProgram];
+          
+          // if no program info show error since we cannot call program
+          if(!paramData) {
+            alert("missing program parameter information for: " + this.state.currentProgram);
+            return false;
+          }
+
+          // Add parameter values into the parameter object set from the pgm-parameter config file
+          let errors = [];
+          paramData.parameters.forEach((parameter) => {
+            if (parameter.usage && parameter.usage === "O") {
+              // set output parameters to blank
+              parameter.value = "";
+            } else if (typeof pgmParams[parameter.field] === "undefined") {
+              // Check to see if parameter has a value returned from the server
+              // if not return and put warning in console
+              /*
+              let error =
+                "AppHeader: Warning the parameter " +
+                parameter.field +
+                " is missing for program " +
+                this.state.currentProgram;
+              console.warn(error);
+              errors.push(error);
+              */
+            } else {
+              parameter.value = pgmParams[parameter.field];
+            }
+          });
+          if (errors.length !== 0) {
+            alert("Program parameter information mismatch for: " + this.state.currentProgram);
+            return false;
+          }
+
+          // Format parameters for Presto(RxClaim Web) calls
+          var rxclaimWebParameters = RxClaimWebTools.formatWebParameters(paramData.parameters);
+
+          // Send url with program and program parameters to open Presto function
+          this.openPresto(environment, rxclaimWebParameters);
+          //console.log(this.state.tenantStack.pop()); 
+          //this.setState({ tenantId: this.state.tenantStack.top });
+
+        } else if (navigationMessage.message === 'getTenantId' ) {
+          const isIFrame = (input: HTMLElement | null): input is HTMLIFrameElement => 
+              input !== null && input.tagName === 'IFRAME';
+          let frame = document.getElementById('frame0');
+          if (isIFrame(frame) && frame.contentWindow) { 
+            frame.contentWindow.postMessage({
+              message: "getTenantId",
+              tenantId: this.state.tenantId
+            }, '*');
+          }
+        } else if (navigationMessage.message === 'getSessionInfo' ) {
+          const isIFrame = (input: HTMLElement | null): input is HTMLIFrameElement => 
+              input !== null && input.tagName === 'IFRAME';
+          let frame = document.getElementById('frame0');
+          if (isIFrame(frame) && frame.contentWindow) { 
+            frame.contentWindow.postMessage(
+            {
+              message: "sendSessionInfo",
+              session_id: AuthProxy.getSessionId(),
+              idp: AuthProxy.getAuthType(),
+              tenantId: this.state.tenantId
+            }, '*');
+          }
+        } else if (navigationMessage.message === 'changeTenant') {
+          let tenant = navigationMessage.tenant;
+          this.setState({ currentTenant: this.state.tenantId });
+          this.setState({ tenantId: tenant });
+          this.state.tenantStack.push(tenant);
+        } else if (navigationMessage.message === 'restoreTenant') {
+          //Required to pop the stack
+          if(this.state.tenantStack.size != 1) {
+            console.log(this.state.tenantStack.pop()); 
+          }
+          this.setState({ tenantId: this.state.tenantStack.top });
+        } else if (navigationMessage.message === 'getAbilities') {
+          const isIFrame = (input: HTMLElement | null): input is HTMLIFrameElement => 
+              input !== null && input.tagName === 'IFRAME';
+          let frame = document.getElementById('frame0');
+          if (isIFrame(frame) && frame.contentWindow) { 
+            frame.contentWindow.postMessage(
+            {
+              message: "sendAbilities",
+              abilities: this.state.abilities
+            }, '*');
+        }
+      } else if(navigationMessage.message === "sendProgramName") {
+        const helpPage = "/help/index.htm#t="+e.data.application+"%2F" + e.data.programName + ".htm";
+        console.log(e.data.programName);
+        window.open(
+          helpPage,
+          'Help'
+        );
+      } 
+    };
+
+    window.addEventListener("message", manageNavigationMessage.bind(this));
+
+    this.loadConfig();
+    this.loadPgmParameters();
+
+    AuthProxy.getTenantIds().then((res: any) =>
+      res.json()).then((data) => {
+        this.setState({ tenantIds: data.roles });
+        if (data && data.roles && data.roles.length > 0) {
+          let tenant = "";
+          for(let i=0; i<data.roles.length; i++) {
+              tenant = data.roles[i];
+              break;
+          }
+          this.setState({ tenantId: tenant, currentTenant: tenant });
+          this.state.tenantStack.push(tenant);
+        } else {
+          this.setState({ tenantId: "     " });
+        }
+      AuthProxy.fetchDGRoles(this.state.tenantIds);
+      if (this.state.tenantIds && this.state.tenantIds.length > 0 
+          && this.state.tenantIds[0] && this.state.tenantIds[0].trim().length>0) {
+          AuthProxy.getPortunusAbilities(this.state.tenantIds[0])
+            .then((res: any) =>
+              res.json())
+            .then((data) => {
+              console.log("data:" + JSON.stringify(data))
+              var result = data['abilities'];
+              if (result !== undefined && result.actors != undefined && result.actors.length > 0) {
+                this.setState({ abilities: result['all-abilities'] });
+                if (this.state.abilities) {
+                  this.getModules(this.state.tenantId);
+                }
+              }     
+              const module = this.state.tenantId !== undefined ? this.state.tenantId.split("_")[0] : "";
+                     const pricingResult = this.state.abilities.filter(
+                       (value) => value.startsWith(module + ".pricing")
+                     );
+              let pricingResultValue =
+                this.pricingList.getPricingList(pricingResult);
+              for (
+                let i = 0;
+                i < pricingResultValue.length;
+                i++
+              ) {
+                if (
+                  Array.isArray(
+                    pricingResultValue[i].items
+                  )
+                ) {
+                  option = {
+                    label:
+                      pricingResultValue[i].label,
+                    items: [],
+                  };
+
+                  for (
+                    let j = 0;
+                    j <
+                    pricingResultValue[i].items
+                      .length;
+                    j++
+                  ) {
+                    let newOption = {
+                      label:
+                        pricingResultValue[i].items[
+                          j
+                        ].label,
+
+                      command: () =>
+                        this.onSelect(
+                          pricingResultValue[i]
+                            .items[j].program
+                        ),
+                    };
+
+                    option.items.push(newOption);
+                  }
+                } else {
+                  option = {
+                    label:
+                      pricingResultValue[i].label,
+                    command: () =>
+                      this.onSelect(
+                        pricingResultValue[i]
+                          .program
+                      ),
+                  };
+                }
+                this.state.pricingMenu.push(option);
+              }
+            });
+        }
+      })
+
+      //  console.log("pricing", pricingResult);
+       
+  }
+
+  getModules(tenantId: string) {
+    const module = tenantId !== undefined ? tenantId.split('_')[0] : '';
+
+    const providerResult = this.state.abilities.filter((value) =>
+      value.startsWith(module + ".provider")
+    );
+    const operationsResult = this.state.abilities.filter((value) =>
+      value.startsWith(module + ".operations")
+    );
+    const eligibilityResult = this.state.abilities.filter((value) =>
+      value.startsWith(module + ".eligibility")
+    );
+
+    const rxclaimLiteResult = this.state.abilities.filter((value) =>
+      value.startsWith(module + ".rxlite")
+    );
+    
+    this.getModulesProvider(providerResult);
+    this.getModulesOperations(operationsResult);
+    this.getModulesEligibility(eligibilityResult);
+    this.setProviderCardsFlag(providerResult);
+    this.getModulesRxClaimLite(rxclaimLiteResult);
+
+  }
+  getModulesEligibility(eligibilityResult: any) {
+
+    if (eligibilityResult.length === 0) {
+      this.setState({
+        showHideEligibility: false
+      })
+      return
+    }
+    eligibilityResult.forEach((element: any) => {
+      
+      let comparingValue = element.split('.')[2] + "." + element.split('.')[3]
+      if (comparingValue === 'access.grant' || comparingValue === 'read.grant') {
+        
+        this.setState({
+          showHideEligibility: true
+        })
+      } else {
+        this.setState({
+          showHideEligibility: false
+        })
+      }
+    });
+  }
+
+
+  getModulesRxClaimLite(rxclaimLiteResult: any) {
+
+    if (rxclaimLiteResult.length === 0) {
+      this.setState({
+        showHideRxClaimLite: false
+      })
+      return
+    }
+    rxclaimLiteResult.forEach((element: any) => {
+      
+      let comparingValue = element.split('.')[2] + "." + element.split('.')[3]
+      if (comparingValue === 'access.grant' || comparingValue === 'read.grant') {
+        
+        this.setState({
+          showHideRxClaimLite: true
+        })
+      } else {
+        this.setState({
+          showHideRxClaimLite: false
+        })
+      }
+    });
+  }
+
+  getModulesOperations(operationsResult: any) {
+
+    this.setState({operationResults: operationsResult});
+    type option = { label: string; command: any };
+    type menu = { label: string; items: Array<option> };
+    // groupBy key and values, eg. Prescriber and corresponding value {prescriberid,sanctioncode ,..}
+    let map = new Map<string, Array<string>>();
+    for (let i = 0; i < operationsResult.length; i++) {
+      let name = operationsResult[i].split(".")[2];
+      let mainSubMenu = operationsResult[i].split(".")[1];
+      let platformName = operationsResult[i].split(".")[0];
+      if (!map.has(name)) {
+        map.set(name, new Array<string>());
+      }
+
+      const lenthOfResultArray = operationsResult[i].split(".").length;
+      map
+        .get(name)
+        ?.push(operationsResult[i].replace(platformName + "." + mainSubMenu + "." + name + ".", ""));
+    }
+
+    // Map of bussiness object read from buiness-object.json
+    let businessObjMap = new Map<string, string>();
+    businessObjMap = this.state.businessObjectMap;
+    this.setState({ operationsMenu: [] })
+    //Adding menu as per business object orders
+    businessObjMap.forEach((value, key) => {
+      //creating menu
+      if (PortunusTools.keyIsEligibleForMenuFormingOperations(key, map)) {
+        //check in this.state.providerMenu label is available or not  
+        if (PortunusTools.checkInOperationsMenu(key.split(".")[0], this.state.operationsMenu)) {
+          for (let i = 0; i < this.state.operationsMenu.length; i++) {
+            if (this.state.operationsMenu[i].label === key.split(".")[0]) {
+              //label is found means menu found
+              //pushing fresh entry
+              let labelName = value.split("-")[1];
+              let frame = ""
+              if(key.split(".")[0] == 'clinicalautomationtool') {
+                frame = window["environments"].cat;
+              } else if(key.split(".")[0] == 'extpbm') {
+                frame = window["environments"].perks;
+              } else if(key.split(".")[0] == 'Claims') {
+                frame = window["environments"].rxview;
+              }
+
+              if(process.env.REACT_APP_API_ENV == 'stg' || process.env.REACT_APP_API_ENV == 'prd') {
+                frame = frame+"-"+process.env.REACT_APP_DATACENTER+".optum.com/"
+              }
+              console.log(frame);
+
+              let option: option = {
+                label: labelName,
+                command: () => this.updateFrame(frame),
+              };
+              //adding item to existing option
+              this.state.operationsMenu[i].items.push(option);
+              console.log(this.state.operationsMenu);
+            }
+          }
+        } else {
+          //create fresh menu
+          //create menu object
+          let menuObj: menu = { label: "", items: [] };
+          menuObj.label = key.split(".")[0]; //menu first level
+          //pushing fresh entry
+          let pgmName = value.split("-")[0];
+          let labelName = value.split("-")[1];
+          let frame = ""
+          let isMultipleOptions = false;
+          if(key.split(".")[0] == 'clinicalautomationtool') {
+            frame = window["environments"].cat;
+          } else if(key.split(".")[0] == 'extpbm') {
+            frame = window["environments"].perks;
+          } else if(key.split(".")[0] == 'Claims') {
+            isMultipleOptions = true;
+            frame = window["environments"].rxview;
+          } 
+          
+          if(process.env.REACT_APP_API_ENV == 'stg' || process.env.REACT_APP_API_ENV == 'prd') {
+            frame = frame+"-"+process.env.REACT_APP_DATACENTER+".optum.com/"
+          }
+          console.log(frame);
+          if(!isMultipleOptions) {
+            let option: option = {
+              label: key.split(".")[0],
+              command: () => this.updateFrame(frame),
+            };
+            menuObj.items.push(option);
+            this.state.operationsMenu.push(option);
+          } else {
+            let option: option = {
+              label: labelName,
+              command: () => this.updateFrame(frame),
+            };
+
+            menuObj.items.push(option);
+            this.state.operationsMenu.push(menuObj);
+          }
+        }
+      }
+    });
+
+    //menu main label renaming
+    for (let i = 0; i < this.state.operationsMenu.length; i++) {
+      console.log(this.state.operationsMenu);
+      if (this.state.operationsMenu[i].label === "extpbm") {
+        let operationsMenu = [...this.state.operationsMenu]
+        let item = { ...operationsMenu[i] }
+        item.label = "External PBM"
+        operationsMenu[i] = item
+        this.setState({
+          operationsMenu
+        })
+      } else if (this.state.operationsMenu[i].label === "clinicalautomationtool") {
+        let operationsMenu = [...this.state.operationsMenu]
+        let item = { ...operationsMenu[i] }
+        item.label = "Clinical Automation Tool"
+        operationsMenu[i] = item
+        this.setState({
+          operationsMenu
+        })
+      } else if (this.state.operationsMenu[i].label === "rxview") {
+        let operationsMenu = [...this.state.operationsMenu]
+        let item = { ...operationsMenu[i] }
+        item.label = "Rejected Claim Review"
+        operationsMenu[i] = item
+        this.setState({
+          operationsMenu
+        });
+      }
+    }
+    var flattenedMenu = this.flattenMenuIfOnlyOneSubMenuItem();
+    console.log('the operationsMenu=', this.state.operationsMenu);
+    console.log('flattenedMenu=', flattenedMenu);
+
+    this.setState({
+      showHideOperationsMenu: this.state.operationsMenu.length > 0 ? true : false,
+    });
+  }
+
+  private flattenMenuIfOnlyOneSubMenuItem() {
+    var flattenedMenu: any[] = [];
+    this.state.operationsMenu.forEach(menu => {
+      if (menu.items?.length === 1) {
+        flattenedMenu.push(menu.items[0]);
+      } else {
+        flattenedMenu.push(menu);
+      }
+    });
+    this.setState({
+      operationsMenu: flattenedMenu
+    });
+    return flattenedMenu;
+  }
+
+  getModulesProvider(providerResult: any) {
+    type option = { label: string; command: any };
+    type menu = { label: string; items: Array<option> };
+    console.log('getModulesProvider=', providerResult);
+    // groupBy key and values, eg. Prescriber and corresponding value {prescriberid,sanctioncode ,..}
+    let map = new Map<string, Array<string>>();
+    for (let i = 0; i < providerResult.length; i++) {
+      let name = providerResult[i].split(".")[2];
+      let mainSubMenu = providerResult[i].split(".")[1];
+      let platformName = providerResult[i].split(".")[0];
+      if (!map.has(name)) {
+        map.set(name, new Array<string>());
+      }
+
+      const lenthOfResultArray = providerResult[i].split(".").length;
+      map
+        .get(name)
+        ?.push(providerResult[i].replace(platformName + "." + mainSubMenu + "." + name + ".", ""));
+    }
+    // Map of bussiness object read from buiness-object.json
+    let businessObjMap = new Map<string, string>();
+    businessObjMap = this.state.businessObjectMap;
+    this.setState({ providerMenu: [] , prescriberSubMenu: [], pharmacySubMenu: [], operationsMenu: []});
+    //Adding menu as per business object orders
+    businessObjMap.forEach((value, key) => {
+    //
+    console.log(key + "=" + value);
+
+      //one by one check each business object will eligible for menu creation or not 
+     
+      //creating menu
+      const isEligibleForMenu = PortunusTools.keyIsEligibleForMenuForming(key, map);
+      console.log('check', key ,'map=',map, 'isEligibleForMenu=', isEligibleForMenu )
+      if (isEligibleForMenu) {
+        //check in this.state.providerMenu label is available or not  
+        if(PortunusTools.checkInProviderMenu(key.split(".")[0],this.state.providerMenu)){
+          let pgmName = value.split("-")[0];
+          let labelName = value.split("-")[1];
+          let option: option = {
+            label: labelName,
+            command: () => this.onSelect(pgmName),
+          };
+          for (let i = 0; i < this.state.providerMenu.length; i++) {
+            if (this.state.providerMenu[i].label === key.split(".")[0]) {
+                this.state.providerMenu[i].items.push(option);
+            }
+          }
+          console.log('option=', option);
+          this.populateProviderSubMenu(key, option);
+        } else {
+           //create fresh menu
+            //create menu object
+            let menuObj: menu = { label: "", items: [] };
+            menuObj.label = key.split(".")[0]; //menu first level
+            //pushing fresh entry
+            let pgmName = value.split("-")[0];
+            let labelName = value.split("-")[1];
+            let option: option = {
+              label: labelName,
+              command: () => this.onSelect(pgmName),
+            };
+            this.populateProviderSubMenu(key, option);
+            menuObj.items.push(option);
+            this.state.providerMenu.push(menuObj);
+        }
+      }
+    });
+
+    //menu main label renaming
+    for (let i = 0; i < this.state.providerMenu.length; i++) {
+      if (this.state.providerMenu[i].label === "prescriber") {
+        // this.state.providerMenu[i].label = 'Prescriber'
+        let providerMenu = [...this.state.providerMenu]
+        let item = { ...providerMenu[i] }
+        item.label = "Prescriber"
+        providerMenu[i] = item
+        this.setState({
+          providerMenu
+        })
+      } else if (this.state.providerMenu[i].label === "pharmacynetwork") {
+        // this.state.providerMenu[i].label = 'Pharmacy Network'
+        let providerMenu = [...this.state.providerMenu]
+        let item = { ...providerMenu[i] }
+        item.label = "Pharmacy Network"
+        providerMenu[i] = item
+        this.setState({
+          providerMenu
+        })
+      }
+    }
+
+    this.setState({
+      showHideMenu: this.state.providerMenu.length > 0 ? true : false,
+      showHidePrescriberSubMenu: this.state.providerMenu.length > 0 ? true : false,
+      showHidePharmacySubMenu: this.state.providerMenu.length > 0 ? true : false,
+      showHideRxLiteSubMenu: this.state.rxLiteMenu.length > 0 ? true : false, 
+    });
+
+   
+
+  }
+
+  setProviderCardsFlag(providerResult: any) {
+
+    if (providerResult.length === 0) {
+      this.setState({
+        showHideProvider: false
+      })
+      return
+    }
+
+    console.log("RESULTS****" + providerResult);
+    this.setState({providerResults: providerResult});
+    console.log("PROVIDER IN STATE " + this.state.providerResults);
+
+    providerResult.forEach((element: any) => {
+      
+      let comparingValue = element.split('.')[4] + "." + element.split('.')[5]
+      let comparingValue1 = element.split('.')[3] + "." + element.split('.')[4]
+      if (comparingValue === 'access.grant' || comparingValue === 'read.grant' || 
+          comparingValue1 === 'access.grant' || comparingValue1 === 'read.grant') {
+        
+        this.setState({
+          showHideProvider: true
+        })
+      } else {
+        this.setState({
+          showHideProvider: false
+        })
+      }
+    });
+  }
+
+  private populateProviderSubMenu(key: string, option: option) {
+    if (key.split(".")[0] === "prescriber") {
+      this.state.prescriberSubMenu.push(option);
+    } else if (key.split(".")[0] === "pharmacynetwork") {
+      this.state.pharmacySubMenu.push(option);
+    }
+  }
+
+  loadConfig() {
+    const businessObjConfig = "./business-object.json";
+    fetch(businessObjConfig)
+      .then((res: any) => res.json())
+      .then((data) => {
+        Object.keys(data).forEach((key) => {
+          this.state.businessObjectMap.set(key, data[key]);
+        });
+      });
+  }
+
+  // Return true if this a known date format
+  isDateParameter(parameter: JSON) {
+    return (parameter.type === "DTE" || parameter.type === "DT#" || parameter.type === "DT8") ? true : false;
+  }
+  // Return true if this a standard numeric
+  isNumericParameter(parameter: JSON) {
+    return (parameter.dataType === "P") ? true : false;
+  }
+
+  // Add trailing spaces to parameters so length is retained for synon program calls (Java 2 Presto)
+  padParameter(paramVal: string, paramLength: number) {
+    var paddedVal = paramVal;
+    
+    // TODO: remove with proper number handling (next sprint)
+    // right now force all values to string
+    paddedVal = paddedVal.toString();
+
+    var count = paddedVal.length;
+
+    if(count > paramLength) {
+      console.warn("AppHeader: Warning value is greater then expected length");
+      return;
+    }
+
+    // Pad value with spaces until expected parameter length is reached
+    while(count !== paramLength && count < paramLength) {
+      paddedVal += " ";
+      count++;
+    }
+
+    return paddedVal;
+  }
+
+  // Java sends a program name that is determined based on the Java InputParameterClass     
+  // Assumption is that the first 9 position of the input parameter class name is set as the program name   
+  // In many cases the 9th position contains a "I" and this works fine.
+  // But there are some cases where the 9th position is a different character. If this is the case we remove it 
+  // and use the first 8 characters as a program name
+  // This only strips the last character if it is alpha and not a "I"
+  formatProgramNameForRxClaimWeb(programName) {
+    var lastCharacter = programName[programName.length - 1];
+    // If last character is alpha but not a "I", trim it
+    if (lastCharacter !== 'I' && lastCharacter.match(/[a-z]/i)) {
+      return programName.substring(0, programName.length - 1);
+    }
+    return programName;
+  }
+
+  // load program parameter information. Use to order and combine parameters for Java 2 Presto (RxClaim Web) calls
+  loadPgmParameters() {
+    const paramConfigFile = './pgm-parameters.json';
+    // If authorized get pgm param data for Java2Presto
+    fetch(paramConfigFile)
+    .then((res: any) => res.json())
+    .then((data)=> {
+        window.pgmParameters = data;
+    })
+
+  }
+
+  onSelect(programName: string) {
+    let params: any = [];
+    this.setState({ currentProgram: programName });
+    if (this.pharmacySubMenu.current && this.state?.subMenu === 'pharmacy') {
+        console.log('this.pharmacySubMenu.current', this.pharmacySubMenu.current);
+        this.pharmacySubMenu.current.toggle(this);
+    }
+    if (this.prescriberSubMenu.current && this.state.subMenu === 'prescriber') {
+      console.log('this.prescriberSubMenu.current', this.prescriberSubMenu.current);
+      this.prescriberSubMenu.current.toggle(this);
+    }
+    if (this.pricingMenu.current && this.state.isPriceFrame && this.state.subMenu === 'pricing') {
+      console.log('this.pricingMenu.current', this.pricingMenu.current);
+      this.pricingMenu.current.toggle(this);
+    }
+    return this.updateFrame(
+      getProgramUrl(programName, params, this.state.tenantId)
+    );
+  }
+
+  toggleProviderMenu(event: React.MouseEvent<HTMLButtonElement>) {
+    // @ts-ignore
+    this.providerMenu.current.toggle(event);
+  }
+  togglePrescriberSubMenu(event: React.MouseEvent<HTMLButtonElement>) {
+    // @ts-ignore
+    this.prescriberSubMenu.current.toggle(event);
+    console.log('this.prescriberSubMenu.current', this.prescriberSubMenu.current);
+    this.setState({isOpen: !this.state?.isOpen, isProvFrame: true, subMenu: "prescriber"});
+  }
+  togglePharmacySubMenu(event: React.MouseEvent<HTMLButtonElement>) {
+    // @ts-ignore
+    this.pharmacySubMenu.current.toggle(event);
+    console.log('this.pharmacySubMenu.current', this.pharmacySubMenu.current);
+    this.setState({isOpen: !this.state?.isOpen, isProvFrame: true, subMenu: "pharmacy"});
+  }
+  selectOperationsSubMenuItem(event: any, menuItem: any) {
+    // @ts-ignore
+    this.setState({isOpen: !this.state?.isOpen, isOpFrame: true, subMenu: "operations"});
+    if (event && event.items?.length > 0) {
+      // @ts-ignore
+      this.operationsMenu.current.toggle(menuItem);
+    } else if (event) {
+      event.command();
+    }
+
+  }
+
+  togglePricingMenu(event: React.MouseEvent<HTMLButtonElement>) {
+    // @ts-ignore
+    this.pricingMenu.current.toggle(event);
+    this.setState({isOpen: !this.state?.isOpen, isPriceFrame: true, subMenu: "pricing"});
+  }
+
+  toggleRxLiteMenu(event: React.MouseEvent<HTMLButtonElement>) {
+    // @ts-ignore
+    
+    this.setState({isOpen: !this.state?.isOpen, isRxLiteFrame: true, subMenu: "rxLite"});
+
+    this.updateRxLiteFrame("RxClaimSearch");
+
+    console.log("RXLITE MENU!!" + this.state.rxLiteMenu);
+  }
+
+  toggleTenantMenu(event: React.MouseEvent<HTMLButtonElement>) {
+    // @ts-ignore
+    this.tenantMenu.current.toggle(event);
+    console.log('this.tenantMenu.current', this.tenantMenu.current);
+    this.setState({isOpen: !this.state?.isOpen});
+  }
+
+  toggleOperationsMenu(event: React.MouseEvent<HTMLButtonElement>) {
+    // @ts-ignore
+    this.operationsMenu.current.toggle(event);
+    this.setState({isOpen: !this.state?.isOpen, isOpFrame: true, subMenu: "operations"});
+  }
+
+  htmlDecode(input: string){
+    var e = document.createElement('div');
+    e.innerHTML = input;
+    return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
+  }
+
+  getFailedTenants() {
+    const env = window["environments"];
+    if(env !== undefined && env.no_auth == true) {
+      fetch('./tenant/failed')
+        .then(response => response.json())
+        .then(data =>  {
+          this.setState({failedTenants: data});
+          let toastFailedList = "";
+          toastFailedList="<br><div>";
+          for(let i = 0; i < this.state.failedTenants.length; i++) {
+            if(i != this.state.failedTenants.length - 1) {
+              toastFailedList = toastFailedList.concat(this.state.failedTenants[i]+"<br>");
+            } else {
+              toastFailedList = toastFailedList.concat(this.state.failedTenants[i]+"</div>");
+            }
+          }
+
+
+          console.log(this.htmlDecode(toastFailedList));
+
+          toast.info(<div>Disabled Tenants: { parse(toastFailedList)}</div>, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            });
+        })
+    }
+    else {
+      fetch('./tenant/tenant/failed', {
+        headers: {
+          'Session-ID': AuthProxy.getSessionId() as string,
+          'Auth-Type': AuthProxy.getAuthType() as string,
+          'tenant-id' : "RXDV1_DEV",
+        }})
+          .then(response => response.json())
+          .then(data =>  {
+            this.setState({failedTenants: data});
+            let toastFailedList = "";
+            toastFailedList="<br><div>";
+            for(let i = 0; i < this.state.failedTenants.length; i++) {
+              if(i != this.state.failedTenants.length - 1) {
+                toastFailedList = toastFailedList.concat(this.state.failedTenants[i]+"<br>");
+              } else {
+                toastFailedList = toastFailedList.concat(this.state.failedTenants[i]+"</div>");
+              }
+            }
+  
+  
+            console.log(this.htmlDecode(toastFailedList));
+  
+            toast.info(<div>Disabled Tenants: { parse(toastFailedList)}</div>, {
+              position: "top-right",
+              autoClose: 5000,
+              hideProgressBar: true,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              });
+          })
+        }
+    }
+
+  // Open RxClaim Web (powered by Presto) 
+  openPresto(env: any, prestoURLParams: string) {
+    let authType = AuthProxy.getAuthType();
+
+    //If security is disabled use msid
+    if(authType == 'testing') {
+      authType = 'msid'
+    }
+
+
+    var prestoWindow;
+    var urlParms = "";
+    // If Presto URL parameters add to URL
+    if (prestoURLParams) {
+      console.log("Add parms");
+
+      // TODO: Consider storing as state variable rather then window global var
+      window.sharedParameters = prestoURLParams;
+
+      // need pgm in URL if passing parameters
+      urlParms = "&pgm=" + this.state.currentProgram;
+    }
+    try{
+      var openURL = env.tenant[this.state.tenantId][authType].presto + "?tenant=" + this.state.tenantId + urlParms;
+      prestoWindow = window.open(openURL, "RxClaimWeb");
+    }catch(error){
+      alert("Error occurred while opening RxClaim Web. Please contact the support team.");
+      console.log(error)
+    }
+    this.setState({ prestoWindow: prestoWindow });
+  }
+
+  public tenantMenuOptions = [];
+
+  public operationsMenuOptions = [];
+
+  render() {
+    let displayUser;
+    if (this.state.userProfile && AuthProxy.getSessionId()) {
+      
+      // only want to display firstname
+      const fullName = this.state.displayUser.split(" ");
+      const firstName = fullName[0];
+     displayUser = <button className="headerBtn"> Hello, {firstName} </button>;
+   } else {
+     displayUser = <button> Hello Guest </button>;
+   }
+   var logoShow;
+   if(this.state.confProfile){
+    logoShow = this.state.logoSrc;
+    console.log(logoShow);
+   }
+    // @ts-ignore
+    const env = window["environments"];
+
+    const providerMenuOptions = this.state.providerMenu;
+    const operationsMenuOptions = this.state.operationsMenu;
+    const pricingMenuOptions = this.state.pricingMenu;
+
+
+    let finalTenants = [];
+    for(let i=0; i<this.state.tenantIds.length; i++) {
+        finalTenants.push(this.state.tenantIds[i]);
+    }
+    const tenantMenuOptions = finalTenants.map((tenantId) => (
+      {
+        label: tenantId,
+        command: () => this.updateTenant(tenantId),
+      }
+    ));
+
+
+
+    React.useEffect(() => {
+      console.log('ref', ref);
+      ref.current?.addEventListener('event', handleEvent);
+      return () => {
+        ref.current?.removeEventListener('event', handleEvent);
+      };
+    }, [ref.current]);
+
+    return (
+      <React.Fragment>
+        <div className="gradient"></div>
+
+        <Toolkit appId="@uitk/react-starter-kit" grid spacing>
+    
+        </Toolkit>
+        <div className="topnav">
+          <div className="logoBoxHeader"><img src={logoShow} className="optum-logo-nav" alt="OptumRx Logo"></img></div>
+  
+          <Button
+            className="button header-button"
+            label="Home"
+            style={{ border: "none", boxShadow: "none" }}
+            onClick={() => this.setHome()}
+            aria-controls="popup_menu"
+            aria-haspopup
+          />
+          {this.state.showHideEligibility && <Button
+            className="button header-button"
+            label="Eligibility"
+            style={{ border: "none", boxShadow: "none" }}
+            onClick={() => this.updateFrame(env.eligibility)}
+            aria-controls="popup_menu"
+            aria-haspopup
+          />}
+            <TieredMenu
+              model={operationsMenuOptions}
+              className="menu"
+              popup
+              ref={this.operationsMenu}
+              id="popup_menu"
+            />
+            {env !== undefined && (env.perks != null || env.cat != null || env.rxview != null) && this.state.showHideOperationsMenu && (
+            <Button
+              className="button header-button"
+              label="Operations"
+              style={{ border: "none", boxShadow: "none" }}
+              onClick={this.setOperationsHome.bind(this)}
+              aria-controls="popup_menu"
+              aria-haspopup
+            />
+            )}
+          <TieredMenu
+            model={providerMenuOptions}
+            className="menu"
+            popup
+            ref={this.providerMenu}
+            id="popup_menu"
+            style={{ width: "auto" }}
+          />
+          {this.state.showHideMenu && (
+            <Button
+              className="button header-button"
+              label="Provider"
+              style={{ border: "none", boxShadow: "none" }}
+              onClick={this.setPrescriberHome.bind(this)}
+              aria-controls="popup_menu"
+              aria-haspopup
+            />
+          )} 
+            <TieredMenu
+              model={pricingMenuOptions}
+              className="menu"
+              popup
+              ref={this.pricingMenu}
+              id="popup_menu"
+            />
+          {env.showPricing && (
+          <Button
+              className="button header-button"
+              label= "Price"
+              style={{ border: "none", boxShadow: "none" }}
+              onClick={this.setPricingHome.bind(this)}
+              Aria-controls="popup_menu"
+              aria-haspopup
+            />
+          )}
+
+          {this.state.showHideRxClaimLite && (
+          <Button
+            className="button header-button"
+            label= "RxClaim Lite"
+            style={{ border: "none", boxShadow: "none" }}
+            onClick={this.setRxLiteHome.bind(this)}
+            Aria-controls="popup_menu"
+            aria-haspopup
+          />
+          )}
+
+           
+          <button
+            className="button header-button p-button p-component"
+            onClick={() => this.openPresto(env)}>
+            <span className="p-button-label p-c" >RxClaim Web</span>
+          </button>
+          
+          <div className="tenantBox">
+          <label className="changeEnv">Change Environment:</label>
+          <Button
+              className="button header-button tenantBtnHeader"
+              style={{ boxShadow: "none"}}
+              onClick={this.toggleTenantMenu.bind(this)}
+              Aria-controls="popup_menu"
+              aria-haspopup
+            > <span className="tenantDisplay">{this.state.tenantId}  <span className={this.tenantMenu.current?.state?.visible ? 'arrow-up tenantArrow' : 'arrow-down tenantArrow'}></span></span> </Button>
+            <TieredMenu
+              model={tenantMenuOptions}
+              className="menu"
+              popup
+              ref={this.tenantMenu}
+              id="popup_menu"
+            />
+          </div>
+            
+            <div className="linkBox">
+              <span className="headerBtn">
+                <button className="headerBtn" onClick={() => this.eligibilityPost()}>{displayUser}</button>
+              </span>
+              <span className="headerBtn">|</span>
+              <button className="headerBtn" onClick={() => this.openHelpText()}>Help</button>
+              <span className="headerBtn">|</span>
+
+        
+        { sessionStorage.sessionId  && ( 
+           <button className="headerBtn" onClick={this.doLogout}>Sign Out</button> 
+        )}
+            </div>
+            
+        </div>
+          {(this.state.isOperationsHome || this.state.isOpFrame) &&(
+            <div>
+              <div className="subnav">
+              <TieredMenu
+                      model={this.state.operationsMenu}
+                      className="menu"
+                      popup
+                      ref={this.operationsMenu}
+                      id="popup_menu"
+                      style={{ width: "auto", background : "white"}}
+                  />
+                {this.state.operationsMenu.map(menuItem => (
+                      <Button
+                          className="submenu-dropdown-button"
+                          style={{  boxShadow: "none" }}
+                        onClick={this.selectOperationsSubMenuItem.bind(this, menuItem)}
+                          aria-controls="popup_menu"
+                          aria-haspopup
+                    >
+                      {menuItem.label}
+                      {(menuItem.items?.length > 0) && (<span className={this.operationsMenu.current?.state?.visible ? 'arrow-up' : 'arrow-down'}></span>)}
+                    </Button>
+                ))}
+              </div>
+            </div>
+          )}
+          {(this.state.isProviderHome || this.state.isProvFrame)&& (
+              <div>
+                <div className="subnav">
+                  <TieredMenu
+                      model={this.state.pharmacySubMenu}
+                      className="menu"
+                      popup
+                      ref={this.pharmacySubMenu}
+                      id="popup_menu"
+                      style={{ width: "auto", background : "white"}}
+                  />
+                  {this.state.showHidePharmacySubMenu  && (
+                      <Button
+                          className="submenu-dropdown-button"
+                          style={{  boxShadow: "none" }}
+                          onClick={this.togglePharmacySubMenu.bind(this)}
+                          aria-controls="popup_menu"
+                          aria-haspopup
+                      > Pharmacy Network <span className={this.pharmacySubMenu.current?.state?.visible ? 'arrow-up' : 'arrow-down'}></span></Button>
+                  )}
+                  <TieredMenu
+                      model={this.state.prescriberSubMenu}
+                      className="menu"
+                      popup
+                      ref={this.prescriberSubMenu}
+                      id="popup_menu"
+                      style={{ width: "auto", background : "white"}}
+                  />
+                  {this.state.showHidePrescriberSubMenu && (
+                      <Button
+                          className="submenu-dropdown-button"
+                          style={{  boxShadow: "none" ,  background : "blue !important"}}
+                          onClick={this.togglePrescriberSubMenu.bind(this)}
+                          aria-controls="popup_menu"
+                          aria-haspopup
+                      > Prescriber  <span className={this.prescriberSubMenu.current?.state?.visible ? 'arrow-up' : 'arrow-down'}></span></Button>
+                  )}
+                </div>
+              </div>
+          )}
+          {(this.state.isPricingHome || this.state.isPriceFrame)&& (
+              <div>
+                <div className="subnav">
+                  <TieredMenu
+                      model={this.state.pricingMenu}
+                      className="menu"
+                      popup
+                      ref={this.pricingMenu}
+                      id="popup_menu"
+                      style={{ width: "auto", background : "white", color: "black !important"}}
+                  />
+                  
+                      <Button
+                          className="submenu-dropdown-button"
+                          style={{  boxShadow: "none", color: "black !important"}}
+                          onClick={this.togglePricingMenu.bind(this)}
+                          aria-controls="popup_menu"
+                          aria-haspopup
+                      > Price <span className={this.pricingMenu.current?.state?.visible ? 'arrow-up' : 'arrow-down'}></span></Button>
+                </div>
+              </div>
+          )}
+
+      {(this.state.isRxLiteHome || this.state.isRxLiteFrame)&& (
+        
+              <div>
+                <div className="subnav">
+                  <TieredMenu
+                      model={this.state.rxLiteMenu}
+                      className="menu"
+                      popup
+                      ref={this.rxLiteMenu}
+                      id="popup_menu"
+                      style={{ width: "200px", background : "white", color: "red !important"}}
+                  />
+                  {this.state.rxLiteMenu.map(menuItem => (
+                      <Button
+                          className="submenu-dropdown-button"
+                          style={{  boxShadow: "none" }}
+                         onClick={this.toggleRxLiteMenu.bind(this)}
+                          aria-controls="popup_menu"
+                          aria-haspopup
+                    >
+                      {menuItem}
+                      {(menuItem.items?.length > 0) && (<span className={this.rxLiteMenu.current?.state?.visible ? 'arrow-up' : 'arrow-down'}></span>)}
+                    </Button>
+                ))}
+                      
+                </div>
+              </div>
+          )}
+        {this.home()}
+        <br></br>
+      </React.Fragment>
+    );
+  }
+
+  updateFrame(url?: string) {
+    console.log(url);
+    if ( url !== undefined && url.includes("eligibility")) {
+       this.setState({ isPriceFrame:false, isOpFrame:false, isProvFrame:false, isRxLiteFrame:false})
+      // Splunk logging on Provider Menu access
+    var splunkAppName = {
+      message: "User's application access from NextGen UI",
+      application: "Eligibility",
+      useraliasname: this.state.userAliasName,
+      tenant: this.state.currentTenant,     
+    }
+    this.send(JSON.stringify(splunkAppName)); 
+    }
+
+    this.validateSessionId();
+    const that = this;
+    this.setState({ isHome: true, isPricingHome: true, isProviderHome: true, isOperationsHome: true, isRxLiteHome: true, modalUrl: undefined });
+    setTimeout(function () {
+      that.setState({ isHome: false, isPricingHome: false, isProviderHome:false, isOperationsHome: false, isRxLiteHome: false, frame: url, modalUrl: undefined });
+    }, 1);
+  }
+
+  updateTenant(tenantId: string) {
+    console.log(tenantId);
+    this.setState({ tenantId: tenantId, currentTenant: tenantId });  
+    AuthProxy.getPortunusAbilities(tenantId)
+      .then((res: any) =>
+        res.json())
+      .then((data) => {
+        var result = data['abilities'];
+
+        if (result !==undefined && result.actors !=undefined && result.actors.length > 0) {
+          this.setState({ abilities: result['all-abilities'] });
+          if (this.state.abilities) {
+            this.getModules(tenantId);
+          }
+        } else {
+          this.setState({ showHideMenu: false, showHideOperationsMenu: false })
+        }
+      });
+    if (this.state.currentProgram != "") {
+      let params: any = [];
+      this.updateFrame(getProgramUrl(this.state.currentProgram, params, tenantId));
+    }
+
+  }
+
+  getContext() {
+    console.log('AuthProxy.getSessionId()=', AuthProxy.getSessionId());
+    // in local replace the sid if connecting to qa enviornment
+    return JSON.stringify(
+        {'sid': AuthProxy.getSessionId() !== 'testing' ? AuthProxy.getSessionId() : '6bf29209b08e59f483193941308d7ca2a80cecac',
+          authtype: AuthProxy.getAuthType()
+        });
+  }
+
+  setHome() {
+    this.setState({ isHome: true, isProviderHome: false, isPricingHome: false, isOperationsHome: false, isRxLiteHome: false, modalUrl: undefined, isOpFrame: false, isPriceFrame: false, isProvFrame: false, isRxLiteFrame: false, isClaims: false});
+  }
+  setPrescriberHome() {
+    console.log("inside setprescriberhome");
+    this.setState({ isProviderHome: true, isPricingHome: false, isOperationsHome:false, isRxLiteHome: false, modalUrl: undefined, isOpFrame: false, isPriceFrame: false, isProvFrame: false, isRxLiteFrame: false, isClaims: false });
+    console.log("ELIGIBILITY" + this.state.isProvFrame)
+    console.log(document);
+    // Splunk logging on Provider Menu access
+    var splunkAppName = {
+      message: "User's application access from NextGen UI",
+      application: "Provider",
+      useraliasname: this.state.userAliasName,
+      tenant: this.state.currentTenant,     
+    }
+    this.send(JSON.stringify(splunkAppName));
+  }
+
+  setPricingHome() {
+    console.log("inside pricing home");
+    this.setState({ isPricingHome: true, isProviderHome:false, isOperationsHome:false, isRxLiteHome: false, modalUrl: undefined, isOpFrame: false, isPriceFrame: false, isProvFrame: false, isRxLiteFrame: false, isClaims: false });
+    console.log("PRICING" + this.state.isPricingHome)
+    console.log("ELIBILITY" +this.state.isPriceFrame)
+    // Splunk logging on Pricing Menu access
+    var splunkAppName = {
+      message: "User's application access from NextGen UI",
+      application: "Pricing",
+      useraliasname: this.state.userAliasName,
+      tenant: this.state.currentTenant,     
+    }
+    this.send(JSON.stringify(splunkAppName));
+  }  
+
+  setRxLiteHome(){
+    console.log("inside RxLite home");
+    this.setState({isRxLiteHome: true,isHome: true, isPricingHome: false, isProviderHome: false, isOperationsHome: false, modalUrl: undefined, isOpFrame: false, isPriceFrame: false, isProvFrame:false, isRxLiteFrame: false, isClaims: false})
+    console.log("Pricing:" + this.state.isPricingHome);
+    console.log("Provider:" + this.state.isProviderHome);
+    console.log("Operations:" + this.state.isOperationsHome);
+    console.log("RxLite" + this.state.isRxLiteHome);
+    console.log("HOME" + this.state.isHome)
+
+    var splunkAppName = {
+      message: "User's application access from NextGen UI",
+      application: "RxLite",
+      useraliasname: this.state.userAliasName,
+      tenant: this.state.currentTenant,     
+    }
+    this.send(JSON.stringify(splunkAppName));
+  }
+
+  setOperationsHome() {
+    console.log("inside operations home");
+    this.setState({ isOperationsHome:true, isPricingHome: false, isProviderHome:false, isRxLiteHome: false, isHome: true, modalUrl: undefined, isOpFrame: false, isPriceFrame: false, isProvFrame: false, isRxLiteFrame: false, isClaims: false});
+
+    console.log("OPERATIONS" + this.state.isOperationsHome)
+    console.log("ELIGIBILITY" + this.state.isOpFrame)
+    // Splunk logging on Pricing Menu access
+    var splunkAppName = {
+      message: "User's application access from NextGen UI",
+      application: "Operations",
+      useraliasname: this.state.userAliasName, 
+      tenant: this.state.currentTenant,    
+    }
+    this.send(JSON.stringify(splunkAppName));
+  }  
+
+  doLogout() {
+    return ReactDOM.render(
+      <React.StrictMode>
+        <Logout />
+      </React.StrictMode>,
+      document.getElementById('root')
+    );
+  }
+
+  eligibilityPost() {
+    if(this.state.frame != null) {
+      if(this.state.frame.includes("eligibility") && !this.state.isHome) {
+        const isIFrame = (input: HTMLElement | null): input is HTMLIFrameElement => 
+        input !== null && input.tagName === 'IFRAME';
+        let frame = document.getElementById('frame0');
+        if (isIFrame(frame) && frame.contentWindow) {
+          frame.contentWindow.postMessage(
+          {
+            message: "openUserProfile"
+          }, '*');
+        }
+      }
+    }
+  }
+
+  openHelpText() {
+    if(this.state.frame != null) {
+      if(this.state.frame.includes("eligibility") && !this.state.isHome) {
+        const isIFrame = (input: HTMLElement | null): input is HTMLIFrameElement => 
+        input !== null && input.tagName === 'IFRAME';
+        let frame = document.getElementById('frame0');
+        if (isIFrame(frame) && frame.contentWindow) {
+          frame.contentWindow.postMessage(
+          {
+            message: "showEligibilityHelpText"
+          }, '*');
+        }
+      }
+    }
+    const isIFrame = (input: HTMLElement | null): input is HTMLIFrameElement => 
+          input !== null && input.tagName === 'IFRAME';
+      let frame = document.getElementById('frame0');
+
+      if (isIFrame(frame) && frame.contentWindow) {
+        frame.contentWindow.postMessage(
+        {
+          message: "getProgramName",
+        }, '*');
+      } else {
+        if(this.state.isProviderHome) {
+          const helpPage = "/help/index.htm#t=Misc%2FWelcometoProvider.htm";
+          window.open(
+            helpPage,
+            'Help'
+          );
+        } else if(this.state.isOperationsHome) {
+          const helpPage = "/help/index.htm#t=Misc%2FWelcome_to_Operations.htm";
+          window.open(
+            helpPage,
+            'Help'
+          );
+        } else {
+          const helpPage = "/help/index.htm#t=Misc%2FWelcomeRxC_NextGen.htm";
+          window.open(
+            helpPage,
+            'Help'
+          );
+        }
+      }
+
+    const manageNavigationMessage = function (e: MessageEvent) {
+      if(e.data.message === "sendProgramName") {
+        const helpPage = "/help/index.htm#t="+e.data.application+"%2F" + e.data.programName + ".htm";
+        console.log(e.data.programName);
+        window.open(
+          helpPage,
+          'Help'
+        );
+      } 
+    }
+    window.addEventListener("message", manageNavigationMessage.bind(this));
+    return;
+  }
+
+
+  home() {
+    if (this.state.isHome || this.state.isProviderHome || this.state.isPricingHome || this.state.isOperationsHome &&
+      this.state.failedTenants.includes(this.state.tenantId)) {
+      const env = window["environments"];
+      return (
+        <React.Fragment>
+         {!this.state.isProviderHome && !this.state.isPricingHome && !this.state.isOperationsHome && !this.state.isRxLiteHome &&(
+           <div>
+          <div className="welcome">
+            <img className="main-img" src='./images/pharmacy-min.jpg'></img>
+          </div>
+          <div className="welcomeInfo">
+            <div className="cardContainer">
+
+            {this.state.showHideEligibility &&
+              <Button onClick={()=> this.updateFrame(env.eligibility)} className="unstyled-button"> 
+
+              <Card className="eligibilityCard"
+                header={<h1 className="headerText">{this.state.card1}</h1>}
+              >
+                <div className="imgBox"><img src={this.clipboardIcon} alt="Clipboard Icon" className="welcomeIcon" /></div>
+                <div className="cardContent">{this.state.card1Desc}</div>
+              </Card>
+              </Button>}
+
+              {this.state.showHideProvider &&
+              <Button onClick={this.setPrescriberHome.bind(this)} className="unstyled-button"> 
+              <Card 
+                header={<h1>{this.state.card2}</h1>}
+              >
+                <div className="imgBox"><img src={this.stethoscopeIcon} alt="Stethoscope Icon" className="welcomeIcon" /></div>
+                <div className="cardContent">{this.state.card2Desc}</div>
+
+              </Card>
+              </Button>}
+
+              <Button onClick={()=>this.openPresto(env)} className="unstyled-button"> 
+              <Card 
+                header={<h1>{this.state.card3}</h1>}
+              >
+                <div className="imgBox"><img src={this.rxclaimIcon} alt="RxClaim Web" className="welcomeIcon" /></div>
+                <div className="cardContent">{this.state.card3Desc}</div>
+              </Card> 
+              </Button>
+            </div>
+          </div>
+        </div>)}
+        {this.state.isOperationsHome && (
+          <div className="info">           
+            <OperationsLanding updateFrameFromChild={this.updateFrameFromChild.bind(this)} currentTenant={this.state.tenantId} operationsData={this.state.operationResults}></OperationsLanding>
+          </div>
+        )}
+
+        {this.state.isProviderHome && (
+          <div className="info">
+            <ProviderLanding updateFrameFromChild={this.updateFrameFromChild.bind(this)} currentTenant={this.state.tenantId} providerData={this.state.providerResults}></ProviderLanding>
+          </div>
+        )}
+        {this.state.isPricingHome && (
+          <div className="info">
+            <PricingLanding></PricingLanding>
+          </div>
+
+        )}
+        {this.state.isRxLiteHome && (
+          <div className="info">
+            {!this.state.isClaims && (
+                <RxLiteLanding updateRxLiteFrame={this.updateRxLiteFrame.bind(this)}></RxLiteLanding>
+            )}
+         
+        
+        {this.state.isClaims && (
+          <div>
+          <claims-micro-product id="claims-webcomponent" text="Claims" context={this.getContext()}></claims-micro-product> </div>
+        )}
+
+
+
+
+          
+        </div>
+        )}
+
+      <AppFooter></AppFooter>
+    </React.Fragment>
+      );
+    } else {
+      if(this.state.frame.includes("rxview") || this.state.frame.includes("perks")) {
+        return (
+          <iframe
+            className="iframe"
+            id="frame0"
+            name="main-iframe"
+            src={
+              this.state.frame+
+              "&sessionId=" +
+              AuthProxy.getSessionId() +
+              "&authType=" +
+              AuthProxy.getAuthType()+
+              "&tenantId="+this.state.tenantId
+            }
+          ></iframe>
+        );
+      } else {
+        return (
+          <iframe
+            className="iframe"
+            id="frame0"
+            name="main-iframe"
+            src={
+              this.state.frame +
+              "&sessionId=" +
+              AuthProxy.getSessionId() +
+              "&authType=" +
+              AuthProxy.getAuthType()
+            }
+          ></iframe>
+        );
+      }
+    }
+  }
+
+
+}
+
+export default AppHeader;
+
