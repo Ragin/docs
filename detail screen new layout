@@ -1,0 +1,102 @@
+Certainly! Here is the full code for `DetailsScreen.jsx` and `YourComponent.jsx` with the back button included:
+
+```jsx
+// DetailsScreen.jsx
+
+import React from 'react';
+import { Grid, Card, CardContent, Typography, IconButton } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+
+const labelStyle = {
+  fontWeight: 'bold',
+  color: '#3F51B5',
+};
+
+const DetailsScreen = ({ data, labels, layout, onBackButtonClick }) => {
+  return (
+    <div>
+      <IconButton
+        edge="start"
+        color="primary"
+        onClick={onBackButtonClick}
+        style={{ marginBottom: '20px' }}
+      >
+        <ArrowBackIcon />
+      </IconButton>
+
+      {layout.map((group, index) => (
+        <Card key={index} elevation={3} style={{ marginBottom: '20px' }}>
+          <CardContent>
+            <Typography variant="h6" style={{ marginBottom: '10px' }}>
+              {group.heading}
+            </Typography>
+            <Grid container spacing={2}>
+              {group.fields.map((field) => (
+                <Grid key={field} item xs={12} sm={6} md={4}>
+                  <div style={{ marginBottom: '15px' }}>
+                    <Typography variant="subtitle1" style={labelStyle}>
+                      {labels[field]}
+                    </Typography>
+                    <Typography variant="body1">{data[field]}</Typography>
+                  </div>
+                </Grid>
+              ))}
+            </Grid>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+};
+
+export default DetailsScreen;
+```
+
+```jsx
+// YourComponent.jsx
+
+import React from 'react';
+import { Container, AppBar, Toolbar, IconButton, Typography } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import DetailsScreen from './DetailsScreen';
+import data from './yourData.json'; // Adjust the path
+import labels from './labels.json'; // Adjust the path
+
+const layout = [
+  { heading: 'Group 1', fields: ['carrier', 'account', 'group'] },
+  { heading: 'Group 2', fields: ['planCode', 'memberId', 'mbrLastName'] },
+  { heading: 'Group 3', fields: ['dob', 'eligFrmDate', 'eligThruDate'] },
+  { heading: 'Group 4', fields: ['pharmacyId', 'pharmacyName', 'rxNumber'] },
+  { heading: 'Group 5', fields: ['refillNumber', 'fillDate', 'phaPhone'] },
+  { heading: 'Group 6', fields: ['drugName', 'productId', 'gpi'] },
+  { heading: 'Group 7', fields: ['msc', 'qtyDispensed', 'daySupply'] },
+  { heading: 'Group 8', fields: ['compoundCode', 'psc', 'prescriberNpi'] },
+  { heading: 'Group 9', fields: ['prescriberName', 'claimStatus', 'priorAuthCd'] },
+  { heading: 'Group 10', fields: ['priorAuthNumber', 'message'] },
+];
+
+const YourComponent = () => {
+  const handleBack = () => {
+    // Implement your back navigation logic here
+    console.log('Navigate back');
+  };
+
+  return (
+    <Container>
+      <AppBar position="static">
+        <Toolbar>
+          <IconButton edge="start" color="inherit" onClick={handleBack}>
+            <ArrowBackIcon />
+          </IconButton>
+          <Typography variant="h6">Your Details Screen</Typography>
+        </Toolbar>
+      </AppBar>
+      <DetailsScreen data={data} labels={labels} layout={layout} onBackButtonClick={handleBack} />
+    </Container>
+  );
+};
+
+export default YourComponent;
+```
+
+This code includes both the `DetailsScreen` component and the `YourComponent` component with the back button functionality. Make sure to replace the `console.log('Navigate back');` with your actual back navigation logic.
