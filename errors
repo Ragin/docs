@@ -1,0 +1,37 @@
+  <Button   data-viewName="claimsSearch"  onClick={onClickLink} sx={{ py: '20px'}}> Back</Button>
+Error: src/claims-details/ClaimsDetails/claims-details.tsx(77,15): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(props: { href: string; } & ButtonOwnProps & Omit<ButtonBaseOwnProps, "classes"> & CommonProps & Omit<Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, "ref"> & { ...; }, "style" | ... 24 more ... | "startIcon">): Element', gave the following error.
+    Property 'href' is missing in type '{ children: string; "data-viewName": string; onClick: (e: MouseEvent<HTMLAnchorElement, MouseEvent>) => void; sx: { py: string; }; }' but required in type '{ href: string; }'.
+Overload 2 of 3, '(props: { component: ElementType<any>; } & ButtonOwnProps & Omit<ButtonBaseOwnProps, "classes"> & CommonProps & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: string; "data-viewName": string; onClick: (e: MouseEvent<HTMLAnchorElement, MouseEvent>) => void; sx: { py: string; }; }' but required in type '{ component: ElementType<any>; }'.
+Overload 3 of 3, '(props: DefaultComponentProps<ExtendButtonBaseTypeMap<ButtonTypeMap<{}, "button">>>): Element | null', gave the following error.
+    Type '(e: MouseEvent<HTMLAnchorElement, MouseEvent>) => void' is not assignable to type 'MouseEventHandler<HTMLButtonElement>'.
+      Types of parameters 'e' and 'event' are incompatible.
+        Type 'MouseEvent<HTMLButtonElement, MouseEvent>' is not assignable to type 'MouseEvent<HTMLAnchorElement, MouseEvent>'.
+          Type 'HTMLButtonElement' is missing the following properties from type 'HTMLAnchorElement': charset, coords, download, hreflang, and 19 more.
+
+Error: src/claims-details/ClaimsDetails/header-component.tsx(9,28): error TS7031: Binding element 'data' implicitly has an 'any' type.
+Error: src/claims-details/ClaimsDetails/header-component.tsx(9,34): error TS7031: Binding element 'labels' implicitly has an 'any' type.
+Error: src/claims-details/ClaimsDetails/header-component.tsx(9,42): error TS7031: Binding element 'layout' implicitly has an 'any' type.
+Error: src/claims-details/ClaimsDetails/header-component.tsx(12,20): error TS7006: Parameter 'group' implicitly has an 'any' type.
+Error: src/claims-details/ClaimsDetails/header-component.tsx(12,27): error TS7006: Parameter 'index' implicitly has an 'any' type.
+Error: src/claims-details/ClaimsDetails/header-component.tsx(19,34): error TS7006: Parameter 'field' implicitly has an 'any' type.
+Error: src/claims-search/ClaimsSearch/claims-search.tsx(56,41): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+Error: src/claims-search/ClaimsSearch/claims-search.tsx(142,11): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(props: { href: string; } & ButtonOwnProps & Omit<ButtonBaseOwnProps, "classes"> & CommonProps & Omit<Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, "ref"> & { ...; }, "style" | ... 24 more ... | "startIcon">): Element', gave the following error.
+    Type '{ children: string; pt: string; onClick: (e: any) => void; variant: "contained"; color: "primary"; }' is not assignable to type 'IntrinsicAttributes & { href: string; } & ButtonOwnProps & Omit<ButtonBaseOwnProps, "classes"> & CommonProps & Omit<...>'.
+      Property 'pt' does not exist on type 'IntrinsicAttributes & { href: string; } & ButtonOwnProps & Omit<ButtonBaseOwnProps, "classes"> & CommonProps & Omit<...>'.
+  Overload 2 of 3, '(props: { component: ElementType<any>; } & ButtonOwnProps & Omit<ButtonBaseOwnProps, "classes"> & CommonProps & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: string; pt: string; onClick: (e: any) => void; variant: "contained"; color: "primary"; }' but required in type '{ component: ElementType<any>; }'.
+  Overload 3 of 3, '(props: DefaultComponentProps<ExtendButtonBaseTypeMap<ButtonTypeMap<{}, "button">>>): Element | null', gave the following error.
+    Type '{ children: string; pt: string; onClick: (e: any) => void; variant: "contained"; color: "primary"; }' is not assignable to type 'IntrinsicAttributes & ButtonOwnProps & Omit<ButtonBaseOwnProps, "classes"> & CommonProps & Omit<...>'.
+      Property 'pt' does not exist on type 'IntrinsicAttributes & ButtonOwnProps & Omit<ButtonBaseOwnProps, "classes"> & CommonProps & Omit<...>'.
+Error: src/useClickLink/use-click-link.tsx(23,46): error TS7053: Element implicitly has an 'any' type because expression of type '"dataset"' can't be used to index type 'EventTarget'.
+  Property 'dataset' does not exist on type 'EventTarget'.
+Error: src/useClickLink/use-click-link.tsx(28,17): error TS7053: Element implicitly has an 'any' type because expression of type '"dataset"' can't be used to index type 'EventTarget'.
+  Property 'dataset' does not exist on type 'EventTarget'.
+lerna ERR! lifecycle "prepack" errored in "@optum-rx-claim-modern/claims", exiting 2
+Error: Process completed with exit code 2.
+
+
