@@ -302,6 +302,110 @@ export function useClickLink(props: UseClickLinkProps): UseClickLinkReturn {
   };
 }
 
+
+===
+ ../../packages/claims/src/claims-details/ClaimsDetails/claims-details.tsx:66:5
+       Type error: No overload matches this call.
+         Overload 2 of 2, '(props: DefaultComponentProps<ContainerTypeMap<{}, "div">>): Element | null', gave the following error.
+           Type 'Element' is not assignable to type 'ReactNode'.
+         Overload 2 of 2, '(props: DefaultComponentProps<ContainerTypeMap<{}, "div">>): Element | null', gave the following error.
+           Type 'Element' is not assignable to type 'ReactNode'.
+
+===
+import React from 'react';
+import {useClaimsDetails} from '../useClaimsDetails/use-claims-details';
+
+import {ClaimsDetailsProps} from './claims-details.types';
+import labels from './labels.json';
+import {Container, Typography, Toolbar, AppBar, Button, Grid} from '@mui/material';
+import HeaderComponent from "./header-component";
+
+/*export interface  IDetailRecord {
+  carrier: string | undefined;
+  account: string | undefined;
+  group: string | undefined;
+  planCode: string | undefined;
+  memberId: string | undefined;
+  mbrLastName: string | undefined;
+  mbrFirstName: string | undefined;
+  dob: number | undefined;
+  eligFrmDate: string | undefined;
+  eligThruDate: string | undefined;
+  pharmacyId: string | undefined;
+  pharmacyName: string | undefined;
+  rxNumber: string | undefined;
+  refillNumber: string | undefined;
+  fillDate: number | undefined;
+  phaPhone: string | undefined;
+  drugName: string | undefined;
+  productId: string | undefined;
+  gpi: string | undefined;
+  msc: string | undefined;
+  qtyDispensed: number | undefined;
+  daySupply: number | undefined;
+  compoundCode: string | undefined;
+  psc: string | undefined;
+  prescriberNpi: string | undefined;
+  prescriberName: string | undefined;
+  claimStatus: string | undefined;
+  priorAuthCd: string | undefined;
+  priorAuthNumber: string | undefined;
+
+}*/
+
+const layout = [
+  { heading: '', fields: ['carrier', 'account', 'group', 'planCode'] },
+  { heading: '', fields: ['memberId', 'mbrLastName','dob', 'eligFrmDate', 'eligThruDate'] },
+  { heading: '', fields: ['pharmacyId', 'pharmacyName', 'rxNumber', 'refillNumber', 'fillDate', 'phaPhone',
+      'drugName', 'productId', 'gpi'] },
+  { heading: '', fields: ['msc', 'qtyDispensed', 'daySupply'] },
+  { heading: '', fields: ['compoundCode', 'psc', 'prescriberNpi'] },
+  { heading: '', fields: ['prescriberName', 'claimStatus', 'priorAuthCd'] },
+  { heading: '', fields: ['priorAuthNumber', 'message'] },
+];
+
+export function ClaimsDetails(props: ClaimsDetailsProps) {
+  const {context, onClickLink} = props;
+  const contextObj =  context;
+  console.log('In ClaimsDetails: contextObj=', contextObj);
+  const detail = context.searchDetailParam;
+  const {  details } = useClaimsDetails({sid: contextObj.sid, tenantId: contextObj.tenantId}, {  rxClaimNbr: detail.rxClaimNbr,
+    rxSeq: detail.rxSeq, memberId: detail.memberId, rxNumber: detail.rxNumber, tenantId: contextObj.tenantId});
+  console.log('In ClaimsDetails: details', details);
+ // create a class for detail1 object
+
+
+  return (
+  details && (
+    <Container>
+      <AppBar position="static" sx={{ background: '#faf9f3'}}>
+        <Toolbar>
+         {/* <IconButton edge="start" color="white" onClick={onClickLink}>
+            <ArrowBackIcon />
+          </IconButton>*/}
+
+         <Grid  container spacing={4}>
+           <Grid   item xs={12} sm={6} md={4}>
+            <div style={{ marginBottom: '15px' }}>
+              <Typography>
+              <Button  href='#' data-viewName="claimsSearch"  onClick={onClickLink} sx={{ py: '20px'}}> Back</Button>
+             </Typography>
+            </div>
+          </Grid>
+        </Grid>
+
+        </Toolbar>
+      </AppBar>
+      <HeaderComponent data={details} labels={labels} layout={layout} />
+    </Container
+    >)
+  );
+}
+
+export default ClaimsDetails;
+
+
+
 export default useClickLink;
 
 
