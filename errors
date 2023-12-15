@@ -35,3 +35,44 @@ lerna ERR! lifecycle "prepack" errored in "@optum-rx-claim-modern/claims", exiti
 Error: Process completed with exit code 2.
 
 
+
+====
+import React from 'react';
+import { Grid, Card, CardContent, Typography } from '@mui/material';
+
+const labelStyle = {
+  fontWeight: 'bold',
+  color: '#3F51B5',
+};
+
+const HeaderComponent = ({ data, labels, layout }) => {
+  return (
+    <div>
+      {layout.map((group, index) => (
+        <Card key={index} elevation={3} style={{ marginBottom: '20px' }}>
+          <CardContent>
+            <Typography variant="h6" style={{ marginBottom: '10px' }}>
+              {group.heading}
+            </Typography>
+            <Grid container spacing={2}>
+              {group.fields.map((field) => (
+                <Grid key={field} item xs={12} sm={6} md={4}>
+                  <div style={{ marginBottom: '15px' }}>
+                    <Typography variant="subtitle1" style={labelStyle}>
+                      {labels[field]}
+                    </Typography>
+                    <Typography variant="body1">{data[field]}</Typography>
+                  </div>
+                </Grid>
+              ))}
+            </Grid>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+};
+
+export default HeaderComponent;
+
+
