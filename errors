@@ -407,5 +407,13 @@ export default ClaimsDetails;
 
 
 export default useClickLink;
+==
+export interface ClaimsDetailsProps {
+  text: string;
+  detail: ClaimDetailSearchRecord;
+  context: any;
+  onClickLink: (e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => void;
+  onClickDetails: (detail: any) => void;
+}
 
 
