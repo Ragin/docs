@@ -15,3 +15,9 @@
           <HeaderComponent data={details} labels={labels} layout={layout} />
         </Grid>
       </Grid>
+---
+  Type error: No overload matches this call.
+         Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+           Type 'Element' is not assignable to type 'ReactNode'.
+         Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+           Type 'Element' is not assignable to type 'ReactNode'.
