@@ -1,0 +1,28 @@
+
+const HeaderComponent: React.FC<HeaderComponentProps> = ({ data, labels, layout }) => {
+  return (
+    <div>
+      {layout.map((group:{heading: string, fields: string[]}, index: number) => (
+        <Card key={index} elevation={3} style={{ marginBottom: '20px', maxWidth: '100% !important' }}>
+          <CardContent style={{ maxWidth: '100% !important' }}>
+            <Typography variant="h6" style={{ marginBottom: '10px' }}>
+              {group.heading}
+            </Typography>
+            <Grid container spacing={1}>
+              {group.fields.map((field: string) => (
+                <Grid key={field} item xs={12} sm={6} md={4}>
+                  <div style={{ marginBottom: '15px' }}>
+                    <Typography variant="subtitle1" style={labelStyle}>
+                      {labels[field]}
+                    </Typography>
+                    <Typography variant="body1">{data[field]}</Typography>
+                  </div>
+                </Grid>
+              ))}
+            </Grid>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+};
