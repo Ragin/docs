@@ -1,0 +1,17 @@
+      <Grid container spacing={2} alignItems="center"    sx={{ overflowY: "scroll", maxHeight: "1049px" }}>
+        <Grid item xs={12} spacing={2}>
+          <AppBar position="static" sx={{ background: '#faf9f3'}}>
+            <Toolbar>
+             <Grid  container spacing={2}>
+               <Grid   item xs={12} sm={4} md={3} sx={{marginTop: '5px'}}>
+                  <Typography>
+                  <Button  href='#' data-viewName="claimsSearch"  onClick={onClickLink} > Back</Button>
+                 </Typography>
+              </Grid>
+            </Grid>
+
+            </Toolbar>
+          </AppBar>
+          <HeaderComponent data={details} labels={labels} layout={layout} />
+        </Grid>
+      </Grid>
