@@ -45,3 +45,71 @@
         <MedicationsTable title="Claim Result" context={claimContext} filters={filters} onClickDetails={onClickDetails} rows={rows} headers={headers} />
       </Grid>
     </Grid>
+======
+<Grid container>
+  <Grid item xs={12}>
+    <Typography variant="h2">Claims Search</Typography>
+  </Grid>
+
+  <Grid item container spacing={2} alignItems="center">
+    <Grid item xs={3}>
+      <TextField
+        label="Member ID"
+        value={filters.memberId}
+        onChange={(e) => setFilters({ ...filters, memberId: e.target.value })}
+      />
+    </Grid>
+
+    <Grid item xs={3}>
+      <TextField
+        type="date"
+        label="Fill Date From"
+        value={filters.fillDtFrom}
+        onChange={(e) => setFilters({ ...filters, fillDtFrom: e.target.value })}
+      />
+    </Grid>
+
+    <Grid item xs={3}>
+      <TextField
+        type="date"
+        label="Fill Date Thru"
+        value={filters.fillDtThru}
+        onChange={(e) => setFilters({ ...filters, fillDtThru: e.target.value })}
+      />
+    </Grid>
+
+    {!claimContext?.tenantId && (
+      <Grid item xs={3}>
+        <TextField
+          label="Tenant ID"
+          value={filters.tenantId}
+          onChange={(e) => setFilters({ ...filters, tenantId: e.target.value })}
+        />
+      </Grid>
+    )}
+
+    <Grid item xs={3}>
+      <Button
+        sx={{ paddingTop: '5px', height: '100%' }}
+        href='#'
+        onClick={handleSearchClick}
+        variant="contained"
+        color="primary"
+        fullWidth
+      >
+        Search
+      </Button>
+    </Grid>
+  </Grid>
+
+  <Grid item xs={12}>
+    <MedicationsTable
+      title="Claim Result"
+      context={claimContext}
+      filters={filters}
+      onClickDetails={onClickDetails}
+      rows={rows}
+      headers={headers}
+    />
+  </Grid>
+</Grid>
