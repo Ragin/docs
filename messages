@@ -1,0 +1,64 @@
+
+{
+"rxClaimNbr":211391504171000,
+"rxSeq": 999,
+"tcdStatus": "P",
+"tenantId": "RXDV1_PRD"
+}
+
+Reponse:
+{
+    "rxClaimNbr": 211391504171000,
+    "rxSeq": 999,
+    "message": "successful",
+    "localMessages": [
+        {
+            "message": "U&C of $0.00 used to price claim",
+            "messageCode": null
+        },
+        {
+            "message": "70-Prod/Service Not Covered",
+            "messageCode": null
+        }
+    ],
+    "rejectMessages": null
+}
+
+For Rejects:  
+
+Request:
+
+{
+"rxClaimNbr":231374075489001,
+"rxSeq": 985,
+"tcdStatus": "R",
+"tenantId": "RXDV1_PRD"
+}
+
+Response:
+
+{
+    "rxClaimNbr": 231374075489001,
+    "rxSeq": 985,
+    "message": "successful",
+    "localMessages": [
+        {
+            "message": "DUR1:TWO LINE MESSAGE LINE1",
+            "messageCode": null
+        },
+        {
+            "message": "THIS IS LINE 2",
+            "messageCode": null
+        }
+    ],
+    "rejectMessages": [
+        {
+            "rejectCd": "88",
+            "rejectMessage": "DUR Reject Error"
+        },
+        {
+            "rejectCd": "569",
+            "rejectMessage": "CMS Appeal Rights Notice"
+        }
+    ]
+}
