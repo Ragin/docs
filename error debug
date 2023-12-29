@@ -1,0 +1,7 @@
+" SimpleAsyncUncaughtExceptionHandler : Unexpected exception occurred invoking async method: public void com.optum.speciality.util.PollingService.pollRxClaimApi() throws javax.net.ssl.SSLException
+ 
+org.springframework.web.reactive.function.client.WebClientResponseException$Unauthorized: 401 Unauthorized from GET https://gateway.optum.com/app/rxclaim-nextgen-api-elr-dmz/v1/rxpricing-product-list/get-response?correlationId=2587454342926174&platform=RXCL1_PRD
+	at org.springframework.web.reactive.function.client.WebClientResponseException.create(WebClientResponseException.java:219) ~[spring-webflux-5.3.26.jar!/:5.3.26]
+	Suppressed: reactor.core.publisher.FluxOnAssembly$OnAssemblyException:
+Error has been observed at the following site(s):
+	*__checkpoint ⇢ 401 from GET https://gateway.optum.com/app/rxclaim-nextgen-api-elr-dmz/v1/rxpricing-product-list/get-response [DefaultWebClient] " 
