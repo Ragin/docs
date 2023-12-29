@@ -37,4 +37,39 @@ const MyAccordion = () => {
   );
 };
 
+======
+import React from 'react';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import { styled } from '@material-ui/core/styles';
+
+const CustomAccordion = styled(Accordion)({
+  flexDirection: 'row-reverse', // This reverses the direction of the accordion
+  border: 'none', // Remove border
+  boxShadow: 'none', // Remove box shadow
+  // Add any other custom styles as needed
+});
+
+const MyAccordion = () => {
+  return (
+    <CustomAccordion>
+      <AccordionSummary
+        expandIcon={<ExpandMoreIcon />}
+        aria-controls="panel1a-content"
+        id="panel1a-header"
+      >
+        {/* Your Accordion Content Goes Here */}
+      </AccordionSummary>
+      <AccordionDetails>
+        {/* Your Accordion Details Content Goes Here */}
+      </AccordionDetails>
+    </CustomAccordion>
+  );
+};
+
+export default MyAccordion;
+
+
 export default MyAccordion;
