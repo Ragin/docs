@@ -41,18 +41,6 @@ const MyAccordion = () => {
 ====
 
 
- Type error: Type '{ children: any; key: any; align: string; }' is not assignable to type 'IntrinsicAttributes & MUIStyledCommonProps<Theme>'.
-         Property 'children' does not exist on type 'IntrinsicAttributes & MUIStyledCommonProps<Theme>'.
-       
-         43 |   const headersMap = (header: any) => {
-         44 |     return (
-       > 45 |       <StyledTableCell
-            |        ^
-         46 |         key={header?.code}
-         47 |         align="left"
-         48 |       >
-
-
 ======
 import React from 'react';
 import Accordion from '@material-ui/core/Accordion';
@@ -111,3 +99,157 @@ const result = evaluateString("${mbrLastName} ${mbrFirstName}(${memberId})", {
   mbrFirstName,
   memberId,
 });
+
+
+===
+
+
+ Type error: Type '{ children: any; key: any; align: string; }' is not assignable to type 'IntrinsicAttributes & MUIStyledCommonProps<Theme>'.
+         Property 'children' does not exist on type 'IntrinsicAttributes & MUIStyledCommonProps<Theme>'.
+       
+         43 |   const headersMap = (header: any) => {
+         44 |     return (
+       > 45 |       <StyledTableCell
+            |        ^
+         46 |         key={header?.code}
+         47 |         align="left"
+         48 |       >
+
+==
+import React, {useEffect, useState} from 'react';
+
+import {useClaimMessages} from '../useClaimMessages/use-claim-messages';
+import {ClaimMessagesProps} from './claim-messages.types';
+import {MessagesResponse} from "../useClaimMessages/use-claim-messages.types";
+import TableContainer from "@mui/material/TableContainer";
+import Table from "@mui/material/Table";
+import TableHead from "@mui/material/TableHead";
+import TableBody from "@mui/material/TableBody";
+import NoRecordsFound from "../../no-records-found/NoRecordsFound/no-records-found";
+import {styled} from "@mui/material/styles";
+import TableCell, {tableCellClasses} from "@mui/material/TableCell";
+import TableRow from "@mui/material/TableRow";
+import { Card, CardContent, Grid} from "@mui/material";
+
+
+export function ClaimMessages (params: ClaimMessagesProps) {
+  const [messages, setMessages] = useState<MessagesResponse>({ rxClaimNbr: 0, rxSeq: 0, localMessages: [], rejectMessages: [], message: ''  });
+  const [loading, setLoading] = useState<boolean>(true);
+  const {  messages1 } = useClaimMessages(params);
+
+  const StyledTableCell = styled(TableCell)(({ theme }) => ({
+    [`&.${tableCellClasses.head}`]: {
+      backgroundColor: theme.palette.common.white,
+      color: theme.palette.common.black,
+      cursor: 'pointer',
+    },
+    [`&.${tableCellClasses.body}`]: {
+      fontSize: 14,
+    },
+  }));
+
+  const StyledTableRow = styled(TableRow)(({ theme }) => ({
+    '&:nth-of-type(odd)': {
+      backgroundColor: theme.palette.action.hover,
+    },
+    // hide last border
+    '&:last-child td, &:last-child th': {
+      border: 0,
+    },
+  }));
+
+  const headersMap = (header: any) => {
+    return (
+      <StyledTableCell
+        key={header?.code}
+        align="left"
+      >
+        {header?.label}
+      </StyledTableCell>
+    );
+  };
+
+  const rowsMap = (row: typeof messages.localMessages[0]) =>{
+    return (
+      <StyledTableRow>
+        <StyledTableCell>{row.messageCode}</StyledTableCell>
+        <StyledTableCell>{row.message}</StyledTableCell>
+      </StyledTableRow>
+    );
+  };
+
+  const rejectRowsMap = (row: typeof messages.rejectMessages[0]) =>{
+    return (
+      <StyledTableRow>
+        <StyledTableCell>{row.rejectCd}</StyledTableCell>
+        <StyledTableCell>{row.rejectMessage}</StyledTableCell>
+      </StyledTableRow>
+    );
+  };
+
+
+  useEffect(() => {
+    console.log('In ClaimMessages: useEffect params=', params, loading);
+    if(true){
+      setLoading(true);
+      console.log('In ClaimMessages: before call useClaimMessages ', messages1);
+      setMessages(messages1);
+      setLoading(false);
+    }
+  }, [params, messages1]);
+
+
+  const headers = [
+    {label:'Message Code', code: 'messageCode'},
+    {label:'Message', code: 'message'}
+  ];
+
+  const rejectedHeaders = [
+    {label:'Reject Code', code: 'rejectCd'},
+    {label:'Reject Message', code: 'rejectMessage'}
+  ];
+
+  return (
+    <Grid container spacing={2} alignItems="center" sx={{overflowY: "scroll", maxHeight: "300px"}}>
+      <Grid item xs={6}>
+        <Card elevation={3} style={{marginBottom: '5px'}}>
+          <CardContent>
+            <TableContainer>
+              <Table sx={{minWidth: '650px'}} aria-label="simple table">
+                <TableHead>
+                  <StyledTableRow>{headers.map(headersMap)}</StyledTableRow>
+                </TableHead>
+                <TableBody>
+                  {messages?.localMessages && messages.localMessages.length > 0 && messages?.localMessages.map(rowsMap)}
+                </TableBody>
+              </Table>
+              {!messages?.localMessages || messages?.localMessages.length == 0 && <NoRecordsFound></NoRecordsFound>}
+            </TableContainer>
+          </CardContent>
+        </Card>
+
+      </Grid>
+      <Grid item xs={6}>
+        <Card elevation={3} style={{marginBottom: '5px'}}>
+          <CardContent>
+            <TableContainer>
+              <Table sx={{minWidth: '650px'}} aria-label="simple table">
+                <TableHead>
+                  <StyledTableRow>{rejectedHeaders.map(headersMap)}</StyledTableRow>
+                </TableHead>
+                <TableBody>
+                  {messages?.rejectMessages && messages.rejectMessages.length > 0 && messages?.rejectMessages.map(rejectRowsMap)}
+                </TableBody>
+              </Table>
+              {!messages?.rejectMessages || messages?.rejectMessages.length == 0 && <NoRecordsFound></NoRecordsFound>}
+            </TableContainer>
+          </CardContent>
+        </Card>
+      </Grid>
+    </Grid>
+
+  );
+};
+
+export default ClaimMessages;
+
