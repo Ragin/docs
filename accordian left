@@ -77,3 +77,21 @@ export default MyAccordion;
 
 
 "`${mbrLastName} ${mbrFirstName}(${memberId})`"
+
+function evaluateString(targetFormat: string, ...args: any[]): string {
+  return targetFormat.replace(/\${(\w+)}/g, (match, p1) => {
+    const arg = args[p1];
+    return arg !== undefined ? arg : match;
+  });
+}
+
+// Example usage
+const mbrLastName = "Doe";
+const mbrFirstName = "John";
+const memberId = 123;
+
+const result = evaluateString("${mbrLastName} ${mbrFirstName}(${memberId})", {
+  mbrLastName,
+  mbrFirstName,
+  memberId,
+});
