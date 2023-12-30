@@ -37,6 +37,22 @@ const MyAccordion = () => {
   );
 };
 
+
+====
+
+
+ Type error: Type '{ children: any; key: any; align: string; }' is not assignable to type 'IntrinsicAttributes & MUIStyledCommonProps<Theme>'.
+         Property 'children' does not exist on type 'IntrinsicAttributes & MUIStyledCommonProps<Theme>'.
+       
+         43 |   const headersMap = (header: any) => {
+         44 |     return (
+       > 45 |       <StyledTableCell
+            |        ^
+         46 |         key={header?.code}
+         47 |         align="left"
+         48 |       >
+
+
 ======
 import React from 'react';
 import Accordion from '@material-ui/core/Accordion';
