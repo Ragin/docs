@@ -73,3 +73,7 @@ export default MyAccordion;
 
 
 export default MyAccordion;
+
+
+
+"`${mbrLastName} ${mbrFirstName}(${memberId})`"
