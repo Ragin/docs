@@ -1,0 +1,190 @@
+public class ClaimPricingResp {
+    private Long rxClaimNbr;
+    private Long rxSeqNbr;
+    private ClaimPricing submit;
+    private ClaimPricing client;
+    private ClaimPricing client2;
+    private ClaimPricingClient patientPayDetails;
+}
+
+public class ClaimPricing {
+    private BigDecimal ingredientsCost;
+
+    private BigDecimal dispensingFee;
+
+    private BigDecimal flatSalesTax;
+
+    private BigDecimal percentSalesTax;
+
+    private BigDecimal incentiveAmt;
+
+    private BigDecimal totalOtherAmt;
+
+    private BigDecimal profServiceFee;
+
+    private BigDecimal patientPay;
+
+    private BigDecimal adjustment;
+
+    private BigDecimal cob;
+
+    private BigDecimal usualCustomary;
+
+    private BigDecimal grossAmtDue;
+
+    public BigDecimal getIngredientsCost() {
+        return ingredientsCost;
+    }
+
+    public void setIngredientsCost(BigDecimal ingredientsCost) {
+        this.ingredientsCost = ingredientsCost;
+    }
+
+    public BigDecimal getDispensingFee() {
+        return dispensingFee;
+    }
+
+    public void setDispensingFee(BigDecimal dispensingFee) {
+        this.dispensingFee = dispensingFee;
+    }
+
+    public BigDecimal getFlatSalesTax() {
+        return flatSalesTax;
+    }
+
+    public void setFlatSalesTax(BigDecimal flatSalesTax) {
+        this.flatSalesTax = flatSalesTax;
+    }
+
+    public BigDecimal getPercentSalesTax() {
+        return percentSalesTax;
+    }
+
+    public void setPercentSalesTax(BigDecimal percentSalesTax) {
+        this.percentSalesTax = percentSalesTax;
+    }
+
+    public BigDecimal getIncentiveAmt() {
+        return incentiveAmt;
+    }
+
+    public void setIncentiveAmt(BigDecimal incentiveAmt) {
+        this.incentiveAmt = incentiveAmt;
+    }
+
+    public BigDecimal getTotalOtherAmt() {
+        return totalOtherAmt;
+    }
+
+    public void setTotalOtherAmt(BigDecimal totalOtherAmt) {
+        this.totalOtherAmt = totalOtherAmt;
+    }
+
+    public BigDecimal getProfServiceFee() {
+        if(profServiceFee == null) {
+            profServiceFee = BigDecimal.ZERO;
+        }
+
+        return profServiceFee;
+    }
+
+    public void setProfServiceFee(BigDecimal profServiceFee) {
+        this.profServiceFee = profServiceFee;
+    }
+
+    public BigDecimal getPatientPay() {
+        return patientPay;
+    }
+
+    public void setPatientPay(BigDecimal patientPay) {
+        this.patientPay = patientPay;
+    }
+
+    public BigDecimal getAdjustment() {
+        return adjustment;
+    }
+
+    public void setAdjustment(BigDecimal adjustment) {
+        this.adjustment = adjustment;
+    }
+
+    public BigDecimal getCob() {
+        return cob;
+    }
+
+    public void setCob(BigDecimal cob) {
+        this.cob = cob;
+    }
+
+    public BigDecimal getUsualCustomary() {
+        return usualCustomary;
+    }
+
+    public void setUsualCustomary(BigDecimal usualCustomary) {
+        this.usualCustomary = usualCustomary;
+    }
+
+    public BigDecimal getGrossAmtDue() {
+        return grossAmtDue;
+    }
+
+    public void setGrossAmtDue(BigDecimal grossAmtDue) {
+        this.grossAmtDue = grossAmtDue;
+    }
+}
+}
+
+public class ClaimPricingClient {
+    private BigDecimal copay;
+
+    private BigDecimal flatCopay;
+
+    private BigDecimal copayPercent;
+
+    private BigDecimal deductible;
+
+    private BigDecimal overCap;
+
+    private BigDecimal productSelect;
+
+    private BigDecimal processorFee;
+
+    private BigDecimal networkSelect;
+
+    private BigDecimal coverageGap;
+
+    private BigDecimal healthPlan;
+
+    private BigDecimal tax;
+
+    private BigDecimal patientPay;
+
+}
+
+convert this response structure to a format that can be used in material ui Table with 4 columns as below:
+
+             Submit     Client       Client2     
+
+Cost      200.00    100.00      110.00
+
+Fee                          3.90         3.90                                 
+
+FTax                                                                         
+
+%Tax                                                                       
+
+Inc                                                                         
+
+Oth                                                                          
+
+OPR                                                                         
+
+Pat                         20.00        20.00                               
+
+Adj                                                                    
+
+COB                                                                         
+
+UC/W    100.00                   
+
+Due       100.00      83.90       93.90
