@@ -188,3 +188,101 @@ COB 
 UC/W    100.00                   
 
 Due       100.00      83.90       93.90
+
+
+import React from 'react';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+
+const ClaimPricingTable = ({ data }) => {
+  return (
+    <TableContainer component={Paper}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell></TableCell>
+            <TableCell>Submit</TableCell>
+            <TableCell>Client</TableCell>
+            <TableCell>Client2</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          <TableRow>
+            <TableCell>Cost</TableCell>
+            <TableCell>{data.submit.ingredientsCost}</TableCell>
+            <TableCell>{data.client.ingredientsCost}</TableCell>
+            <TableCell>{data.client2.ingredientsCost}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Fee</TableCell>
+            <TableCell>{data.submit.dispensingFee}</TableCell>
+            <TableCell>{data.client.dispensingFee}</TableCell>
+            <TableCell>{data.client2.dispensingFee}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Flat Sales Tax</TableCell>
+            <TableCell>{data.submit.flatSalesTax}</TableCell>
+            <TableCell>{data.client.flatSalesTax}</TableCell>
+            <TableCell>{data.client2.flatSalesTax}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Percent Sales Tax</TableCell>
+            <TableCell>{data.submit.percentSalesTax}</TableCell>
+            <TableCell>{data.client.percentSalesTax}</TableCell>
+            <TableCell>{data.client2.percentSalesTax}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Incentive Amount</TableCell>
+            <TableCell>{data.submit.incentiveAmt}</TableCell>
+            <TableCell>{data.client.incentiveAmt}</TableCell>
+            <TableCell>{data.client2.incentiveAmt}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Total Other Amount</TableCell>
+            <TableCell>{data.submit.totalOtherAmt}</TableCell>
+            <TableCell>{data.client.totalOtherAmt}</TableCell>
+            <TableCell>{data.client2.totalOtherAmt}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Professional Service Fee</TableCell>
+            <TableCell>{data.submit.profServiceFee}</TableCell>
+            <TableCell>{data.client.profServiceFee}</TableCell>
+            <TableCell>{data.client2.profServiceFee}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Patient Pay</TableCell>
+            <TableCell>{data.submit.patientPay}</TableCell>
+            <TableCell>{data.client.patientPay}</TableCell>
+            <TableCell>{data.client2.patientPay}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Adjustment</TableCell>
+            <TableCell>{data.submit.adjustment}</TableCell>
+            <TableCell>{data.client.adjustment}</TableCell>
+            <TableCell>{data.client2.adjustment}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>COB (Coordination of Benefits)</TableCell>
+            <TableCell>{data.submit.cob}</TableCell>
+            <TableCell>{data.client.cob}</TableCell>
+            <TableCell>{data.client2.cob}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Usual Customary</TableCell>
+            <TableCell>{data.submit.usualCustomary}</TableCell>
+            <TableCell>{data.client.usualCustomary}</TableCell>
+            <TableCell>{data.client2.usualCustomary}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Gross Amount Due</TableCell>
+            <TableCell>{data.submit.grossAmtDue}</TableCell>
+            <TableCell>{data.client.grossAmtDue}</TableCell>
+            <TableCell>{data.client2.grossAmtDue}</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+};
+
+export default ClaimPricingTable;
+
