@@ -1,0 +1,84 @@
+To share context between routed pages in Next.js, you can use the `context` provider from the `react` package. Here's a simple example:
+
+1. Create a context file, let's say `MyContext.js`:
+
+```jsx
+import { createContext, useContext, useState } from 'react';
+
+const MyContext = createContext();
+
+export const MyContextProvider = ({ children }) => {
+  const [sharedValue, setSharedValue] = useState('Default Value');
+
+  return (
+    <MyContext.Provider value={{ sharedValue, setSharedValue }}>
+      {children}
+    </MyContext.Provider>
+  );
+};
+
+export const useMyContext = () => {
+  return useContext(MyContext);
+};
+```
+
+2. Wrap your main `_app.js` file with the context provider:
+
+```jsx
+// pages/_app.js
+
+import { MyContextProvider } from '../path/to/MyContext';
+
+function MyApp({ Component, pageProps }) {
+  return (
+    <MyContextProvider>
+      <Component {...pageProps} />
+    </MyContextProvider>
+  );
+}
+
+export default MyApp;
+```
+
+3. Now, you can use the context in your routed pages:
+
+```jsx
+// pages/Page1.js
+
+import { useMyContext } from '../path/to/MyContext';
+
+function Page1() {
+  const { sharedValue, setSharedValue } = useMyContext();
+
+  return (
+    <div>
+      <h1>Page 1</h1>
+      <p>Shared Value: {sharedValue}</p>
+      <button onClick={() => setSharedValue('Updated Value')}>Update Value</button>
+    </div>
+  );
+}
+
+export default Page1;
+```
+
+```jsx
+// pages/Page2.js
+
+import { useMyContext } from '../path/to/MyContext';
+
+function Page2() {
+  const { sharedValue } = useMyContext();
+
+  return (
+    <div>
+      <h1>Page 2</h1>
+      <p>Shared Value: {sharedValue}</p>
+    </div>
+  );
+}
+
+export default Page2;
+```
+
+Now, the `sharedValue` is accessible across your routed pages. Make sure to import and use the `MyContextProvider` in any new pages where you want to share the context.
