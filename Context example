@@ -82,3 +82,110 @@ export default Page2;
 ```
 
 Now, the `sharedValue` is accessible across your routed pages. Make sure to import and use the `MyContextProvider` in any new pages where you want to share the context.
+
+
+
+====
+home.tsx
+
+
+import React, {useState} from 'react';
+import Script from 'next/script';
+import {Typography} from '@mui/material';
+import { ROUTE_EVENT, ANALYTICS_EVENT} from '@optum-rx-claim-modern/claims';
+
+import betteruiToken from "../theme/betterui.json";
+import {createUniversalTheme, OptumTokens} from "@skyline/themes";
+import {useRouter} from "next/router"
+import {GlobalContextProvider, useGlobalContext} from "./GlobalContext";
+
+
+export default function Home() {
+  const { sharedContext, setSharedContext } = useGlobalContext();
+  const [viewName, setViewName] = useState<string>('claimsSearch');
+  const [viewHistory] = useState<string[]>(['claimsSearch']);
+  // const betterUi = createUniversalTheme(betteruiToken, 'betterUi');
+  // const {claimsRef} = useNextJsTest();
+
+
+
+
+  console.log('OptumTokens=', OptumTokens);
+  // const betterUi = createUniversalTheme(betteruiToken, 'betterUi');
+  // const {claimsRef} = useNextJsTest();
+  const ref = React.useRef<HTMLDivElement>();
+  const router = useRouter();
+  const context = JSON.stringify({sid: '7c88c67b2140ade7154b0d846740cd358eab23a1', authtype: 'msid'});
+  let newContext = JSON.stringify(context);
+  const [claimContext, setClaimContext] = useState<string>(newContext);
+
+  const handleEvent = ((e: CustomEvent<any>) => {
+    console.log('handleEvent');
+    const {detail} = e;
+
+    // eslint-disable-next-line default-case
+    switch (detail.type) {
+      case ROUTE_EVENT.TYPE: {
+
+        console.log('In Page: detail=', detail);
+        newContext = JSON.stringify({...context, searchDetailParam: detail.payload.searchDetailParam});
+        console.log('In Page: newContext=', newContext);
+        setClaimContext(newContext);
+        setSharedContext(newContext);
+        if (detail.payload.viewName) {
+          viewHistory.push(detail.payload.viewName);
+          setViewName(detail.payload.viewName);
+          router.push(`claims-details/${detail.payload.viewName}`);
+        }
+
+        break;
+      }
+
+      case ANALYTICS_EVENT.TYPE:
+        if (window.trackAnalytics) {
+          window.trackAnalytics(detail.payload);
+        }
+    }
+  }) as EventListener;
+
+
+  React.useEffect(() => {
+    console.log('ref', ref);
+    ref.current?.addEventListener('event', handleEvent);
+    return () => {
+      ref.current?.removeEventListener('event', handleEvent);
+    };
+  }, [ref.current]);
+
+  return (
+    <main>
+      <Script src="http://localhost:4173/claims-webcomponent.es.js" strategy="afterInteractive" />
+      <GlobalContextProvider>
+        <claims-micro-product ref={ref} text="Claims"  view="claimsSearch"  context={context} theme="OptumDefault" ></claims-micro-product>
+      </GlobalContextProvider>
+
+    </main>
+  );
+}
+
+===GlobalContext.tsx
+
+import { createContext, useContext, useState } from 'react';
+
+const GlobalContext = createContext({});
+
+export const GlobalContextProvider = ({ children }) => {
+  const [sharedContext, setSharedContext] = useState({});
+
+  return (
+    <GlobalContext.Provider value={{sharedContext, setSharedContext }}>
+      {children}
+    </GlobalContext.Provider>
+  );
+};
+
+export const useGlobalContext = () => {
+  return useContext(GlobalContext);
+};
+
+
