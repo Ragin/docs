@@ -64,3 +64,78 @@ LTC Provider Qualified
 LTC Product Qualified                                                        
 LTC Claim Qualified                                                          
 Client DCS Rate           .0000          
+
+
+
+
+
+==
+
+{
+    "rxClaimNbr": 223121827655000,
+    "rxSeqNbr": 999,
+    "medicarePartD": {
+        "contractNumber": "S1122",
+        "planBenefitPackage": "010",
+        "segment": "010",
+        "troopSchedule": "          ",
+        "cppAmt": 0.00,
+        "drugCovStatusSchedule": "EVUASHE   ",
+        "drugCovStatusCode": "N",
+        "innovationSavingsModel": " ",
+        "originalCppAmt": 0.00,
+        "benefitPhaseCob": "01",
+        "estGenericSavingsAmt": 0.00
+    },
+    "additionalInfo": {
+        "transitionalBenefit": {
+            "override": "SANS001   ",
+            "priorDrug": "8",
+            "prodMaiOrSch": null,
+            "productMai": null,
+            "preMaiDrugStatus": null,
+            "rejectReason": [
+                "LVLCH",
+                "NENRL",
+                "NNFRM"
+            ],
+            "planEdit": [
+                "**",
+                "**",
+                "**"
+            ],
+            "passPreQualCheck": "Y",
+            "manual": " ",
+            "memberTbEligibility": "Y",
+            "suppressLetter": "N",
+            "formLvlch": "L"
+        },
+        "negFormChangeBenefitYear": {
+            "tbPaid": null,
+            "paPaid": null,
+            "ndcList": null,
+            "drugCoverageStatus": null,
+            "gpiAndMsc": null,
+            "gpiList": null
+        },
+        "diagnosisLetters": {
+            "provisionalFillLetter": " "
+        },
+        "coverageDetermination": {
+            "schedule": "          ",
+            "sequence": "          "
+        },
+        "drugCoverageProgram": {
+            "genericGapCov": "N",
+            "formNonFormSts": "F",
+            "bioSimiliarProduct": " "
+        },
+        "dailyCostShare": {
+            "providerQualified": "N",
+            "productQualified": " ",
+            "claimQualified": " ",
+            "clientDcsRate": 0.0000,
+            "approvedDcsRate": 0
+        }
+    }
+}
