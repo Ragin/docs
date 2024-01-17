@@ -405,6 +405,7 @@ export default SimpleLayoutComponent;
 
 
 // layout.js
+// layout.js
 const layout = [
   {
     heading: 'Part D Details',
@@ -450,8 +451,38 @@ const layout = [
       'additionalInfo.negFormChangeBenefitYear.gpiList',
     ],
   },
-  // Add more sections as needed
+  {
+    heading: 'Diagnosis Letters',
+    fields: ['additionalInfo.diagnosisLetters.provisionalFillLetter'],
+  },
+  {
+    heading: 'Coverage Determination',
+    fields: [
+      'additionalInfo.coverageDetermination.schedule',
+      'additionalInfo.coverageDetermination.sequence',
+    ],
+  },
+  {
+    heading: 'Drug Coverage Program',
+    fields: [
+      'additionalInfo.drugCoverageProgram.genericGapCov',
+      'additionalInfo.drugCoverageProgram.formNonFormSts',
+      'additionalInfo.drugCoverageProgram.bioSimiliarProduct',
+    ],
+  },
+  {
+    heading: 'Daily Cost Share',
+    fields: [
+      'additionalInfo.dailyCostShare.providerQualified',
+      'additionalInfo.dailyCostShare.productQualified',
+      'additionalInfo.dailyCostShare.claimQualified',
+      'additionalInfo.dailyCostShare.clientDcsRate',
+      'additionalInfo.dailyCostShare.approvedDcsRate',
+    ],
+  },
 ];
+
+export default layout;
 
 export default layout;
 
