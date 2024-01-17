@@ -139,3 +139,55 @@ Client DCS Rate           .0000
         }
     }
 }
+
+
+===import React from 'react';
+import { Grid, Card, CardContent, Typography } from '@mui/material';
+import './claims-detail.css';
+import {evaluateString} from "../../common/common-utils";
+const labelStyle = {
+  fontWeight: 'bold',
+  color: '#3F51B5',
+};
+
+interface SimpleLayoutComponentProps {
+  data: any;
+  labels: any;
+  layout: any;
+  style?: any;
+}
+
+const SimpleLayoutComponent: React.FC<SimpleLayoutComponentProps> = ({ data, labels, layout }) => {
+  return (
+    <Grid container spacing={2} >
+      <Grid item xs={12} spacing={2}>
+        <Card elevation={3}  style={{ marginBottom: '0px', borderBottom: "solid" }}>
+         <CardContent >
+           {layout.map((group:{heading: string, fields: string[]}) => (
+             <Grid container spacing={1}>
+               <Grid  item xs={12} >
+                 <Typography variant="h6" style={{ marginBottom: '10px' }}>
+                   {evaluateString(group.heading, data)}
+                 </Typography>
+               </Grid>
+              {group.fields.map((field: string) => (
+              <Grid key={field} item xs={12} sm={4} md={3}>
+                <div style={{ marginBottom: '15px' }}>
+                  <Typography variant="subtitle1" style={labelStyle}>
+                    {labels[field]}
+                  </Typography>
+                  <Typography variant="body1">{data[field]}</Typography>
+                </div>
+              </Grid>
+              ))}
+            </Grid>
+           ))}
+         </CardContent>
+        </Card>
+
+      </Grid>
+    </Grid>
+  );
+};
+
+export default SimpleLayoutComponent;
