@@ -194,10 +194,27 @@ export default SimpleLayoutComponent;
 
 -----
 
-Certainly! Based on the information provided in the payload and the UI layout, I'll create a layout parameter that you can use with the React component:
+Certainly! Here is the updated layout parameter and labels.json file based on the new UI layout:
 
 ```javascript
+// Updated layout parameter
 const layout = [
+  {
+    heading: "Part D Details",
+    fields: [
+      "contractNumber",
+      "planBenefitPackage",
+      "segment",
+      "troopSchedule",
+      "cppAmt",
+      "drugCovStatusSchedule",
+      "drugCovStatusCode",
+      "innovationSavingsModel",
+      "originalCppAmt",
+      "benefitPhaseCob",
+      "estGenericSavingsAmt",
+    ],
+  },
   {
     heading: "Transitional Benefit",
     fields: [
@@ -227,34 +244,67 @@ const layout = [
     ],
   },
   {
-    heading: "Diagnosis Letters",
-    fields: ["provisionalFillLetter"],
+    heading: "Claim Origination",
+    fields: [
+      "claimOrigination",
+      "reimbursement",
+      "extractSts",
+      "submFeeQual",
+    ],
+  },
+  {
+    heading: "Drug Status",
+    fields: [
+      "drugStatus",
+      "typeOfFill",
+      "nonPecosNpiInd",
+    ],
   },
   {
     heading: "Provisional Fill",
-    fields: ["schedule", "sequence"],
+    fields: [
+      "iraApplied",
+      "provisionalFill",
+      "provisionalFillLetter",
+      "letterReasonCode",
+    ],
+  },
+  {
+    heading: "Part D/Non-Part D Cvg Determination",
+    fields: ["schedule", "seq"],
   },
   {
     heading: "Drug Coverage Program",
-    fields: ["genericGapCov", "formNonFormSts", "bioSimiliarProduct"],
+    fields: [
+      "genericGapCov",
+      "pdeFormNonFormStatus",
+      "biosimilarProduct",
+    ],
   },
   {
     heading: "Daily Cost Share",
     fields: [
-      "providerQualified",
-      "productQualified",
-      "claimQualified",
+      "ltcProviderQualified",
+      "ltcProductQualified",
+      "ltcClaimQualified",
       "clientDcsRate",
-      "approvedDcsRate",
     ],
   },
 ];
-```
 
-Certainly! Here is a sample `labels.json` file with labels for the fields:
-
-```json
+// Updated labels.json file
 {
+  "contractNumber": "Contract Number",
+  "planBenefitPackage": "Plan Benefit Package",
+  "segment": "Segment",
+  "troopSchedule": "CPP TrOOP Schedule",
+  "cppAmt": "Covered Part D Plan Pay Amount",
+  "drugCovStatusSchedule": "Drug Coverage Status Schedule",
+  "drugCovStatusCode": "Drug Coverage Status Code",
+  "innovationSavingsModel": "Innovation Savings Model",
+  "originalCppAmt": "Original CPP Calculation for MSP",
+  "benefitPhaseCob": "Benefit Phase for Internal COB",
+  "estGenericSavingsAmt": "Estimated Generic Savings Amount",
   "override": "Override",
   "priorDrug": "Prior Drug Sts",
   "prodMaiOrSch": "Prod w/ MAI O/R",
@@ -270,20 +320,28 @@ Certainly! Here is a sample `labels.json` file with labels for the fields:
   "tbPaid": "TB Paid",
   "paPaid": "PA Paid",
   "ndcList": "NDC List",
-  "drugCoverageStatus": "Drug Cov Sts",
+  "drugCoverageStatus": "CMS Drug Cov Sts",
   "gpiAndMsc": "GPI+MSC",
   "gpiList": "GPI List",
+  "claimOrigination": "Claim Origination",
+  "reimbursement": "Reimbursement",
+  "extractSts": "Extract Sts",
+  "submFeeQual": "Subm Fee Qual",
+  "drugStatus": "Drug Status",
+  "typeOfFill": "Type of Fill",
+  "nonPecosNpiInd": "Non-PECOS NPI Ind",
+  "iraApplied": "IRA Applied",
+  "provisionalFill": "Provisional Fill",
   "provisionalFillLetter": "Provisional Fill Letter",
+  "letterReasonCode": "Letter Reason Code",
   "schedule": "Schedule",
-  "sequence": "Seq",
+  "seq": "Seq",
   "genericGapCov": "Generic Gap Cov",
-  "formNonFormSts": "PDE Form/Non-Form Status",
-  "bioSimiliarProduct": "Biosimilar Product",
-  "providerQualified": "LTC Provider Qualified",
-  "productQualified": "LTC Product Qualified",
-  "claimQualified": "LTC Claim Qualified",
-  "clientDcsRate": "Client DCS Rate",
-  "approvedDcsRate": "Approved DCS Rate"
+  "pdeFormNonFormStatus": "PDE Form/Non-Form Status",
+  "biosimilarProduct": "Biosimilar Product",
+  "ltcProviderQualified": "LTC Provider Qualified",
+  "ltcProductQualified": "LTC Product Qualified",
+  "ltcClaimQualified": "LTC Claim Qualified",
+  "clientDcsRate": "Client DCS Rate"
 }
 ```
-
