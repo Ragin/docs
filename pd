@@ -345,3 +345,113 @@ const layout = [
   "clientDcsRate": "Client DCS Rate"
 }
 ```
+
+// SimpleLayoutComponent.tsx
+import React from 'react';
+import { Grid, Card, CardContent, Typography } from '@mui/material';
+import './claims-detail.css';
+
+const labelStyle = {
+  fontWeight: 'bold',
+  color: '#3F51B5',
+};
+
+interface SimpleLayoutComponentProps {
+  data: any;
+  labels: any;
+  layout: any;
+}
+
+const SimpleLayoutComponent: React.FC<SimpleLayoutComponentProps> = ({ data, labels, layout }) => {
+  const getFieldByPath = (path: string) => {
+    return path.split('.').reduce((obj, key) => (obj && obj[key] !== undefined ? obj[key] : null), data);
+  };
+
+  const renderFieldValue = (field: string) => {
+    const value = getFieldByPath(field);
+    return value !== null && value !== undefined ? value.toString() : 'N/A';
+  };
+
+  return (
+    <Grid container spacing={2}>
+      {layout.map((group: { heading: string, fields: string[] }) => (
+        <Grid item xs={12} spacing={2} key={group.heading}>
+          <Card elevation={3} style={{ marginBottom: '0px', borderBottom: 'solid' }}>
+            <CardContent>
+              <Typography variant="h6" style={{ marginBottom: '10px' }}>
+                {group.heading}
+              </Typography>
+              <Grid container spacing={1}>
+                {group.fields.map((field: string) => (
+                  <Grid key={field} item xs={12} sm={4} md={3}>
+                    <div style={{ marginBottom: '15px' }}>
+                      <Typography variant="subtitle1" style={labelStyle}>
+                        {labels[field]}
+                      </Typography>
+                      <Typography variant="body1">{renderFieldValue(field)}</Typography>
+                    </div>
+                  </Grid>
+                ))}
+              </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
+      ))}
+    </Grid>
+  );
+};
+
+export default SimpleLayoutComponent;
+
+
+// layout.js
+const layout = [
+  {
+    heading: 'Part D Details',
+    fields: [
+      'medicarePartD.contractNumber',
+      'medicarePartD.planBenefitPackage',
+      'medicarePartD.segment',
+      'medicarePartD.troopSchedule',
+      'medicarePartD.cppAmt',
+      'medicarePartD.drugCovStatusSchedule',
+      'medicarePartD.drugCovStatusCode',
+      'medicarePartD.innovationSavingsModel',
+      'medicarePartD.originalCppAmt',
+      'medicarePartD.benefitPhaseCob',
+      'medicarePartD.estGenericSavingsAmt',
+    ],
+  },
+  {
+    heading: 'Transitional Benefit',
+    fields: [
+      'additionalInfo.transitionalBenefit.override',
+      'additionalInfo.transitionalBenefit.priorDrug',
+      'additionalInfo.transitionalBenefit.prodMaiOrSch',
+      'additionalInfo.transitionalBenefit.productMai',
+      'additionalInfo.transitionalBenefit.preMaiDrugStatus',
+      'additionalInfo.transitionalBenefit.rejectReason',
+      'additionalInfo.transitionalBenefit.planEdit',
+      'additionalInfo.transitionalBenefit.passPreQualCheck',
+      'additionalInfo.transitionalBenefit.manual',
+      'additionalInfo.transitionalBenefit.memberTbEligibility',
+      'additionalInfo.transitionalBenefit.suppressLetter',
+      'additionalInfo.transitionalBenefit.formLvlch',
+    ],
+  },
+  {
+    heading: 'Neg Form Change Across Benefit Year',
+    fields: [
+      'additionalInfo.negFormChangeBenefitYear.tbPaid',
+      'additionalInfo.negFormChangeBenefitYear.paPaid',
+      'additionalInfo.negFormChangeBenefitYear.ndcList',
+      'additionalInfo.negFormChangeBenefitYear.drugCoverageStatus',
+      'additionalInfo.negFormChangeBenefitYear.gpiAndMsc',
+      'additionalInfo.negFormChangeBenefitYear.gpiList',
+    ],
+  },
+  // Add more sections as needed
+];
+
+export default layout;
+
