@@ -1,0 +1,66 @@
+•From RCTC4 (Claim Detail àMedicare Part D) - RCTC4001 and RCTCD031 tabs from attached mapping document
+https://github.com/Ragin/docs/tree/main
+Contract Number, PBP, Segment, CPP TrOOP Schedule, Covered Part D Plan Pay Amount, Drug Coverage Status Schedule, Drug Coverage Status Code, Innovation Savings Model,       
+
+RCTC4001 screen:                       
+
+Original CPP Calculation for MSP, Benefit Phase for Internal COB, Estimated Generic Savings Amount
+
+ Contract Number                  S5601                              
+Plan Benefit Package             001                                
+Segment                          000                                
+CPP TrOOP Schedule                                                  
+Covered Part D Plan Pay Amount          .00                         
+Drug Coverage Status Schedule    VYDCSS01    TEST VY DCSS           
+Drug Coverage Status Code        C           Covered Part D Drug    
+Innovation Savings Model                                            
+Original CPP Calculation for MSP        .00                         
+                                                                   
+Benefit Phase for Internal COB   D           DEDUCTIBLE             
+                                                                   
+Estimated Generic Savings Amount        .00                         
+
+
+
+below data from API need to go into a separate display table
+
+From RCTCD031 (Claim Detail àAdditional Claim InfoàMedicare Part D)
+
+
+
+Override Schedule, Prior Drug Status, Reject Reasons (stored in RCTC3), Plan Edit, Pass Pre Qualif Check, Member TB Eligibility, Suppress Letter, Form LVLCH, Neg Form Change Across Benefit Year (TB Paid, PA Paid, NDC List, GPI List, GPI+MSC, CMS Drug Cov Status)
+
+Page 2 Detail: Provisional Fill, Diagnosis Letters, Part D/Non Part D Coverage Determination (Schedule/Seq), Drug Coverage Program, Generic Gap Cov, PDE Form/Non Form Status, Biosimilar Product, Daily Cost Share (LTC Provider Qualified, LTC Product Qualified, LTC Claim Qualified, Client DCS Rate, Approved DCS Rate)
+
+
+
+------------------------------ Transitional Benefit --------------------------
+Override                     Prior Drug Sts                                   
+Prod w/ MAI O/R              Pre-MAI Drug Sts                                 
+Product w/ MAI               Annual Reset                                     
+Reject Reason                                                                 
+Plan Edit                                                                     
+Pass Pre-Qualif Check  N     Manual                                           
+Member TB Eligibility  N                                                      
+Suppress Letter        N     Form LVLCH                                       
+--------------------- Neg Form Change Across Benefit Year --------------------
+TB Paid                      CMS Drug Cov Sts                                 
+PA Paid                      GPI+MSC                                          
+NDC List                     GPI List     
+
+Claim Origination   M     Reimbursement P      Extract Sts    Subm Fee Qual  
+Drug Status         F     Type of Fill         Non-PECOS NPI Ind             
+IRA Applied                                                                  
+---------- Provisional Fill -----------        ---- Diagnosis Letters ----   
+Provisional Fill Letter                        Letter Reason Code            
+- Part D/Non-Part D Cvg Determination -                                      
+Schedule             Seq                                                     
+-------- Drug Coverage Program --------                                      
+Generic Gap Cov           N                                                  
+PDE Form/Non-Form Status  F                                                  
+Biosimilar Product                                                           
+------- Daily Cost Share -------                                             
+LTC Provider Qualified                                                       
+LTC Product Qualified                                                        
+LTC Claim Qualified                                                          
+Client DCS Rate           .0000          
