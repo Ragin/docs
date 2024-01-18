@@ -485,4 +485,47 @@ const layout = [
 export default layout;
 
 export default layout;
+]
+
+{
+  "medicarePartD.contractNumber": "Contract Number",
+  "medicarePartD.planBenefitPackage": "Plan Benefit Package",
+  "medicarePartD.segment": "Segment",
+  "medicarePartD.troopSchedule": "Troop Schedule",
+  "medicarePartD.cppAmt": "CPP Amount",
+  "medicarePartD.drugCovStatusSchedule": "Drug Coverage Status Schedule",
+  "medicarePartD.drugCovStatusCode": "Drug Coverage Status Code",
+  "medicarePartD.innovationSavingsModel": "Innovation Savings Model",
+  "medicarePartD.originalCppAmt": "Original CPP Amount for MSP",
+  "medicarePartD.benefitPhaseCob": "Benefit Phase for Internal COB",
+  "medicarePartD.estGenericSavingsAmt": "Estimated Generic Savings Amount",
+  "additionalInfo.transitionalBenefit.override": "Override",
+  "additionalInfo.transitionalBenefit.priorDrug": "Prior Drug Sts",
+  "additionalInfo.transitionalBenefit.prodMaiOrSch": "Prod w/ MAI O/R",
+  "additionalInfo.transitionalBenefit.productMai": "Product w/ MAI",
+  "additionalInfo.transitionalBenefit.preMaiDrugStatus": "Pre-MAI Drug Sts",
+  "additionalInfo.transitionalBenefit.rejectReason": "Reject Reason",
+  "additionalInfo.transitionalBenefit.planEdit": "Plan Edit",
+  "additionalInfo.transitionalBenefit.passPreQualCheck": "Pass Pre-Qualif Check",
+  "additionalInfo.transitionalBenefit.manual": "Manual",
+  "additionalInfo.transitionalBenefit.memberTbEligibility": "Member TB Eligibility",
+  "additionalInfo.transitionalBenefit.suppressLetter": "Suppress Letter",
+  "additionalInfo.transitionalBenefit.formLvlch": "Form LVLCH",
+  "additionalInfo.negFormChangeBenefitYear.tbPaid": "TB Paid",
+  "additionalInfo.negFormChangeBenefitYear.paPaid": "PA Paid",
+  "additionalInfo.negFormChangeBenefitYear.ndcList": "NDC List",
+  "additionalInfo.negFormChangeBenefitYear.drugCoverageStatus": "Drug Coverage Status",
+  "additionalInfo.negFormChangeBenefitYear.gpiAndMsc": "GPI+MSC",
+  "additionalInfo.negFormChangeBenefitYear.gpiList": "GPI List",
+  "additionalInfo.diagnosisLetters.provisionalFillLetter": "Provisional Fill Letter",
+  "additionalInfo.coverageDetermination.schedule": "Schedule",
+  "additionalInfo.coverageDetermination.sequence": "Seq",
+  "additionalInfo.drugCoverageProgram.genericGapCov": "Generic Gap Cov",
+  "additionalInfo.drugCoverageProgram.formNonFormSts": "PDE Form/Non-Form Status",
+  "additionalInfo.drugCoverageProgram.bioSimiliarProduct": "Biosimilar Product",
+  "additionalInfo.dailyCostShare.providerQualified": "LTC Provider Qualified",
+  "additionalInfo.dailyCostShare.productQualified": "LTC Product Qualified",
+  "additionalInfo.dailyCostShare.claimQualified": "LTC Claim Qualified",
+  "additionalInfo.dailyCostShare.clientDcsRate": "Client DCS Rate"
+}
 
