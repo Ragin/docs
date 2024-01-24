@@ -26,3 +26,43 @@ export const Claims = (props: ClaimsProps) => {
 };
 
 export default Claims;
+========
+
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { ClaimsProps } from './claims.types';
+import ClaimsDetails from '../claims-details/ClaimsDetails/claims-details';
+import ClaimsSearch from '../claims-search/ClaimsSearch/claims-search';
+import { GlobalContext } from './Contexts';
+
+export const Claims = (props: ClaimsProps) => {
+  console.log('In Claims: props', props);
+  const { view = 'claimsSearch', context, text, detail, onClickDetails, onClickLink } = props;
+  const contextObj = JSON.parse(context);
+  console.log('In Claims: main contextObj', contextObj);
+  const [contextObj2, setContextObj2] = React.useState(contextObj);
+  console.log('Claims main view', view);
+  useEffect(() => {
+    console.log('In Claims: contextObj', contextObj);
+    setContextObj2(JSON.parse(context));
+  }, [context]);
+
+  return (
+    <Router>
+      <GlobalContext.Provider value={contextObj2}>
+        <Switch>
+          <Route path="/claimsSearch">
+            <ClaimsSearch context={contextObj} text={text} onClickDetails={onClickDetails} />
+          </Route>
+          <Route path="/claimsDetails">
+            {view === 'claimsDetails' && contextObj.searchDetailParam && (
+              <ClaimsDetails context={contextObj} onClickLink={onClickLink} detail={detail} text={text} onClickDetails={onClickDetails} />
+            )}
+          </Route>
+        </Switch>
+      </GlobalContext.Provider>
+    </Router>
+  );
+};
+
+export default Claims;
