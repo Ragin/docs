@@ -66,3 +66,36 @@ export const Claims = (props: ClaimsProps) => {
 };
 
 export default Claims;
+
+
+======
+import React, { useContext } from 'react';
+import { useHistory } from 'react-router-dom';
+import { GlobalContext } from '../Claims/Contexts';
+
+const ClaimsSearch = ({ context, text, onClickDetails }) => {
+  const history = useHistory();
+  const globalContext = useContext(GlobalContext);
+
+  const handleDetailsClick = () => {
+    // Assuming you have some logic to determine the detail to be displayed
+    const detailId = getDetailId(); // Replace this with your logic
+
+    // Update the global context with the detail information
+    const updatedContext = { ...globalContext, searchDetailParam: detailId };
+    globalContext.setContextObj2(updatedContext);
+
+    // Navigate to the ClaimsDetails component
+    history.push('/claimsDetails');
+  };
+
+  return (
+    <div>
+      {/* Your existing ClaimsSearch component code */}
+      <button onClick={handleDetailsClick}>View Details</button>
+    </div>
+  );
+};
+
+export default ClaimsSearch;
+
