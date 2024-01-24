@@ -1,0 +1,28 @@
+import React, { useEffect} from 'react';
+import { ClaimsProps } from './claims.types';
+import ClaimsDetails from "../claims-details/ClaimsDetails/claims-details";
+import ClaimsSearch from "../claims-search/ClaimsSearch/claims-search";
+import {GlobalContext} from "./Contexts";
+
+export const Claims = (props: ClaimsProps) => {
+  console.log('In Claims: props', props);
+  const {view = 'claimsSearch', context, text, detail, onClickDetails, onClickLink} = props;
+  const contextObj =  JSON.parse(context);
+  console.log('In Claims: main contextObj', contextObj);
+  const [contextObj2, setContextObj2] = React.useState(contextObj);
+  console.log('Claims main  view', view);
+  useEffect(() => {
+    console.log('In Claims: contextObj', contextObj);
+    setContextObj2(JSON.parse(context))
+  }, [context]);
+
+  return (
+    <GlobalContext.Provider value={contextObj2}>
+      {view === 'claimsSearch' && <ClaimsSearch context={contextObj} text ={text}  onClickDetails={ onClickDetails}/>}
+      {view === 'claimsDetails' && contextObj.searchDetailParam && <ClaimsDetails context={contextObj} onClickLink={onClickLink} detail= {detail} text ={text} onClickDetails={ onClickDetails}/>}
+    </GlobalContext.Provider>
+  );
+
+};
+
+export default Claims;
