@@ -1,0 +1,8 @@
+      frame.contentWindow.postMessage(
+            {
+              message: "sendSessionInfo",
+              session_id: AuthProxy.getSessionId(),
+              idp: AuthProxy.getAuthType(),
+              tenantId: this.state.tenantId,
+            },
+ is sent to another window without origin restriction.
