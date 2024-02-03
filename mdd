@@ -1,5 +1,61 @@
-prescription-drug-events.tsx
-===========================
+import {Accordion, AccordionDetails, AccordionSummary, Grid, Typography} from "@mui/material";
+import React from 'react';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import {ClaimDetailSearchRecord} from "../../useClaimsDetails/use-claims-details.types";
+import {ClaimsDetailsProps} from "../claims-details.types";
+import {ClaimRequestParams} from "../../../common/model-types";
+import {PrescriptionDrugEvents} from "../../../prescription-drug-event/PrescriptionDrugEvent/prescription-drug-events";
+
+export function PrescriptionDrugEventTab(props: ClaimsDetailsProps) {
+
+  const {context} = props;
+  const contextObj = context;
+  const [prescriptionDrug, setPrescriptionDrug] = React.useState(false);
+
+  console.log('In PrescriptionDrugEventTab: contextObj=', contextObj);
+  const detail: ClaimDetailSearchRecord = context.searchDetailParam;
+  const requestParams: ClaimRequestParams = {
+    rxClaimNbr: detail.rxClaimNbr as number,
+    rxSeq: detail.rxSeq as number,
+    tenantId: detail.tenantId as string,
+    sid: contextObj.sid as string,
+    authType: contextObj.authtype as string,
+    expanded: true
+  };
+
+
+  function handlePrescriptionDrug() {
+    setPrescriptionDrug(!prescriptionDrug);
+    console.log('handleAccordionChange');
+  }
+
+  return (<>
+    <Grid container spacing={2} alignItems="start">
+      <Grid item xs={12}>
+        <Accordion id="messages" expanded={prescriptionDrug} onChange={handlePrescriptionDrug}
+                   style={
+                     {
+                       flexDirection: "row-reverse",
+                       border: "none",
+                       boxShadow: "none",
+                       margin: "5px",
+                       maxWidth: "97%"
+                     }
+                   }>
+          <AccordionSummary expandIcon={<ExpandMoreIcon/>}>
+            <Typography variant="h6">CMS prescription drug event file</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            {prescriptionDrug &&  <PrescriptionDrugEvents {...requestParams}/>}
+          </AccordionDetails>
+        </Accordion>
+      </Grid>
+    </Grid>
+  </>);
+}
+======
+
+ 
 import React, {useEffect, useState} from 'react';
 
 import {
