@@ -1,50 +1,36 @@
-  src/prescription-drug-event/PrescriptionDrugEvent/prescription-drug-events.tsx(28,11): error TS2322: Type '{ children: string; prescriptionDrugEvents: any; }' is not assignable to type 'IntrinsicAttributes & PrescriptionDrugEventsProp'.
-         Property 'children' does not exist on type 'IntrinsicAttributes & PrescriptionDrugEventsProp'
+// prescription-drug-events.tsx
 
-
-
-
-import React, {useEffect, useState} from 'react';
-
-import {
-  usePrescriptionDrugEvents
-} from '../usePrescriptionDrugEvent/use-prescription-drug-events';
-
-import {PrescriptionDrugEventProps} from './prescription-drug-events.types';
+import React, { useEffect, useState } from 'react';
+import { usePrescriptionDrugEvents } from '../usePrescriptionDrugEvent/use-prescription-drug-events';
+import { PrescriptionDrugEventProps } from './prescription-drug-events.types';
 import PrescriptionDrugEventsTable from "./components/prescription-drug-events-table";
-
-
 
 export function PrescriptionDrugEvents(params: PrescriptionDrugEventProps) {
   console.log('In PrescriptionDrugEvents', 'params=', params);
-  const [prescriptionDrugEvents, setPrescriptionDrugEvents] = useState<any>({});
-
-
-
+  const [prescriptionDrugEvents, setPrescriptionDrugEvents] = useState<any>(null);
 
   useEffect(() => {
-
     setPrescriptionDrugEvents(usePrescriptionDrugEvents(params));
     console.log('In PrescriptionDrugEvents: in useEffect ', prescriptionDrugEvents);
   }, [params]);
+
   return (
     <>
       {
-        prescriptionDrugEvents && prescriptionDrugEvents?.medicarePartDMddFiles ?
-        (<PrescriptionDrugEventsTable  prescriptionDrugEvents = {prescriptionDrugEvents.medicarePartDMddFiles}  > </PrescriptionDrugEventsTable>)
+        prescriptionDrugEvents && prescriptionDrugEvents.medicarePartDMddFiles ?
+        (<PrescriptionDrugEventsTable prescriptionDrugEvents={prescriptionDrugEvents.medicarePartDMddFiles} />)
         :  (<div>No Prescription Drug Events Found</div>)
       }
     </>
-);
+  );
 }
 
 export default PrescriptionDrugEvents;
 
 
+// prescription-drug-events-table.tsx
+
 import React from 'react';
-
-
-
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
@@ -59,13 +45,22 @@ import Collapse from "@mui/material/Collapse";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
-interface PrescriptionDrugEventsProp {
-  prescriptionDrugEvents: any
+interface PrescriptionDrugEvent {
+  mdhFileId: string;
+  mdhSubmitterId: string;
+  mdhFileFromDate: string;
+  mdhFileThruDate: string;
+  createDate: string;
+  txnReportStatus: string;
+  resubmissionStatus: string;
 }
 
+interface PrescriptionDrugEventsProp {
+  prescriptionDrugEvents: PrescriptionDrugEvent[];
+}
 
-const  PrescriptionDrugEventsTable: React.FC<PrescriptionDrugEventsProp> = ({ prescriptionDrugEvents }) => {
-  console.log('In PrescriptionDrugEventsTable', 'prescrionDrugEvents=', prescriptionDrugEvents);
+const PrescriptionDrugEventsTable: React.FC<PrescriptionDrugEventsProp> = ({ prescriptionDrugEvents }) => {
+  console.log('In PrescriptionDrugEventsTable', 'prescriptionDrugEvents=', prescriptionDrugEvents);
   const [open, setOpen] = React.useState(false);
 
   const handleToggle = () => {
@@ -74,130 +69,63 @@ const  PrescriptionDrugEventsTable: React.FC<PrescriptionDrugEventsProp> = ({ pr
 
   return (
     <>
-    <TableContainer component={Paper}>
-      <Table aria-label="collapsible table">
-        <TableHead>
-          <TableRow>
-            <TableCell/>
-            <TableCell>File</TableCell>
-            <TableCell align="right">Submitter</TableCell>
-            <TableCell align="right">From</TableCell>
-            <TableCell align="right">Through</TableCell>
-            <TableCell align="right">Created</TableCell>
-            <TableCell align="right">Transaction report status</TableCell>
-            <TableCell align="right">Resubmit status</TableCell>
-            <TableCell align="right">Response</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {prescriptionDrugEvents.map((row: any) => (
-            <React.Fragment key={row.mdhFileId}>
-              <TableRow sx={{'& > *': {borderBottom: 'unset'}}}>
-                <TableCell>
-                  <IconButton
-                    aria-label="expand row"
-                    size="small"
-                    onClick={handleToggle}
-                  >
-                    {open ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon/>}
-                  </IconButton>
-                </TableCell>
-                <TableCell component="th" scope="row">
-                  {row.mdhFileId}
-                </TableCell>
-                <TableCell align="right">{row.mdhSubmitterId}</TableCell>
-                <TableCell align="right">{row.mdhFileFromDate}</TableCell>
-                <TableCell align="right">{row.mdhFileThruDate}</TableCell>
-                <TableCell align="right">{row.createDate}</TableCell>
-                <TableCell align="right">{row.txnReportStatus}</TableCell>
-                <TableCell align="right">{row.resubmissionStatus}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell style={{paddingBottom: 0, paddingTop: 0}} colSpan={6}>
-                  <Collapse in={open} timeout="auto" unmountOnExit>
-                    <Box sx={{margin: 1}}>
-                      <Typography variant="h6" gutterBottom component="div">
-                        Details
-                      </Typography>
-                      {/*<PrescriptionDrugEventDetails mdhFileId={row.mdhFileId} submitterId={row.mdhSubmitterId} tenantId={params.tenantId} sid={params.sid}/>*/}
-                    </Box>
-                  </Collapse>
-                </TableCell>
-              </TableRow>
-            </React.Fragment>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+      <TableContainer component={Paper}>
+        <Table aria-label="collapsible table">
+          <TableHead>
+            <TableRow>
+              <TableCell/>
+              <TableCell>File</TableCell>
+              <TableCell align="right">Submitter</TableCell>
+              <TableCell align="right">From</TableCell>
+              <TableCell align="right">Through</TableCell>
+              <TableCell align="right">Created</TableCell>
+              <TableCell align="right">Transaction report status</TableCell>
+              <TableCell align="right">Resubmit status</TableCell>
+              <TableCell align="right">Response</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {prescriptionDrugEvents.map((row) => (
+              <React.Fragment key={row.mdhFileId}>
+                <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
+                  <TableCell>
+                    <IconButton
+                      aria-label="expand row"
+                      size="small"
+                      onClick={handleToggle}
+                    >
+                      {open ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon/>}
+                    </IconButton>
+                  </TableCell>
+                  <TableCell component="th" scope="row">
+                    {row.mdhFileId}
+                  </TableCell>
+                  <TableCell align="right">{row.mdhSubmitterId}</TableCell>
+                  <TableCell align="right">{row.mdhFileFromDate}</TableCell>
+                  <TableCell align="right">{row.mdhFileThruDate}</TableCell>
+                  <TableCell align="right">{row.createDate}</TableCell>
+                  <TableCell align="right">{row.txnReportStatus}</TableCell>
+                  <TableCell align="right">{row.resubmissionStatus}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+                    <Collapse in={open} timeout="auto" unmountOnExit>
+                      <Box sx={{ margin: 1 }}>
+                        <Typography variant="h6" gutterBottom component="div">
+                          Details
+                        </Typography>
+                        {/*<PrescriptionDrugEventDetails mdhFileId={row.mdhFileId} submitterId={row.mdhSubmitterId} tenantId={params.tenantId} sid={params.sid}/>*/}
+                      </Box>
+                    </Collapse>
+                  </TableCell>
+                </TableRow>
+              </React.Fragment>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </>
   );
-
 }
 
 export default PrescriptionDrugEventsTable;
-
-
-========
-
-
-// prescription-drug-events.tsx
-
-import React, { useEffect, useState } from 'react';
-import { usePrescriptionDrugEvents } from '../usePrescriptionDrugEvent/use-prescription-drug-events';
-import { PrescriptionDrugEventProps } from './prescription-drug-events.types';
-import PrescriptionDrugEventsTable from "./components/prescription-drug-events-table";
-
-export function PrescriptionDrugEvents(params: PrescriptionDrugEventProps) {
-  console.log('In PrescriptionDrugEvents', 'params=', params);
-  const [prescriptionDrugEvents, setPrescriptionDrugEvents] = useState<any>(null);
-
-  useEffect(() => {
-    setPrescriptionDrugEvents(usePrescriptionDrugEvents(params));
-    console.log('In PrescriptionDrugEvents: in useEffect ', prescriptionDrugEvents);
-  }, [params]);
-
-  return (
-    <>
-      {
-        prescriptionDrugEvents && prescriptionDrugEvents.medicarePartDMddFiles ?
-        (<PrescriptionDrugEventsTable prescriptionDrugEvents={prescriptionDrugEvents.medicarePartDMddFiles} />)
-        :  (<div>No Prescription Drug Events Found</div>)
-      }
-    </>
-  );
-}
-
-export default PrescriptionDrugEvents;
-
-
-===
-
-// prescription-drug-events.tsx
-
-import React, { useEffect, useState } from 'react';
-import { usePrescriptionDrugEvents } from '../usePrescriptionDrugEvent/use-prescription-drug-events';
-import { PrescriptionDrugEventProps } from './prescription-drug-events.types';
-import PrescriptionDrugEventsTable from "./components/prescription-drug-events-table";
-
-export function PrescriptionDrugEvents(params: PrescriptionDrugEventProps) {
-  console.log('In PrescriptionDrugEvents', 'params=', params);
-  const [prescriptionDrugEvents, setPrescriptionDrugEvents] = useState<any>(null);
-
-  useEffect(() => {
-    setPrescriptionDrugEvents(usePrescriptionDrugEvents(params));
-    console.log('In PrescriptionDrugEvents: in useEffect ', prescriptionDrugEvents);
-  }, [params]);
-
-  return (
-    <>
-      {
-        prescriptionDrugEvents && prescriptionDrugEvents.medicarePartDMddFiles ?
-        (<PrescriptionDrugEventsTable prescriptionDrugEvents={prescriptionDrugEvents.medicarePartDMddFiles} />)
-        :  (<div>No Prescription Drug Events Found</div>)
-      }
-    </>
-  );
-}
-
-export default PrescriptionDrugEvents;
-
