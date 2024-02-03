@@ -135,3 +135,69 @@ const  PrescriptionDrugEventsTable: React.FC<PrescriptionDrugEventsProp> = ({ pr
 }
 
 export default PrescriptionDrugEventsTable;
+
+
+========
+
+
+// prescription-drug-events.tsx
+
+import React, { useEffect, useState } from 'react';
+import { usePrescriptionDrugEvents } from '../usePrescriptionDrugEvent/use-prescription-drug-events';
+import { PrescriptionDrugEventProps } from './prescription-drug-events.types';
+import PrescriptionDrugEventsTable from "./components/prescription-drug-events-table";
+
+export function PrescriptionDrugEvents(params: PrescriptionDrugEventProps) {
+  console.log('In PrescriptionDrugEvents', 'params=', params);
+  const [prescriptionDrugEvents, setPrescriptionDrugEvents] = useState<any>(null);
+
+  useEffect(() => {
+    setPrescriptionDrugEvents(usePrescriptionDrugEvents(params));
+    console.log('In PrescriptionDrugEvents: in useEffect ', prescriptionDrugEvents);
+  }, [params]);
+
+  return (
+    <>
+      {
+        prescriptionDrugEvents && prescriptionDrugEvents.medicarePartDMddFiles ?
+        (<PrescriptionDrugEventsTable prescriptionDrugEvents={prescriptionDrugEvents.medicarePartDMddFiles} />)
+        :  (<div>No Prescription Drug Events Found</div>)
+      }
+    </>
+  );
+}
+
+export default PrescriptionDrugEvents;
+
+
+===
+
+// prescription-drug-events.tsx
+
+import React, { useEffect, useState } from 'react';
+import { usePrescriptionDrugEvents } from '../usePrescriptionDrugEvent/use-prescription-drug-events';
+import { PrescriptionDrugEventProps } from './prescription-drug-events.types';
+import PrescriptionDrugEventsTable from "./components/prescription-drug-events-table";
+
+export function PrescriptionDrugEvents(params: PrescriptionDrugEventProps) {
+  console.log('In PrescriptionDrugEvents', 'params=', params);
+  const [prescriptionDrugEvents, setPrescriptionDrugEvents] = useState<any>(null);
+
+  useEffect(() => {
+    setPrescriptionDrugEvents(usePrescriptionDrugEvents(params));
+    console.log('In PrescriptionDrugEvents: in useEffect ', prescriptionDrugEvents);
+  }, [params]);
+
+  return (
+    <>
+      {
+        prescriptionDrugEvents && prescriptionDrugEvents.medicarePartDMddFiles ?
+        (<PrescriptionDrugEventsTable prescriptionDrugEvents={prescriptionDrugEvents.medicarePartDMddFiles} />)
+        :  (<div>No Prescription Drug Events Found</div>)
+      }
+    </>
+  );
+}
+
+export default PrescriptionDrugEvents;
+
