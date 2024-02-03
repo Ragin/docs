@@ -1,4 +1,5 @@
 prescription-drug-events.tsx
+===========================
 import React, {useEffect, useState} from 'react';
 
 import {
@@ -32,6 +33,9 @@ export function PrescriptionDrugEvents(params: PrescriptionDrugEventProps) {
 export default PrescriptionDrugEvents;
 
 ==========
+
+
+
 import React, {useState} from 'react';
 import {getData} from "../../model/service/claimService";
 import {
@@ -114,10 +118,12 @@ export function usePrescriptionDrugEvents(request: usePrescrionDrugEventsProps) 
   };
 }
 
+
+
 export function usePrescriptionDrugEventDetails(request: usePrescrionDrugEventDetailsProps) : usePrescrionDrugEventDetailsReturn {
 
 
-  const [prescriptionDrugEventDetails, setPrescriptionDrugEventDetails] = React.useState({});
+  const [prescriptionDrugEventDetails, setPrescriptionDrugEventDetails] = React.useState<PrescriptionDrugEventDetailType>({});
 
   React.useEffect(() => {
     console.log('In usePrescriptionDrugEvent: in useEffect');
@@ -130,9 +136,134 @@ export function usePrescriptionDrugEventDetails(request: usePrescrionDrugEventDe
       const response = await getData(`/get-mdd-pde?mdhFileId=${request.mdhFileId}&submitterId=${request.submitterId}&tenantId=${request.tenantId}`,
         {sid: request.sid, 'auth-type': undefined});
       console.log('In usePrescriptionDrugEvent: messages', {...response.data});
-      setPrescriptionDrugEventDetails({...response.data});
+      // setPrescriptionDrugEventDetails({...response.data});
+      // temporary hard coded data
+      setPrescriptionDrugEventDetails({
+        "rxClaimNumber": "223391218959000",
+        "claimSeqNbr": "999",
+        "memberId": "PDEDLTCRM1        ",
+        "carrierId": "PDEDLTCR ",
+        "accountId": "PDEDLTCRA1     ",
+        "groupId": "PDEDLTCRG1     ",
+        "mdhFileId": "PD22339011",
+        "submitterId": "A9823",
+        "pbpId": "989",
+        "contractId": "A9823",
+        "message": "successful",
+        "mddDetailRecord": {
+          "drugCoverageStsCd": "C",
+          "adjustCd": " ",
+          "cmsAuditFlag": null,
+          "md2PartDModelInd": null,
+          "catastrophicCovCd": null,
+          "sbmOriginCd": "0",
+          "nonStandardCd": "P",
+          "pricingExceptionCd": "O",
+          "hicn": "PDEDLTCRM1",
+          "tier": "1",
+          "ingredientCost": "1.70",
+          "dispFee": "3.50",
+          "salesTax": "10.00",
+          "pdePatPay": "15.20",
+          "estRebateAtPos": 0,
+          "gdcaAmount": "0.00",
+          "gdcbAmount": "15.20",
+          "otherTroopAmt": "0.00",
+          "licsAmt": "0.00",
+          "plroAmt": "0.00",
+          "cppAmt": "0.00",
+          "nppAmt": "0.00",
+          "vaccineAdminFee": 0,
+          "sbmPrescriberQl": null,
+          "sbmPrescriberId": null,
+          "cmsTransReportStatus": "A",
+          "transReportStsDate": 1221205,
+          "mddEditCount": 0,
+          "edit01": null,
+          "edit02": null,
+          "edit03": null,
+          "edit04": null,
+          "edit05": null,
+          "edit06": null,
+          "edit07": null,
+          "edit08": null,
+          "edit09": null,
+          "edit10": null,
+          "exclusionRsnCd": null,
+          "resubCmstype": null,
+          "resubmissionSts": null,
+          "rsubmissionDate": null,
+          "resubTime": null,
+          "resubUser": null,
+          "reporocFileId": null,
+          "reporocSubId": null,
+          "reporocDate": null,
+          "reporocTime": null,
+          "reporocUser": null,
+          "brandGenCd": null,
+          "formularyCd": null,
+          "beginBenefitPhase": null,
+          "endBenefitPhase": null,
+          "dateOrigClaimRcvd": null,
+          "paidDate": null,
+          "totlGrossDrgCstAcc": null,
+          "othTroopamtInd": null,
+          "trueOopAccum": null,
+          "reportedGapDiscount": null,
+          "subDos": null,
+          "sbmQtyDisp": null,
+          "sbmDysSupply": null,
+          "sbmPscCd": null,
+          "sbmRxNumber": null,
+          "sbmFillNumber": null,
+          "adjBeginTimeStamp": null,
+          "nonPecosNpiInd": null,
+          "adjRsnCdQl": null,
+          "adjRsnCd": null,
+          "sbmSrvProvIdQl": null,
+          "sbmSrvProvId": null,
+          "sbmPharServiceType": null,
+          "patientResidence": null,
+          "scc": null,
+          "sbmCmpdCd": null,
+          "sbmProductId": null
+        },
+        "mddResponseRecord": {
+          "calcGapDiscount": 0.00,
+          "pbpOfRecord": null,
+          "altSrvProvIdQl": null,
+          "altSrvProvId": null,
+          "origSbmContract": null,
+          "contractOfRecord": null,
+          "correctedHicn": null,
+          "patientGenderCd": "1",
+          "dob": 0,
+          "mddEditCount": 0,
+          "edit01": null,
+          "edit02": null,
+          "edit03": null,
+          "edit04": null,
+          "edit05": null,
+          "edit06": null,
+          "edit07": null,
+          "edit08": null,
+          "edit09": null,
+          "edit10": null,
+          "exclusionRsnCd": null,
+          "resubmissionSts": "N",
+          "rsubmissionDate": 0,
+          "resubTime": 0,
+          "resubUser": null,
+          "reporocFileId": null,
+          "reporocSubId": null,
+          "reporocDate": 0,
+          "reporocTime": "0",
+          "reporocUser": null
+        }
+      })
       // setLoading(false);
-      return response.data;
+     // return response.data;
+      return prescriptionDrugEventDetails;
     } catch (error) {
       console.error('In usePrescriptionDrugEvent: Error fetching data:', error);
       //  setLoading(false);
@@ -147,6 +278,7 @@ export function usePrescriptionDrugEventDetails(request: usePrescrionDrugEventDe
 }
 
 export default usePrescriptionDrugEvents;
+
 
 ====
 import React from 'react';
@@ -384,131 +516,175 @@ export function PrescriptionDrugEventDetails(params: usePrescrionDrugEventDetail
 }
 ====
 
-detail response type
-interface MddDetailRecord {
-    drugCoverageStsCd: string;
-    adjustCd: string | null;
-    cmsAuditFlag: any;
-    md2PartDModelInd: any;
-    catastrophicCovCd: any;
-    sbmOriginCd: string;
-    nonStandardCd: string;
-    pricingExceptionCd: string;
-    hicn: string;
-    tier: string;
-    ingredientCost: string;
-    dispFee: string;
-    salesTax: string;
-    pdePatPay: string;
-    estRebateAtPos: number;
-    gdcaAmount: string;
-    gdcbAmount: string;
-    otherTroopAmt: string;
-    licsAmt: string;
-    plroAmt: string;
-    cppAmt: string;
-    nppAmt: string;
-    vaccineAdminFee: number;
-    sbmPrescriberQl: any;
-    sbmPrescriberId: any;
-    cmsTransReportStatus: string;
-    transReportStsDate: number;
-    mddEditCount: number;
-    edit01: any;
-    edit02: any;
-    edit03: any;
-    edit04: any;
-    edit05: any;
-    edit06: any;
-    edit07: any;
-    edit08: any;
-    edit09: any;
-    edit10: any;
-    exclusionRsnCd: any;
-    resubCmstype: any;
-    resubmissionSts: any;
-    rsubmissionDate: any;
-    resubTime: any;
-    resubUser: any;
-    reporocFileId: any;
-    reporocSubId: any;
-    reporocDate: any;
-    reporocTime: any;
-    reporocUser: any;
-    brandGenCd: any;
-    formularyCd: any;
-    beginBenefitPhase: any;
-    endBenefitPhase: any;
-    dateOrigClaimRcvd: any;
-    paidDate: any;
-    totlGrossDrgCstAcc: any;
-    othTroopamtInd: any;
-    trueOopAccum: any;
-    reportedGapDiscount: any;
-    subDos: any;
-    sbmQtyDisp: any;
-    sbmDysSupply: any;
-    sbmPscCd: any;
-    sbmRxNumber: any;
-    sbmFillNumber: any;
-    adjBeginTimeStamp: any;
-    nonPecosNpiInd: any;
-    adjRsnCdQl: any;
-    adjRsnCd: any;
-    sbmSrvProvIdQl: any;
-    sbmSrvProvId: any;
-    sbmPharServiceType: any;
-    patientResidence: any;
-    scc: any;
-    sbmCmpdCd: any;
-    sbmProductId: any;
+export interface usePrescrionDrugEventsProps {
+  rxClaimNbr: number;
+  rxSeq: number;
+  tenantId: string;
+  sid: string;
+  authType: string;
+  expanded: boolean;
 }
 
-interface MddResponseRecord {
-    calcGapDiscount: number;
-    pbpOfRecord: any;
-    altSrvProvIdQl: any;
-    altSrvProvId: any;
-    origSbmContract: any;
-    contractOfRecord: any;
-    correctedHicn: any;
-    patientGenderCd: string;
-    dob: number;
-    mddEditCount: number;
-    edit01: any;
-    edit02: any;
-    edit03: any;
-    edit04: any;
-    edit05: any;
-    edit06: any;
-    edit07: any;
-    edit08: any;
-    edit09: any;
-    edit10: any;
-    exclusionRsnCd: any;
-    resubmissionSts: string;
-    rsubmissionDate: number;
-    resubTime: number;
-    resubUser: any;
-    reporocFileId: any;
-    reporocSubId: any;
-    reporocDate: number;
-    reporocTime: string;
-    reporocUser: any;
+export interface PrescriptionDrugEventResponseType {
+  rxClaimNbr: number,
+  rxSeqNbr: number,
+  message: string,
+  medicarePartDMddFiles: any[]
 }
 
-interface ApiResponse {
-    rxClaimNumber: string;
-    claimSeqNbr: string;
-    memberId: string;
-    carrierId: string;
-    accountId: string;
-    groupId: string;
-    mdhFileId: string;
-    submitterId: string;
-    pbpId: string;
-    contractId: string;
-    message: string;
-    mddDetailRecord: MddDetailRecord;
-    mddResponseRecord: MddResponseRecord;
+export interface PrescriptionDrugEventType {
+  mdhFileId: number,
+  mdhSubmitterId: number,
+  mdhFileFromDate: string,
+  mdhFileThruDate: string,
+  createDate: string,
+  txnReportStatus: string | null,
+  resubmissionStatus: string| null,
 }
+
+
+export interface usePrescrionDrugEventsReturn {
+  prescriptionDrugEvents: any;
+}
+
+export interface usePrescrionDrugEventDetailsProps {
+  mdhFileId: string;
+  submitterId: string;
+  tenantId: string;
+  sid: string;
+  authType: string;
+}
+
+export interface usePrescrionDrugEventDetailsReturn {
+  prescriptionDrugEventDetails: any;
+}
+
+
+export interface MddDetailRecord {
+  drugCoverageStsCd: string;
+  adjustCd: string | null;
+  cmsAuditFlag: any;
+  md2PartDModelInd: any;
+  catastrophicCovCd: any;
+  sbmOriginCd: string;
+  nonStandardCd: string;
+  pricingExceptionCd: string;
+  hicn: string;
+  tier: string;
+  ingredientCost: string;
+  dispFee: string;
+  salesTax: string;
+  pdePatPay: string;
+  estRebateAtPos: number;
+  gdcaAmount: string;
+  gdcbAmount: string;
+  otherTroopAmt: string;
+  licsAmt: string;
+  plroAmt: string;
+  cppAmt: string;
+  nppAmt: string;
+  vaccineAdminFee: number;
+  sbmPrescriberQl: any;
+  sbmPrescriberId: any;
+  cmsTransReportStatus: string;
+  transReportStsDate: number;
+  mddEditCount: number;
+  edit01: any;
+  edit02: any;
+  edit03: any;
+  edit04: any;
+  edit05: any;
+  edit06: any;
+  edit07: any;
+  edit08: any;
+  edit09: any;
+  edit10: any;
+  exclusionRsnCd: any;
+  resubCmstype: any;
+  resubmissionSts: any;
+  rsubmissionDate: any;
+  resubTime: any;
+  resubUser: any;
+  reporocFileId: any;
+  reporocSubId: any;
+  reporocDate: any;
+  reporocTime: any;
+  reporocUser: any;
+  brandGenCd: any;
+  formularyCd: any;
+  beginBenefitPhase: any;
+  endBenefitPhase: any;
+  dateOrigClaimRcvd: any;
+  paidDate: any;
+  totlGrossDrgCstAcc: any;
+  othTroopamtInd: any;
+  trueOopAccum: any;
+  reportedGapDiscount: any;
+  subDos: any;
+  sbmQtyDisp: any;
+  sbmDysSupply: any;
+  sbmPscCd: any;
+  sbmRxNumber: any;
+  sbmFillNumber: any;
+  adjBeginTimeStamp: any;
+  nonPecosNpiInd: any;
+  adjRsnCdQl: any;
+  adjRsnCd: any;
+  sbmSrvProvIdQl: any;
+  sbmSrvProvId: any;
+  sbmPharServiceType: any;
+  patientResidence: any;
+  scc: any;
+  sbmCmpdCd: any;
+  sbmProductId: any;
+}
+
+export interface MddResponseRecord {
+  calcGapDiscount: number;
+  pbpOfRecord: any;
+  altSrvProvIdQl: any;
+  altSrvProvId: any;
+  origSbmContract: any;
+  contractOfRecord: any;
+  correctedHicn: any;
+  patientGenderCd: string;
+  dob: number;
+  mddEditCount: number;
+  edit01: any;
+  edit02: any;
+  edit03: any;
+  edit04: any;
+  edit05: any;
+  edit06: any;
+  edit07: any;
+  edit08: any;
+  edit09: any;
+  edit10: any;
+  exclusionRsnCd: any;
+  resubmissionSts: string;
+  rsubmissionDate: number;
+  resubTime: number;
+  resubUser: any;
+  reporocFileId: any;
+  reporocSubId: any;
+  reporocDate: number;
+  reporocTime: string;
+  reporocUser: any;
+}
+
+export interface PrescriptionDrugEventDetailType {
+  rxClaimNumber: string;
+  claimSeqNbr: string;
+  memberId: string;
+  carrierId: string;
+  accountId: string;
+  groupId: string;
+  mdhFileId: string;
+  submitterId: string;
+  pbpId: string;
+  contractId: string;
+  message: string;
+  mddDetailRecord: MddDetailRecord;
+  mddResponseRecord: MddResponseRecord;
+}
+
