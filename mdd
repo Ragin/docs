@@ -1,0 +1,510 @@
+prescription-drug-events.tsx
+import React, {useEffect, useState} from 'react';
+
+import {
+  usePrescriptionDrugEvents
+} from '../usePrescriptionDrugEvent/use-prescription-drug-events';
+
+import {PrescriptionDrugEventProps} from './prescription-drug-events.types';
+
+import {PrescriptionDrugEventsTable} from "./components/prescription-drug-events-table";
+
+export function PrescriptionDrugEvents(params: PrescriptionDrugEventProps) {
+  console.log('In PrescriptionDrugEvents', 'params=', params);
+  const {prescrionDrugEvents1} = usePrescriptionDrugEvents(params);
+  const [prescrionDrugEvents, setprescrionDrugEvents] = useState({});
+  console.log('In PrescriptionDrugEvents', 'prescrionDrugEvents=', prescrionDrugEvents1);
+
+
+
+  useEffect(() => {
+      console.log('In PrescriptionDrugEvents: in useEffect ', prescrionDrugEvents1);
+      setprescrionDrugEvents(prescrionDrugEvents1);
+  }, [params, prescrionDrugEvents1]);
+  return (
+    <>
+      {prescrionDrugEvents && prescrionDrugEvents?.medicarePartDMddFiles === null && <div>No Prescription Drug Events Found</div>}
+      {prescrionDrugEvents && prescrionDrugEvents?.medicarePartDMddFiles && <PrescriptionDrugEventsTable  {...prescrionDrugEvents}  > </PrescriptionDrugEventsTable>}
+    </>
+);
+}
+
+export default PrescriptionDrugEvents;
+
+==========
+import React, {useState} from 'react';
+import {getData} from "../../model/service/claimService";
+import {
+  PrescriptionDrugEventResponseType,
+  usePrescrionDrugEventDetailsProps, usePrescrionDrugEventDetailsReturn,
+  usePrescrionDrugEventsProps,
+  usePrescrionDrugEventsReturn
+} from "./use-prescription-drug-events.types";
+
+export function usePrescriptionDrugEvents(request: usePrescrionDrugEventsProps) : any {
+  console.log('In usePrescriptionDrugEvents', 'request=', request);
+
+  const [prescriptionDrugEvents, setPrescriptionDrugEvents] = React.useState<PrescriptionDrugEventResponseType>({ rxClaimNbr: 0, rxSeqNbr: 0, message: '', medicarePartDMddFiles: []});
+
+  React.useEffect(() => {
+    console.log('In usePrescriptionDrugEvent: in useEffect');
+    fetchPharmDSumaryData().then(r => console.log('r=', r));
+  }, []);
+
+  const fetchPharmDSumaryData = async () => {
+    try {
+      console.log('In usePrescriptionDrugEvent: request=', {rxClaimNbr: request.rxClaimNbr, rxSeq: request.rxSeq,  tenantId:  request.tenantId});
+      let response:any = {};
+      try {
+        response = await getData(`/get-cms-pde?rxClaimNbr=${request.rxClaimNbr}&rxSeqNbr=${request.rxSeq}&tenantId=${request.tenantId}`,
+          {sid: request.sid, 'auth-type': undefined});
+      } catch (e) {
+        console.log('In usePrescriptionDrugEvent: Error fetching data:', e);
+      }
+      console.log('In usePrescriptionDrugEvent: messages', {...response});
+      // setPrescriptionDrugEvents({...response.data});
+      // temporary hard coded data
+      setPrescriptionDrugEvents({
+        'rxClaimNbr': 233062399615000,
+        "rxSeqNbr": 999,
+        "message": "successful",
+        "medicarePartDMddFiles": [
+          {
+            "mdhFileId": "PD23306302",
+            "mdhSubmitterId": "KSID",
+            "mdhFileFromDate": "20230101",
+            "mdhFileThruDate": "20231231",
+            "createDate": "20231102",
+            "txnReportStatus": null,
+            "resubmissionStatus": null
+          },
+          {
+            "mdhFileId": "PD23306321",
+            "mdhSubmitterId": "KSID",
+            "mdhFileFromDate": "20230101",
+            "mdhFileThruDate": "20231231",
+            "createDate": "20231102",
+            "txnReportStatus": null,
+            "resubmissionStatus": null
+          },
+          {
+            "mdhFileId": "PD23307031",
+            "mdhSubmitterId": "KSID",
+            "mdhFileFromDate": "20230101",
+            "mdhFileThruDate": "20231231",
+            "createDate": "20231103",
+            "txnReportStatus": null,
+            "resubmissionStatus": null
+          }
+        ]
+      });
+      // setLoading(false);
+      // return response.data;
+      return prescriptionDrugEvents;
+    } catch (error) {
+      console.error('In usePrescriptionDrugEvent: Error fetching data:', error);
+      //  setLoading(false);
+    }
+    return;
+  };
+
+  console.log('In usePrescriptionDrugEvent: messages=', prescriptionDrugEvents);
+  return {
+    prescriptionDrugEvents
+  };
+}
+
+export function usePrescriptionDrugEventDetails(request: usePrescrionDrugEventDetailsProps) : usePrescrionDrugEventDetailsReturn {
+
+
+  const [prescriptionDrugEventDetails, setPrescriptionDrugEventDetails] = React.useState({});
+
+  React.useEffect(() => {
+    console.log('In usePrescriptionDrugEvent: in useEffect');
+    fetchPharmDSumaryData().then(r => console.log('r=', r));
+  }, []);
+
+  const fetchPharmDSumaryData = async () => {
+    try {
+      console.log('In usePrescriptionDrugEvent: request=', {mdhFileId: request.mdhFileId, submitterId: request.submitterId,  tenantId:  request.tenantId});
+      const response = await getData(`/get-mdd-pde?mdhFileId=${request.mdhFileId}&submitterId=${request.submitterId}&tenantId=${request.tenantId}`,
+        {sid: request.sid, 'auth-type': undefined});
+      console.log('In usePrescriptionDrugEvent: messages', {...response.data});
+      setPrescriptionDrugEventDetails({...response.data});
+      // setLoading(false);
+      return response.data;
+    } catch (error) {
+      console.error('In usePrescriptionDrugEvent: Error fetching data:', error);
+      //  setLoading(false);
+    }
+    return;
+  };
+
+  console.log('In usePrescriptionDrugEvent: messages=', setPrescriptionDrugEventDetails);
+  return {
+    prescriptionDrugEventDetails
+  };
+}
+
+export default usePrescriptionDrugEvents;
+
+====
+import React from 'react';
+
+
+
+import TableContainer from "@mui/material/TableContainer";
+import Paper from "@mui/material/Paper";
+import Table from "@mui/material/Table";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import TableCell from "@mui/material/TableCell";
+import TableBody from "@mui/material/TableBody";
+import IconButton from "@mui/material/IconButton";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import Collapse from "@mui/material/Collapse";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+
+export function PrescriptionDrugEventsTable(prescrionDrugEvents: any) {
+  console.log('In PrescriptionDrugEventsTable', 'prescrionDrugEvents=', prescrionDrugEvents);
+
+
+  function Row(props: { row: any}) {
+    const {row} = props;
+    console.log('In PrescriptionDrugEventsTable: Row', 'row=', row);
+    const [open, setOpen] = React.useState(false);
+
+    return (
+      <>
+      {row?.mdhFileId && (  <React.Fragment>
+        <TableRow sx={{'& > *': {borderBottom: 'unset'}}}>
+          <TableCell>
+            <IconButton
+              aria-label="expand row"
+              size="small"
+              onClick={() => setOpen(!open)}
+            >
+              {open ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon/>}
+            </IconButton>
+          </TableCell>
+          <TableCell component="th" scope="row">
+            {row.mdhFileId}
+          </TableCell>
+          <TableCell align="right">{row.mdhSubmitterId}</TableCell>
+          <TableCell align="right">{row.mdhFileFromDate}</TableCell>
+          <TableCell align="right">{row.mdhFileThruDate}</TableCell>
+          <TableCell align="right">{row.createDate}</TableCell>
+          <TableCell align="right">{row.txnReportStatus}</TableCell>
+          <TableCell align="right">{row.resubmissionStatus}</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell style={{paddingBottom: 0, paddingTop: 0}} colSpan={6}>
+            <Collapse in={open} timeout="auto" unmountOnExit>
+              <Box sx={{margin: 1}}>
+                <Typography variant="h6" gutterBottom component="div">
+                  Details
+                </Typography>
+                {/*<PrescriptionDrugEventDetails mdhFileId={row.mdhFileId} submitterId={row.mdhSubmitterId} tenantId={params.tenantId} sid={params.sid}/>*/}
+              </Box>
+            </Collapse>
+          </TableCell>
+        </TableRow>
+      </React.Fragment>)}
+      </>
+    );
+  }
+
+  return (
+    <>
+    {  prescrionDrugEvents && (<TableContainer component={Paper}>
+      <Table aria-label="collapsible table">
+        <TableHead>
+          <TableRow>
+            <TableCell/>
+            <TableCell>File</TableCell>
+            <TableCell align="right">Submitter</TableCell>
+            <TableCell align="right">From</TableCell>
+            <TableCell align="right">Through</TableCell>
+            <TableCell align="right">Created</TableCell>
+            <TableCell align="right">Transaction report status</TableCell>
+            <TableCell align="right">Resubmit status</TableCell>
+            <TableCell align="right">Response</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {prescrionDrugEvents && prescrionDrugEvents?.map((row: any) => (
+                <Row  row={row}/>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>)}
+    </>
+  );
+
+}
+
+export default PrescriptionDrugEventsTable;
+===
+import * as React from 'react';
+
+import SimpleLayoutComponent from "../../../claims-details/ClaimsDetails/components/simple-layout-compoent";
+import labels from "../../../common/labels.json";
+
+import {usePrescriptionDrugEventDetails} from "../../usePrescriptionDrugEvent/use-prescription-drug-events";
+import {usePrescrionDrugEventDetailsProps} from "../../usePrescriptionDrugEvent/use-prescription-drug-events.types";
+const prescrionDrugEventLayout =  [
+  {
+    heading: 'MDD Detail Record',
+    fields: [
+      "drugCoverageStsCd",
+      "adjustCd",
+      "cmsAuditFlag",
+      "md2PartDModelInd",
+      "catastrophicCovCd",
+      "sbmOriginCd",
+      "nonStandardCd",
+      "pricingExceptionCd",
+      "hicn",
+      "tier",
+      "ingredientCost",
+      "dispFee",
+      "salesTax",
+      "pdePatPay",
+      "estRebateAtPos",
+      "gdcaAmount",
+      "gdcbAmount",
+      "otherTroopAmt",
+      "licsAmt",
+      "plroAmt",
+      "cppAmt",
+      "nppAmt",
+      "vaccineAdminFee",
+      "sbmPrescriberQl",
+      "sbmPrescriberId",
+      "cmsTransReportStatus",
+      "transReportStsDate",
+      "mddEditCount",
+      "edit01",
+      "edit02",
+      "edit03",
+      "edit04",
+      "edit05",
+      "edit06",
+      "edit07",
+      "edit08",
+      "edit09",
+      "edit10",
+      "exclusionRsnCd",
+      "resubCmstype",
+      "resubmissionSts",
+      "rsubmissionDate",
+      "resubTime",
+      "resubUser",
+      "reporocFileId",
+      "reporocSubId",
+      "reporocDate",
+      "reporocTime",
+      "reporocUser",
+      "brandGenCd",
+      "formularyCd",
+      "beginBenefitPhase",
+      "endBenefitPhase",
+      "dateOrigClaimRcvd",
+      "paidDate",
+      "totlGrossDrgCstAcc",
+      "othTroopamtInd",
+      "trueOopAccum",
+      "reportedGapDiscount",
+      "subDos",
+      "sbmQtyDisp",
+      "sbmDysSupply",
+      "sbmPscCd",
+      "sbmRxNumber",
+      "sbmFillNumber",
+      "adjBeginTimeStamp",
+      "nonPecosNpiInd",
+      "adjRsnCdQl",
+      "adjRsnCd",
+      "sbmSrvProvIdQl",
+      "sbmSrvProvId",
+      "sbmPharServiceType",
+      "patientResidence",
+      "scc",
+      "sbmCmpdCd",
+      "sbmProductId"
+    ],
+  },
+  {
+    heading: 'Response',
+    fields: [
+      "calcGapDiscount",
+      "pbpOfRecord",
+      "altSrvProvIdQl",
+      "altSrvProvId",
+      "origSbmContract",
+      "contractOfRecord",
+      "correctedHicn",
+      "patientGenderCd",
+      "dob",
+      "mddEditCount",
+      "edit01",
+      "edit02",
+      "edit03",
+      "edit04",
+      "edit05",
+      "edit06",
+      "edit07",
+      "edit08",
+      "edit09",
+      "edit10",
+      "exclusionRsnCd",
+      "resubmissionSts",
+      "rsubmissionDate",
+      "resubTime",
+      "resubUser",
+      "reporocFileId",
+      "reporocSubId",
+      "reporocDate",
+      "reporocTime",
+      "reporocUser"
+    ]
+  }
+];
+export function PrescriptionDrugEventDetails(params: usePrescrionDrugEventDetailsProps) {
+  const {prescriptionDrugEventDetails} = usePrescriptionDrugEventDetails(params);
+
+  return (
+      <SimpleLayoutComponent
+        layout={prescrionDrugEventLayout}
+        data={prescriptionDrugEventDetails}
+        labels={labels}></SimpleLayoutComponent>
+  );
+}
+====
+
+detail response 
+{
+    "rxClaimNumber": "223391218959000",
+    "claimSeqNbr": "999",
+    "memberId": "PDEDLTCRM1        ",
+    "carrierId": "PDEDLTCR ",
+    "accountId": "PDEDLTCRA1     ",
+    "groupId": "PDEDLTCRG1     ",
+    "mdhFileId": "PD22339011",
+    "submitterId": "A9823",
+    "pbpId": "989",
+    "contractId": "A9823",
+    "message": "successful",
+    "mddDetailRecord": {
+        "drugCoverageStsCd": "C",
+        "adjustCd": " ",
+        "cmsAuditFlag": null,
+        "md2PartDModelInd": null,
+        "catastrophicCovCd": null,
+        "sbmOriginCd": "0",
+        "nonStandardCd": "P",
+        "pricingExceptionCd": "O",
+        "hicn": "PDEDLTCRM1",
+        "tier": "1",
+        "ingredientCost": "1.70",
+        "dispFee": "3.50",
+        "salesTax": "10.00",
+        "pdePatPay": "15.20",
+        "estRebateAtPos": 0,
+        "gdcaAmount": "0.00",
+        "gdcbAmount": "15.20",
+        "otherTroopAmt": "0.00",
+        "licsAmt": "0.00",
+        "plroAmt": "0.00",
+        "cppAmt": "0.00",
+        "nppAmt": "0.00",
+        "vaccineAdminFee": 0,
+        "sbmPrescriberQl": null,
+        "sbmPrescriberId": null,
+        "cmsTransReportStatus": "A",
+        "transReportStsDate": 1221205,
+        "mddEditCount": 0,
+        "edit01": null,
+        "edit02": null,
+        "edit03": null,
+        "edit04": null,
+        "edit05": null,
+        "edit06": null,
+        "edit07": null,
+        "edit08": null,
+        "edit09": null,
+        "edit10": null,
+        "exclusionRsnCd": null,
+        "resubCmstype": null,
+        "resubmissionSts": null,
+        "rsubmissionDate": null,
+        "resubTime": null,
+        "resubUser": null,
+        "reporocFileId": null,
+        "reporocSubId": null,
+        "reporocDate": null,
+        "reporocTime": null,
+        "reporocUser": null,
+        "brandGenCd": null,
+        "formularyCd": null,
+        "beginBenefitPhase": null,
+        "endBenefitPhase": null,
+        "dateOrigClaimRcvd": null,
+        "paidDate": null,
+        "totlGrossDrgCstAcc": null,
+        "othTroopamtInd": null,
+        "trueOopAccum": null,
+        "reportedGapDiscount": null,
+        "subDos": null,
+        "sbmQtyDisp": null,
+        "sbmDysSupply": null,
+        "sbmPscCd": null,
+        "sbmRxNumber": null,
+        "sbmFillNumber": null,
+        "adjBeginTimeStamp": null,
+        "nonPecosNpiInd": null,
+        "adjRsnCdQl": null,
+        "adjRsnCd": null,
+        "sbmSrvProvIdQl": null,
+        "sbmSrvProvId": null,
+        "sbmPharServiceType": null,
+        "patientResidence": null,
+        "scc": null,
+        "sbmCmpdCd": null,
+        "sbmProductId": null
+    },
+    "mddResponseRecord": {
+        "calcGapDiscount": 0.00,
+        "pbpOfRecord": null,
+        "altSrvProvIdQl": null,
+        "altSrvProvId": null,
+        "origSbmContract": null,
+        "contractOfRecord": null,
+        "correctedHicn": null,
+        "patientGenderCd": "1",
+        "dob": 0,
+        "mddEditCount": 0,
+        "edit01": null,
+        "edit02": null,
+        "edit03": null,
+        "edit04": null,
+        "edit05": null,
+        "edit06": null,
+        "edit07": null,
+        "edit08": null,
+        "edit09": null,
+        "edit10": null,
+        "exclusionRsnCd": null,
+        "resubmissionSts": "N",
+        "rsubmissionDate": 0,
+        "resubTime": 0,
+        "resubUser": null,
+        "reporocFileId": null,
+        "reporocSubId": null,
+        "reporocDate": 0,
+        "reporocTime": "0",
+        "reporocUser": null
+    }
+}
