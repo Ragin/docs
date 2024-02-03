@@ -787,4 +787,48 @@ export function PrescriptionDrugEvents(params: PrescriptionDrugEventProps) {
 
 export default PrescriptionDrugEvents;
 
+============
+import React, { useEffect, useState } from 'react';
+import { getData } from "../../model/service/claimService";
+import {
+  PrescriptionDrugEventResponseType,
+  usePrescrionDrugEventsProps,
+} from "./use-prescription-drug-events.types";
+
+export function usePrescriptionDrugEvents(request: usePrescrionDrugEventsProps) : any {
+  console.log('In usePrescriptionDrugEvents', 'request=', request);
+
+  const [prescriptionDrugEvents, setPrescriptionDrugEvents] = useState<PrescriptionDrugEventResponseType>({ rxClaimNbr: 0, rxSeqNbr: 0, message: '', medicarePartDMddFiles: []});
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        console.log('In usePrescriptionDrugEvent: request=', {rxClaimNbr: request.rxClaimNbr, rxSeq: request.rxSeq,  tenantId:  request.tenantId});
+        const response = await getData(`/get-cms-pde?rxClaimNbr=${request.rxClaimNbr}&rxSeqNbr=${request.rxSeq}&tenantId=${request.tenantId}`,
+          {sid: request.sid, 'auth-type': undefined});
+        console.log('In usePrescriptionDrugEvent: messages', response.data);
+        setPrescriptionDrugEvents(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('In usePrescriptionDrugEvent: Error fetching data:', error);
+        setPrescriptionDrugEvents({
+          'rxClaimNbr': 233062399615000,
+          "rxSeqNbr": 999,
+          "message": "successful",
+          "medicarePartDMddFiles": []
+        });
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, [request]);
+
+  console.log('In usePrescriptionDrugEvent: messages=', prescriptionDrugEvents);
+  return {
+    prescriptionDrugEvents,
+    loading
+  };
+}
 
