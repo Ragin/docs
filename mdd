@@ -832,3 +832,51 @@ export function usePrescriptionDrugEvents(request: usePrescrionDrugEventsProps) 
   };
 }
 
+
+====
+
+ File                Submitter    From      Thru        Create     Txn Report Resubmit    
+   PD22154011  YASH1       6/03/22   6/03/22   6/03/22              
+
+
+TO DISPlay in detail
+
+                                                                             
+RxClaim# 221533814768000   1       Member  SADKMED                            
+Carrier  SADK         Account  SADKACCT            Group  SADKGRP             
+File  PD22154011  Submitter ID  YASH1   PBP  001  Contract  A0707             
+                                                                             
+Drug Coverage Status Code       C      Non-Standard Code             P        
+Adj/Del Code         CMS Audit         Pricing Exception Code        O        
+Catastrophic Coverage Code             Original HICN     SADKMED120821        
+Prescription Origin Code        0      Tier  7  Part D Model Indicator  07    
+Cost              100.00  GDCA Amount          .00  PLRO Amount          .00  
+Fee                 3.90  GDCB Amount       103.90  CPP Amount           .00  
+Tax                  .00  Other TrOOP          .00  NPP Amount         83.90  
+Patient Pay        20.00  LICS Amount          .00  Vac Admin            .00  
+POS Rebates          .00    Prescriber:  Qualifier     ID                     
+Transaction Report: Status                           Date                     
+Edit: Count         Code                                                      
+Exclusion Reason Code                                    Delete Request N     
+Resubmission: Status             User                     Date                
+Reprocessed:  File               Submitter ID             Date               +
+
+
+
+
+RCMDD017   ENTER                 RxCLAIM (QA2)                         1/10/24
+SADK                     Medicare Part D PDE Response                 13:15:25
+                                                                             
+RxClaim# 221533814768000   1       Member  SADKMED                            
+Carrier  SADK         Account  SADKACCT            Group  SADKGRP             
+File  PD22154011  Submitter ID  YASH1   PBP  001  Contract  A0707             
+                                                                             
+CMS Calc Gap Discount            .00     CMS Calc Mfg Discount           .00  
+PBP of Record                            App Disc % Mfg Drg                   
+Alt Serv Prov ID Qual                    App Disc % Mfg Drg LIS               
+Alt Serv Prov ID                                                              
+Org Submitting Contract                                                       
+P2P Contract of Record                                                        
+Corrected HICN                                                                
+Patient Gender          M                                                     
+Date of Birth                                                  
