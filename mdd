@@ -1091,3 +1091,29 @@ const prescriptionDetailLayout =  [
   "mddResponseRecord.dob": "Date of Birth"
 }
 
+
+====
+
+ <TableContainer component={Paper}>
+        <Table aria-label="collapsible table">
+          <TableHead>
+            <TableRow>
+              <TableCell/>
+              <TableCell>File</TableCell>
+              <TableCell align="right">Submitter</TableCell>
+              <TableCell align="right">From</TableCell>
+              <TableCell align="right">Through</TableCell>
+              <TableCell align="right">Created</TableCell>
+              <TableCell align="right">Transaction report status</TableCell>
+              <TableCell align="right">Resubmit status</TableCell>
+              <TableCell align="right">Response</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {prescriptionDrugEvents.map((row) => (
+              <Row key={row.mdhFileId}  row={row} detaiProps={getDetaiProps(row)}/>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
