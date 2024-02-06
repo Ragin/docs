@@ -1,0 +1,30 @@
+import React, { useState } from 'react';
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Link from '@mui/material/Link';
+import Typography from '@mui/material/Typography';
+
+function DynamicBreadcrumbs() {
+  const [breadcrumbs, setBreadcrumbs] = useState(['Home']);
+
+  const handleBreadcrumbClick = (newBreadcrumb) => {
+    // Add the new breadcrumb to the existing list
+    setBreadcrumbs([...breadcrumbs, newBreadcrumb]);
+  };
+
+  return (
+    <div>
+      <Breadcrumbs aria-label="breadcrumb">
+        {breadcrumbs.map((breadcrumb, index) => (
+          <Link key={index} color="inherit" href="#" onClick={() => handleBreadcrumbClick(breadcrumb)}>
+            {breadcrumb}
+          </Link>
+        ))}
+      </Breadcrumbs>
+      <button onClick={() => handleBreadcrumbClick('New Page')}>Add New Page</button>
+    </div>
+  );
+}
+
+export default DynamicBreadcrumbs;
+
+
