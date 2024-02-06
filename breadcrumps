@@ -25,6 +25,25 @@ function DynamicBreadcrumbs() {
   );
 }
 
+       src/Claims/claims-routing.ts(9,16): error TS1005: '>' expected.
+       src/Claims/claims-routing.ts(9,20): error TS1005: ')' expected.
+       src/Claims/claims-routing.ts(9,25): error TS1005: ';' expected.
+       src/Claims/claims-routing.ts(9,34): error TS1136: Property assignment expected.
+       src/Claims/claims-routing.ts(9,49): error TS1109: Expression expected.
+       src/Claims/claims-routing.ts(9,50): error TS1109: Expression expected.
+       src/Claims/claims-routing.ts(9,53): error TS1161: Unterminated regular expression literal.
+       src/Claims/claims-routing.ts(10,16): error TS1005: ';' expected.
+       src/Claims/claims-routing.ts(10,40): error TS1005: ';' expected.
+       src/Claims/claims-routing.ts(10,49): error TS1136: Property assignment expected.
+       src/Claims/claims-routing.ts(10,65): error TS1109: Expression expected.
+       src/Claims/claims-routing.ts(10,66): error TS1109: Expression expected.
+       src/Claims/claims-routing.ts(10,69): error TS1161: Unterminated regular expression literal.
+       src/Claims/claims-routing.ts(11,9): error TS1161: Unterminated regular expression literal.
+       src/Claims/claims-routing.ts(12,7): error TS1161: Unterminated regular expression literal.
+       src/Claims/claims-routing.ts(13,3): error TS1128: Declaration or statement expected.
+       src/Claims/claims-routing.ts(14,1): error TS1128: Declaration or statement expected.
+       
+       
 
 
 
