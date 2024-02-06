@@ -31,3 +31,93 @@ function DynamicBreadcrumbs() {
 export default DynamicBreadcrumbs;
 
 
+routing
+// App.js
+import React from 'react';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import SearchPage from './SearchPage';
+import ClaimDetailPage from './ClaimDetailPage';
+
+function App() {
+  return (
+    <Router>
+      <Switch>
+        <Route path="/" exact component={SearchPage} />
+        <Route path="/claims/:claimId" component={ClaimDetailPage} />
+      </Switch>
+    </Router>
+  );
+}
+
+export default App;
+==
+
+// SearchPage.js
+import React from 'react';
+import { Link } from 'react-router-dom';
+
+function SearchPage() {
+  const searchResults = [
+    { id: 1, title: 'Claim 1', type: 'auto' },
+    { id: 2, title: 'Claim 2', type: 'health' },
+    // Other search results...
+  ];
+
+  return (
+    <div>
+      <h1>Search Results</h1>
+      <ul>
+        {searchResults.map(result => (
+          <li key={result.id}>
+            <Link to={{
+              pathname: '/claim',
+              search: `?id=${result.id}&type=${result.type}`
+            }}>{result.title}</Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default SearchPage;
+
+
+==
+// ClaimDetailPage.js
+import React, { useEffect, useState } from 'react';
+
+function ClaimDetailPage({ location }) {
+  const searchParams = new URLSearchParams(location.search);
+  const claimId = searchParams.get('id');
+  const claimType = searchParams.get('type');
+  const [claim, setClaim] = useState(null);
+
+  useEffect(() => {
+    // Fetch claim details based on claimId
+    // Example fetch call
+    fetch(`/api/claims/${claimId}`)
+      .then(response => response.json())
+      .then(data => setClaim(data))
+      .catch(error => console.error('Error fetching claim details:', error));
+  }, [claimId]);
+
+  if (!claim) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <div>
+      <h1>Claim Details</h1>
+      <p>ID: {claim.id}</p>
+      <p>Title: {claim.title}</p>
+      <p>Type: {claimType}</p>
+      {/* Display other claim details */}
+    </div>
+  );
+}
+
+export default ClaimDetailPage;
+
+
+
