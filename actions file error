@@ -1,0 +1,68 @@
+name: 'Setup NPM'
+
+inputs:
+  skip_gh_install:
+    required: false
+    type: boolean
+  skip_install:
+    required: false
+    type: boolean
+  fetch_depth:
+    required: false
+    type: number
+    default: 1
+  token:
+    required: false
+    type: string
+    default: ${{ github.token }}
+  npm_token:
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: ${{ inputs.fetch_depth }}
+        token: ${{ inputs.token }}
+
+    - name: Setup node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16.13.x
+
+    - name: Setup NPM
+      run: npm config set registry https://repo1.uhc.com/artifactory/api/npm/npm-virtual/
+      shell: bash
+
+    - name: Configure NPMRC
+      run: printf "//repo1.uhc.com/artifactory/api/npm/npm-local/:_authToken=${{ inputs.npm_token }}\n//repo1.uhc.com/artifactory/api/npm/npm-local/:always-auth=true" > .npmrc
+      shell: bash
+
+    - name: Install Yarn
+      if: ${{ inputs.skip_install != 'true' }}
+      run: |
+        sudo mkdir -p /home/runner
+        sudo mkdir -p /home/runner/.npm
+        sudo chown -R 1000:1000 "/home/runner/.npm"
+        npm install -g yarn
+      shell: bash
+
+    - name: Install Dependencies
+      if: ${{ inputs.skip_install != 'true' }}
+      run: yarn install
+      shell: bash
+
+    - name: Install Github CLI
+      if: ${{ inputs.skip_gh_install != 'true' }}
+      run: |
+          sudo apt-get update
+          sudo apt-get install gh
+      shell: bash
+
+    - name: Setup tasks failed
+      if: ${{ failure() }}
+      run: echo Setup has failed. Try running "yarn install" and ensure all changes to "yarn.lock" are committed and pushed.
+      shell: bash
