@@ -290,3 +290,28 @@ const PrescriptionDrugEventsTable: React.FC<PrescriptionDrugEventsProp> = ({ pre
 
 export default PrescriptionDrugEventsTable;
 
+==
+
+import React from 'react';
+import Dialog from "@mui/material/Dialog";
+import Slide from "@mui/material/Slide";
+
+const ReportDialog = ({ open, handleClose }) => {
+  const Transition = React.forwardRef(function Transition(props, ref) {
+    return <Slide direction="left" ref={ref} {...props} />;
+  });
+
+  return (
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      TransitionComponent={Transition}
+    >
+      <div>Hello World</div>
+    </Dialog>
+  );
+};
+
+export default ReportDialog;
+
+
