@@ -1,1 +1,132 @@
 
+import React from 'react';
+import TableContainer from "@mui/material/TableContainer";
+import Paper from "@mui/material/Paper";
+import Table from "@mui/material/Table";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import TableCell from "@mui/material/TableCell";
+import TableBody from "@mui/material/TableBody";
+import IconButton from "@mui/material/IconButton";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import Collapse from "@mui/material/Collapse";
+import Box from "@mui/material/Box";
+import {PrescriptionDrugEventDetails} from "./prescription-drug-event-details";
+import {
+  PrescrionDrugEventDetailsProps
+} from "../../usePrescriptionDrugEvent/use-prescription-drug-events.types";
+import {Grid} from "@mui/material";
+
+interface PrescriptionDrugEvent {
+  mdhFileId: string;
+  mdhSubmitterId: string;
+  mdhFileFromDate: string;
+  mdhFileThruDate: string;
+  createDate: string;
+  txnReportStatus: string;
+  resubmissionStatus: string;
+}
+
+interface PrescriptionDrugEventsProp {
+  prescriptionDrugEvents: PrescriptionDrugEvent[];
+  tenantId: string;
+  sid: string;
+  authType: string;
+}
+
+class Row extends React.Component<{ row: PrescriptionDrugEvent, detailsProps: PrescrionDrugEventDetailsProps }, any> {
+  constructor(props: any) {
+    super(props);
+    this.state = {
+      open: false,
+    };
+  }
+
+  handleToggle = () => {
+    this.setState((prevState: any) => ({ open: !prevState['open'] }));
+  }
+
+  render() {
+    return <React.Fragment>
+      <TableRow sx={{"& > *": {borderBottom: "unset"}}}>
+        <TableCell>
+          <IconButton
+            aria-label="expand row"
+            size="small"
+            onClick={this.handleToggle}
+          >
+            {this.state['open'] ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon/>}
+          </IconButton>
+        </TableCell>
+        <TableCell component="th" scope="row">
+          {this.props.row.mdhFileId}
+        </TableCell>
+        <TableCell align="right">{this.props.row.mdhSubmitterId}</TableCell>
+        <TableCell align="right">{this.props.row.mdhFileFromDate}</TableCell>
+        <TableCell align="right">{this.props.row.mdhFileThruDate}</TableCell>
+        <TableCell align="right">{this.props.row.createDate}</TableCell>
+        <TableCell align="right">{this.props.row.txnReportStatus}</TableCell>
+        <TableCell align="right">{this.props.row.resubmissionStatus}</TableCell>
+        <TableCell align="right">View Report</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell style={{paddingBottom: 0, paddingTop: 0}} colSpan={12}>
+          <Collapse in={this.state['open']} timeout="auto" unmountOnExit>
+            <Box sx={{margin: 1}}>
+              {<PrescriptionDrugEventDetails {...this.props.detailsProps}/>}
+            </Box>
+          </Collapse>
+        </TableCell>
+      </TableRow>
+    </React.Fragment>;
+  }
+}
+
+
+const PrescriptionDrugEventsTable: React.FC<PrescriptionDrugEventsProp> = ({ prescriptionDrugEvents, tenantId, sid, authType }) => {
+  console.log('In PrescriptionDrugEventsTable', 'prescriptionDrugEvents=', prescriptionDrugEvents);
+
+  const getDetailsProps = (row: PrescriptionDrugEvent) => {
+    const detailProps : PrescrionDrugEventDetailsProps = {
+      mdhFileId: row.mdhFileId,
+      submitterId: row.mdhSubmitterId,
+      tenantId: tenantId,
+      sid: sid,
+      authType: authType
+    };
+    return detailProps;
+  }
+  return (
+    <>
+      <Grid container spacing={2} alignItems="start">
+        <Grid item xs={12}>
+      <TableContainer component={Paper}>
+        <Table aria-label="collapsible table">
+          <TableHead>
+            <TableRow>
+              <TableCell/>
+              <TableCell>File</TableCell>
+              <TableCell align="right">Submitter</TableCell>
+              <TableCell align="right">From</TableCell>
+              <TableCell align="right">Through</TableCell>
+              <TableCell align="right">Created</TableCell>
+              <TableCell align="right">Transaction report status</TableCell>
+              <TableCell align="right">Resubmit status</TableCell>
+              <TableCell align="right"></TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody style={{ flexGrow: 1 }}>
+            {prescriptionDrugEvents.map((row: PrescriptionDrugEvent) => (
+              <Row key={row.mdhFileId}  row={row} detailsProps={getDetailsProps(row)}/>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+        </Grid>
+      </Grid>
+    </>
+  );
+}
+
+export default PrescriptionDrugEventsTable;
