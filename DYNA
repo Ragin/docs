@@ -1,0 +1,244 @@
+import React from 'react';
+import { Grid, Card, CardContent, Typography } from '@mui/material';
+import '../claims-detail.css';
+import {evaluateString} from "../../../common/common-utils";
+import {labelHeadingStyle, labelStyle} from "./header-component";
+import {styled} from "@mui/material/styles";
+
+
+interface SimpleLayoutComponentProps {
+  data: any;
+  labels: any;
+  layout: any;
+  style?: any;
+}
+
+const StyledCard = styled(Card)`
+  margin-bottom: 10px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+const SimpleLayoutComponent: React.FC<SimpleLayoutComponentProps> = ({ data, labels, layout, cols }) => {
+  console.log('In SimpleLayoutComponent: data=', data);
+  const getFieldByPath = (path: string) => {
+    return path.split('.').reduce((obj, key) => (obj && obj[key] !== undefined ? obj[key] : null), data);
+  };
+  if (!cols) {
+    cols = 3;
+  }
+  const renderFieldValue = (field: string) => {
+    const value = getFieldByPath(field);
+    return value !== null && value !== undefined ? value.toString() : '';
+  };
+
+  const evaluateString = (targetFormat: string)  => {
+    if(targetFormat.indexOf('${') === -1) {
+     return  renderFieldValue(targetFormat);
+    }
+    console.log('targetFormat', targetFormat);
+    const val = targetFormat ? targetFormat.replace(/\${(\w+)}/g, (match, key) => {
+      console.log('match', match, 'key', key);
+      const arg = getFieldByPath(key);
+      return arg !== undefined ? arg : match;
+    }) : '';
+    console.log('val==>', val);
+    return val;
+  }
+  return (
+    <Grid container spacing={2} >
+      <Grid item xs={12} spacing={2}>
+        <Card elevation={3}  >
+          <Grid container spacing={2} >
+            <Grid item xs={12} spacing={2}>
+            {layout.map((group:{heading: string, fields: string[]}) => (
+              <StyledCard elevation={3} key={group.heading}>
+                <Card elevation={3} key={group.heading} >
+                <CardContent>
+                  <Grid container spacing={1} >
+                    <Grid  item xs={12} >
+                     <span></span>
+                    </Grid>
+                    <Grid  item xs={12}>
+                      <Typography variant="h6" style={labelHeadingStyle}>
+                        {evaluateString(group.heading)}
+                      </Typography>
+                    </Grid>
+                    {group.fields.map((field: string) => (
+                      <Grid key={field} item xs={12} sm={cols} md={cols}  >
+                        <div style={{ marginBottom: '15px' }}>
+                          <Typography variant="subtitle1" style={labelStyle}>
+                            {labels[field]}
+                          </Typography>
+                          <Typography variant="body1">{evaluateString(field)}</Typography>
+                        </div>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </CardContent>
+              </Card>
+              </StyledCard>
+            ))}
+          </Grid>
+          </Grid>
+        </Card>
+
+      </Grid>
+    </Grid>
+  );
+};
+
+export default SimpleLayoutComponent;
+===
+
+import * as React from 'react';
+
+import SimpleLayoutComponent from "../../../claims-details/ClaimsDetails/components/simple-layout-compoent";
+import labels from "../../../common/labels.json";
+import usePrescriptionDrugEventDetails from "../../usePrescriptionDrugEvent/use-prescription-drug-events-details";
+import {PrescrionDrugEventDetailsProps} from "../../usePrescriptionDrugEvent/use-prescription-drug-events.types";
+import {Grid} from "@mui/material";
+
+const prescriptionDetailLayout = [
+  {
+    heading: 'MDD Detail Record',
+    fields: [
+      "mddDetailRecord.drugCoverageStsCd",
+      "mddDetailRecord.adjustCd",
+      "mddDetailRecord.cmsAuditFlag",
+      "mddDetailRecord.md2PartDModelInd",
+      "mddDetailRecord.catastrophicCovCd",
+      "mddDetailRecord.sbmOriginCd",
+      "mddDetailRecord.nonStandardCd",
+      "mddDetailRecord.pricingExceptionCd",
+      "mddDetailRecord.hicn",
+      "mddDetailRecord.tier",
+    ]
+  },
+  {
+    "heading": '',
+    "fields": [
+      "mddDetailRecord.ingredientCost",
+      "mddDetailRecord.dispFee",
+      "mddDetailRecord.salesTax",
+      "mddDetailRecord.pdePatPay",
+      "mddDetailRecord.estRebateAtPos",
+      "mddDetailRecord.gdcaAmount",
+      "mddDetailRecord.gdcbAmount",
+      "mddDetailRecord.otherTroopAmt",
+      "mddDetailRecord.licsAmt",
+      "mddDetailRecord.plroAmt",
+      "mddDetailRecord.cppAmt",
+      "mddDetailRecord.nppAmt",
+      "mddDetailRecord.vaccineAdminFee"
+    ]
+  },
+  {
+    "heading": '',
+    "fields": [
+      "mddDetailRecord.sbmPrescriberQl",
+      "mddDetailRecord.sbmPrescriberId",
+      "mddDetailRecord.cmsTransReportStatus",
+      "mddDetailRecord.transReportStsDate",
+      "mddDetailRecord.mddEditCount",
+      "${mddDetailRecord.edit01}, ${mddDetailRecord.edit02}, ${mddDetailRecord.edit03}, ${mddDetailRecord.edit04}, ${mddDetailRecord.edit05}, ${mddDetailRecord.edit06}, ${mddDetailRecord.edit07}, ${mddDetailRecord.edit08}, ${mddDetailRecord.edit09}, ${mddDetailRecord.edit10}",
+      "mddDetailRecord.exclusionRsnCd",
+      "mddDetailRecord.resubCmstype",
+      "mddDetailRecord.resubmissionSts",
+      "mddDetailRecord.rsubmissionDate",
+      "mddDetailRecord.resubTime",
+      "mddDetailRecord.resubUser",
+      "mddDetailRecord.reporocFileId",
+      "mddDetailRecord.reporocSubId",
+      "mddDetailRecord.reporocDate",
+      "mddDetailRecord.reporocTime",
+      "mddDetailRecord.reporocUser"
+    ],
+  },
+  {
+    "heading": '',
+    "fields": [
+      "mddDetailRecord.brandGenCd",
+      "mddDetailRecord.formularyCd",
+      "mddDetailRecord.beginBenefitPhase",
+      "mddDetailRecord.endBenefitPhase",
+      "mddDetailRecord.dateOrigClaimRcvd",
+      "mddDetailRecord.paidDate",
+      "mddDetailRecord.totlGrossDrgCstAcc",
+      "mddDetailRecord.othTroopamtInd",
+      "mddDetailRecord.trueOopAccum",
+      "mddDetailRecord.reportedGapDiscount",
+      "mddDetailRecord.subDos",
+      "mddDetailRecord.sbmQtyDisp",
+      "mddDetailRecord.sbmDysSupply",
+      "mddDetailRecord.sbmPscCd",
+      "mddDetailRecord.sbmRxNumber",
+      "mddDetailRecord.sbmFillNumber",
+      "mddDetailRecord.adjBeginTimeStamp",
+      "mddDetailRecord.nonPecosNpiInd",
+      "mddDetailRecord.adjRsnCdQl",
+      "mddDetailRecord.adjRsnCd",
+      "mddDetailRecord.sbmSrvProvIdQl",
+      "mddDetailRecord.sbmSrvProvId",
+      "mddDetailRecord.sbmPharServiceType",
+      "mddDetailRecord.patientResidence",
+      "mddDetailRecord.scc",
+      "mddDetailRecord.sbmCmpdCd",
+      "mddDetailRecord.sbmProductId",
+      "mddDetailRecord.orgPrescribedQty",
+      "mddDetailRecord.phaPrcConAtPOS",
+      "mddDetailRecord.selDrugSubsidy",
+      "mddDetailRecord.medPresPymtPlnInd"
+    ]
+  },
+];
+
+const layoutResonse = [
+  {
+    heading: '',
+    fields: [
+      "mddResponseRecord.calcGapDiscount",
+      "mddResponseRecord.pbpOfRecord",
+      "mddResponseRecord.altSrvProvIdQl",
+      "mddResponseRecord.altSrvProvId",
+      "mddResponseRecord.origSbmContract",
+      "mddResponseRecord.contractOfRecord",
+      "mddResponseRecord.correctedHicn",
+      "mddResponseRecord.patientGenderCd",
+      "mddResponseRecord.dob",
+      "mddResponseRecord.mddEditCount",
+      "${mddResponseRecord.edit01}, ${mddResponseRecord.edit02}, ${mddResponseRecord.edit03}, ${mddResponseRecord.edit04}, ${mddResponseRecord.edit05}, ${mddResponseRecord.edit06}, ${mddResponseRecord.edit07}, ${mddResponseRecord.edit08}, ${mddResponseRecord.edit09}, ${mddResponseRecord.edit10}",
+      "mddResponseRecord.exclusionRsnCd",
+      "mddResponseRecord.resubmissionSts",
+      "${mddResponseRecord.rsubmissionDate} / ${mddResponseRecord.resubTime}",
+      "mddResponseRecord.resubUser",
+      "mddResponseRecord.reporocFileId",
+      "${mddResponseRecord.reporocUser} (${mddResponseRecord.reporocSubId})",
+      "${mddResponseRecord.reporocDate} / ${mddResponseRecord.reporocTime}"
+    ]
+  }
+]
+
+export function PrescriptionDrugEventDetails(params: PrescrionDrugEventDetailsProps) {
+  const {prescriptionDrugEventDetails} = usePrescriptionDrugEventDetails(params);
+
+  return (
+    <>
+    <SimpleLayoutComponent
+      layout={prescriptionDetailLayout}
+      data={prescriptionDrugEventDetails}
+      labels={labels}></SimpleLayoutComponent>
+      <Grid container spacing={2} >
+        <Grid item xs={12} spacing={2}>
+          <h1> Response</h1>
+        </Grid>
+      </Grid>
+      <SimpleLayoutComponent
+        layout={layoutResonse}
+        data={prescriptionDrugEventDetails}
+        labels={labels}></SimpleLayoutComponent>
+    </>
+  );
+}
