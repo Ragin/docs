@@ -242,3 +242,31 @@ export function PrescriptionDrugEventDetails(params: PrescrionDrugEventDetailsPr
     </>
   );
 }
+
+====
+const evaluateString = (targetFormat: string) => {
+  // If the targetFormat does not contain '${}', simply return the rendered field value
+  if (targetFormat.indexOf('${') === -1) {
+    return renderFieldValue(targetFormat);
+  }
+  
+  // Split the targetFormat string into parts separated by '${}'
+  const parts = targetFormat.split('${');
+  
+  // Iterate over the parts and replace placeholders with field values
+  const evaluatedString = parts.map((part, index) => {
+    if (index === 0) {
+      return part; // First part doesn't contain a placeholder
+    }
+    const closingBracketIndex = part.indexOf('}');
+    if (closingBracketIndex === -1) {
+      return '${' + part; // Incomplete placeholder, return as is
+    }
+    const key = part.substring(0, closingBracketIndex);
+    const arg = getFieldByPath(key.trim());
+    return arg !== undefined ? arg + part.substring(closingBracketIndex + 1) : '${' + part;
+  }).join('');
+  
+  return evaluatedString;
+};
+
