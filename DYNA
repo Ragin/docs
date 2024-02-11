@@ -294,11 +294,11 @@ const evaluateString = (targetFormat: string) => {
     const remainder = part.substring(closingBracketIndex + 1);
     if (arg === null || arg === undefined || (typeof arg === 'string' && arg.trim() === '')) {
       // Check if the remainder starts or ends with specific characters
-      if (remainder.startsWith('/') || remainder.endsWith('/') || remainder.startsWith('(')) {
+      if (remainder[0] === '/' || remainder[0] === '(') {
         return remainder.substring(1); // Remove the leading character if it's '/', '('
       }
-      if (remainder.endsWith(')')) {
-        return remainder.substring(0, remainder.length - 1); // Remove the trailing ')' character
+      if (remainder[remainder.length - 1] === ')' || remainder[remainder.length - 1] === '/') {
+        return remainder.substring(0, remainder.length - 1); // Remove the trailing ')' character or '/'
       }
       // Check if the remainder is '0 / 0'
       if (remainder.trim() === '0 / 0') {
