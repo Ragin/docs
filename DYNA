@@ -293,6 +293,10 @@ const evaluateString = (targetFormat: string) => {
     const arg = getFieldByPath(key.trim());
     const remainder = part.substring(closingBracketIndex + 1);
     if (arg === null || arg === undefined || arg === 0 || (typeof arg === 'string' && arg.trim() === '')) {
+      // Check if there are characters before and after the placeholder
+      if (index === 1 && remainder.length > 0 && remainder.charAt(0) === '/') {
+        return remainder.substring(1); // If placeholder is at the beginning and followed by '/', remove it
+      }
       return remainder; // Replace with remainder if arg is null, undefined, 0, or empty string
     }
     return arg + remainder;
