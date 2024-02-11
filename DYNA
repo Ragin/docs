@@ -269,4 +269,35 @@ const evaluateString = (targetFormat: string) => {
   
   return evaluatedString;
 };
+==
+
+const evaluateString = (targetFormat: string) => {
+  // If the targetFormat does not contain '${}', simply return the rendered field value
+  if (targetFormat.indexOf('${') === -1) {
+    return renderFieldValue(targetFormat);
+  }
+  
+  // Split the targetFormat string into parts separated by '${}'
+  const parts = targetFormat.split('${');
+  
+  // Iterate over the parts and replace placeholders with field values
+  const evaluatedString = parts.map((part, index) => {
+    if (index === 0) {
+      return part; // First part doesn't contain a placeholder
+    }
+    const closingBracketIndex = part.indexOf('}');
+    if (closingBracketIndex === -1) {
+      return '${' + part; // Incomplete placeholder, return as is
+    }
+    const key = part.substring(0, closingBracketIndex);
+    const arg = getFieldByPath(key.trim());
+    const remainder = part.substring(closingBracketIndex + 1);
+    if (arg === null || arg === undefined || arg === 0 || (typeof arg === 'string' && arg.trim() === '')) {
+      return remainder; // Replace with remainder if arg is null, undefined, 0, or empty string
+    }
+    return arg + remainder;
+  }).join('');
+  
+  return evaluatedString;
+};
 
