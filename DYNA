@@ -293,8 +293,15 @@ const evaluateString = (targetFormat: string) => {
     const arg = getFieldByPath(key.trim());
     const remainder = part.substring(closingBracketIndex + 1);
     if (arg === null || arg === undefined || (typeof arg === 'string' && arg.trim() === '')) {
-      // Check if the remainder contains only specific characters or is '0'
-      if (/^[\/()]*$/.test(remainder) || remainder.trim() === '0') {
+      // Check if the remainder starts or ends with specific characters
+      if (remainder.startsWith('/') || remainder.endsWith('/') || remainder.startsWith('(')) {
+        return remainder.substring(1); // Remove the leading character if it's '/', '('
+      }
+      if (remainder.endsWith(')')) {
+        return remainder.substring(0, remainder.length - 1); // Remove the trailing ')' character
+      }
+      // Check if the remainder is '0 / 0'
+      if (remainder.trim() === '0 / 0') {
         return ''; // Replace with empty string
       }
       return remainder; // Replace with remainder if arg is null, undefined, or empty string
