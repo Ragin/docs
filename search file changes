@@ -346,3 +346,31 @@ export const ClaimsSearch = forwardRef((props: ClaimsSearchProps, ref: React.Ref
 });
 
 export default ClaimsSearch;
+===
+
+const handleSearchClick = (e: any) => {
+  console.log('In Claims Search :filters, event =', filters , e);
+  const fromDt: any = filters.fillDtFrom?.split('-').join('');
+  const thruDt: any = filters.fillDtThru?.split('-').join('');
+  const newSearchState: SearchFilter = {
+    memberId: searchBy === 'Member ID' ? filters.memberId : undefined, // Include memberId if searching by Member ID
+    pharmacyId: searchBy === 'Pharmacy ID' ? filters.pharmacyId : undefined, // Include pharmacyId if searching by Pharmacy ID
+    rxNumber: searchBy === 'Pharmacy ID' ? filters.rxNumber : undefined, // Include rxNumber if searching by Pharmacy ID
+    fillNumber: searchBy === 'Pharmacy ID' ? filters.fillNumber : undefined, // Include fillNumber if searching by Pharmacy ID
+    fillDtFrom: filters.fillDtFrom ? Number(fromDt) : undefined,
+    fillDtThru: filters.fillDtThru ? Number(thruDt) : undefined,
+    tenantId: filters.tenantId ? filters.tenantId : claimContext?.tenantId
+  };
+
+  sessionStorage.setItem("claimSearchFilter", JSON.stringify(filters));
+
+  console.log('In Claims Search :in claims rows =', rows);
+  console.log('In Claims Search :newSearchState=', newSearchState);
+  if ((searchBy === 'Member ID' && filters.memberId && filters.fillDtFrom && filters.fillDtThru && (claimContext?.tenantId || filters.tenantId)) ||
+      (searchBy === 'Pharmacy ID' && filters.pharmacyId && filters.fillDtFrom && filters.fillDtThru)) {
+    setSearchState({...newSearchState});
+  } else {
+    console.log('In Claims Search : please enter all search parameters before search');
+  }
+};
+
