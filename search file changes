@@ -1,0 +1,191 @@
+import React, {forwardRef, useContext, useEffect, useState} from 'react';
+import Grid from '@mui/material/Grid';
+import { MedicationsTable } from '../../medications-table/MedicationsTable/medications-table';
+import { ClaimsSearchProps } from './claims-search.types';
+import {Button, TextField} from "@mui/material";
+import { useMedicationsTable } from '../../medications-table/useMedicationsTable/use-medications-table';
+import {SearchFilter} from "../../medications-table/useMedicationsTable/use-medications-table.types";
+
+import "./claims-search.css";
+import {GlobalContext} from "../../Claims/Contexts";
+
+export interface IClaimSearchFilter {
+  memberId: string | undefined;
+  fillDtFrom: string | undefined;
+  fillDtThru: string | undefined;
+  tenantId: string | undefined;
+}
+
+export const ClaimsSearch = forwardRef((props: ClaimsSearchProps, ref: React.Ref<HTMLDivElement>) => {
+  const { context, onClickDetails } = props;
+  let globalContext = useContext(GlobalContext);
+  const [claimContext, setClaimContext] = React.useState(context);
+  if (globalContext) {
+    console.log('In Claims Search :inside globalContext not null globalContext context ==', globalContext);
+
+    // setClaimContext({...globalContext});
+  }
+  console.log('In Claims Search :context context ==', context);
+  console.log('In Claims Search :globalContext context ==', globalContext);
+
+  const [filters, setFilters] = useState<IClaimSearchFilter>({
+    memberId: '',
+    fillDtFrom: '',
+    fillDtThru: '',
+    tenantId: ''
+  });
+
+  // const context = useContext(GlobalContext);
+  console.log('In Claims Search :Claims before useMedicationsTable context  = ', claimContext);
+
+  const { setSearchState, rows, headers } = useMedicationsTable(claimContext);
+
+
+  useEffect(() => {
+    // Access count value from session storage
+    let claimSearchFilter: any = sessionStorage.getItem("claimSearchFilter");
+    console.log('In Claims Search :filters=', filters);
+    console.log('In Claims Search : props=', props);
+    console.log('In Claims Search :context context ==', context);
+    console.log('In Claims Search :globalContext context ==', globalContext);
+    setClaimContext(props.context);
+    console.log('In Claims Search :claimSearchFilter ==', claimSearchFilter);
+    let claimSearchFilterObj: IClaimSearchFilter | undefined = undefined;
+    try {
+      claimSearchFilterObj = JSON.parse(claimSearchFilter);
+    } catch (error) {
+      console.log('filter in session not valid JSON');
+    }
+    console.log('In Claims Search :claimSearchFilterObj=', claimSearchFilterObj);
+    if (claimSearchFilterObj) {
+      filters.fillDtThru = claimSearchFilterObj.fillDtThru;
+      filters.fillDtFrom = claimSearchFilterObj.fillDtFrom;
+      filters.memberId = claimSearchFilterObj.memberId;
+      filters.tenantId = props.context?.tenantId ? props?.context?.tenantId : claimContext?.tenantId;
+      setFilters({...filters});
+      console.log('In Claims Search : filters=', filters);
+      handleSearchClick(null);
+    }
+
+
+
+  }, [props.context]); //No dependency to trigger in each page load
+
+
+
+  const handleSearchClick = (e: any) => {
+    console.log('In Claims Search :filters, event =', filters , e);
+    // console.log('fillDtFromRef=', fillDtFromRef, 'fillDtFromRef.current?.value?.replace(\'-\', \'\')=', fillDtFromRef.current?.value?.replaceAll('-', ''));
+    const fromDt: any = filters.fillDtFrom?.split('-').join('');
+    const thruDt: any = filters.fillDtThru?.split('-').join('');
+    const newSearchState: SearchFilter = {
+      memberId: filters.memberId,
+      fillDtFrom: filters.fillDtFrom ? Number(fromDt) : undefined,
+      fillDtThru: filters.fillDtThru ? Number(thruDt) : undefined,
+      tenantId: filters.tenantId ? filters.tenantId : claimContext?.tenantId
+    };
+    sessionStorage.setItem("claimSearchFilter", JSON.stringify(filters));
+
+    console.log('In Claims Search :in claims rows =', rows);
+    console.log('In Claims Search :newSearchState=', newSearchState);
+    if(filters.memberId && filters.fillDtFrom && filters.fillDtThru && (claimContext?.tenantId || filters.tenantId)){
+      setSearchState({...newSearchState});
+    } else {
+      console.log('In Claims Search : please enter all search parametes before search');
+    }
+
+
+    // reloadTable();
+  };
+
+  return (
+
+    claimContext &&
+    <Grid container ref={ref} spacing={2} alignItems="center" sx={{ overflowY: "scroll", maxHeight: "650px" }}>
+      <Grid item xs={9} container spacing={2}>
+        <Grid item xs={3}>
+          <TextField
+            label="Member ID"
+            value={filters.memberId}
+            onChange={(e) => setFilters({ ...filters, memberId: e.target.value })}
+          />
+        </Grid>
+        <Grid item xs={3}>
+          <TextField
+            type="date"
+            label="Fill Date From"
+            value={filters.fillDtFrom}
+            onChange={(e) => setFilters({ ...filters, fillDtFrom: e.target.value.length > 10 ? e.target.value.slice(0, 10) :  e.target.value })}
+          />
+        </Grid>
+        <Grid item xs={3}>
+          <TextField
+            type="date"
+            label="Fill Date Thru"
+            value={filters.fillDtThru}
+            onChange={(e) => setFilters({ ...filters, fillDtThru: e.target.value.length > 10 ? e.target.value.slice(0, 10) :  e.target.value })}
+          />
+        </Grid>
+
+        {!claimContext?.tenantId &&
+          <Grid item xs={3}>
+            <TextField
+              label="Tenant ID"
+              value={filters.tenantId}
+              onChange={(e) => setFilters({ ...filters, tenantId: e.target.value })}
+            />
+        </Grid>}
+        <Grid item xs={3} sx={{marginTop: '25px'}}>
+          <Button href='#' onClick={handleSearchClick} variant="contained" color="primary">
+            Search
+          </Button>
+        </Grid>
+      </Grid>
+      <Grid item xs={12}>
+        <MedicationsTable title="Claim Result" context={claimContext} filters={filters} onClickDetails={onClickDetails} rows={rows} headers={headers} />
+      </Grid>
+    </Grid>
+  );
+});
+
+export default ClaimsSearch;
+===
+
+import {UseClaimsSearchReturn} from "../useClaimsSearch/use-claims-search.types";
+import {IClaimSearchFilter} from "./claims-search";
+
+export interface ClaimsSearchProps extends UseClaimsSearchReturn {
+  context: IClaimSearchFilter;
+  text?: string;
+}
+===
+
+import {useClickLink} from '../../useClickLink/use-click-link';
+
+import useClickDetails from "../../useClickDetails/use-click-details";
+import {UseClaimsSearchProps, UseClaimsSearchReturn} from "./use-claims-search.types"
+export function useClaimsSearch(props: UseClaimsSearchProps): UseClaimsSearchReturn {
+  const {ref} = props;
+  const {onClickLink} = useClickLink({ref});
+  const {onClickDetails} = useClickDetails({ref});
+  return {
+    onClickLink,
+    onClickDetails
+  };
+}
+
+
+
+export default useClaimsSearch;
+==
+
+import React from "react";
+
+export interface UseClaimsSearchProps {
+  ref: React.RefObject<HTMLDivElement>;
+}
+
+export interface UseClaimsSearchReturn {
+  onClickLink?: (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => void;
+  onClickDetails: (detail: any) => void;
+}
