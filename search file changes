@@ -189,3 +189,160 @@ export interface UseClaimsSearchReturn {
   onClickLink?: (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => void;
   onClickDetails: (detail: any) => void;
 }
+
+
+
+
+
+===========gn===============
+
+
+import React, {forwardRef, useContext, useEffect, useState} from 'react';
+import Grid from '@mui/material/Grid';
+import { MedicationsTable } from '../../medications-table/MedicationsTable/medications-table';
+import { ClaimsSearchProps } from './claims-search.types';
+import {Button, TextField, MenuItem} from "@mui/material";
+import { useMedicationsTable } from '../../medications-table/useMedicationsTable/use-medications-table';
+import {SearchFilter} from "../../medications-table/useMedicationsTable/use-medications-table.types";
+
+import "./claims-search.css";
+import {GlobalContext} from "../../Claims/Contexts";
+
+export interface IClaimSearchFilter {
+  memberId: string | undefined;
+  fillDtFrom: string | undefined;
+  fillDtThru: string | undefined;
+  tenantId: string | undefined;
+  pharmacyId?: string; // New fields for Pharmacy ID search
+  rxNumber?: string;
+  fillNumber?: string;
+}
+
+export const ClaimsSearch = forwardRef((props: ClaimsSearchProps, ref: React.Ref<HTMLDivElement>) => {
+  const { context, onClickDetails } = props;
+  let globalContext = useContext(GlobalContext);
+  const [claimContext, setClaimContext] = React.useState(context);
+  const [filters, setFilters] = useState<IClaimSearchFilter>({
+    memberId: '',
+    fillDtFrom: '',
+    fillDtThru: '',
+    tenantId: ''
+  });
+
+  // New state for the selected search option
+  const [searchBy, setSearchBy] = useState<string>('Member ID');
+
+  // Function to handle dropdown change
+  const handleSearchByChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchBy(event.target.value);
+    // Reset other filter values when changing search option
+    setFilters({
+      memberId: '',
+      fillDtFrom: '',
+      fillDtThru: '',
+      tenantId: '',
+      pharmacyId: '', // Reset Pharmacy ID search fields
+      rxNumber: '',
+      fillNumber: ''
+    });
+  };
+
+  // JSX for dropdown options
+  const searchOptions = ['Member ID', 'Pharmacy ID'];
+
+  // JSX for additional filters based on selected option
+  const additionalFilters = searchBy === 'Pharmacy ID' && (
+    <>
+      <Grid item xs={3}>
+        <TextField
+          label="Pharmacy ID"
+          value={filters.pharmacyId}
+          onChange={(e) => setFilters({ ...filters, pharmacyId: e.target.value })}
+        />
+      </Grid>
+      <Grid item xs={3}>
+        <TextField
+          label="Rx Number"
+          value={filters.rxNumber}
+          onChange={(e) => setFilters({ ...filters, rxNumber: e.target.value })}
+        />
+      </Grid>
+      <Grid item xs={3}>
+        <TextField
+          label="Fill Number"
+          value={filters.fillNumber}
+          onChange={(e) => setFilters({ ...filters, fillNumber: e.target.value })}
+        />
+      </Grid>
+    </>
+  );
+
+  return (
+    claimContext &&
+    <Grid container ref={ref} spacing={2} alignItems="center" sx={{ overflowY: "scroll", maxHeight: "650px" }}>
+      <Grid item xs={9} container spacing={2}>
+        <Grid item xs={3}>
+          <TextField
+            select
+            label="Search for claim by"
+            value={searchBy}
+            onChange={handleSearchByChange}
+          >
+            {searchOptions.map((option) => (
+              <MenuItem key={option} value={option}>
+                {option}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+        {searchBy === 'Member ID' && (
+          <>
+            <Grid item xs={3}>
+              <TextField
+                label="Member ID"
+                value={filters.memberId}
+                onChange={(e) => setFilters({ ...filters, memberId: e.target.value })}
+              />
+            </Grid>
+          </>
+        )}
+        <Grid item xs={3}>
+          <TextField
+            type="date"
+            label="Fill Date From"
+            value={filters.fillDtFrom}
+            onChange={(e) => setFilters({ ...filters, fillDtFrom: e.target.value.length > 10 ? e.target.value.slice(0, 10) :  e.target.value })}
+          />
+        </Grid>
+        <Grid item xs={3}>
+          <TextField
+            type="date"
+            label="Fill Date Thru"
+            value={filters.fillDtThru}
+            onChange={(e) => setFilters({ ...filters, fillDtThru: e.target.value.length > 10 ? e.target.value.slice(0, 10) :  e.target.value })}
+          />
+        </Grid>
+        {!claimContext?.tenantId && searchBy === 'Member ID' && (
+          <Grid item xs={3}>
+            <TextField
+              label="Tenant ID"
+              value={filters.tenantId}
+              onChange={(e) => setFilters({ ...filters, tenantId: e.target.value })}
+            />
+          </Grid>
+        )}
+        {additionalFilters}
+        <Grid item xs={3} sx={{marginTop: '25px'}}>
+          <Button href='#' onClick={handleSearchClick} variant="contained" color="primary">
+            Search
+          </Button>
+        </Grid>
+      </Grid>
+      <Grid item xs={12}>
+        <MedicationsTable title="Claim Result" context={claimContext} filters={filters} onClickDetails={onClickDetails} rows={rows} headers={headers} />
+      </Grid>
+    </Grid>
+  );
+});
+
+export default ClaimsSearch;
