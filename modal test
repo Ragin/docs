@@ -1,0 +1,233 @@
+
+import * as React from 'react';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import './RejectStyle.css'
+import CloseIcon from '@mui/icons-material/Close';
+
+import { Dialog, DialogActions, DialogContent, DialogTitle, IconButton} from '@mui/material';
+import { makeStyles } from "@material-ui/core/styles";
+import {useClaimMessages} from '../useClaimMessages/use-claim-messages';
+import { ClaimMessagesProps } from './claim-messages.types';
+import { red } from '@mui/material/colors';
+
+
+
+const useStyles = makeStyles({
+  paper: {
+    position: "fixed",
+    backgroundColor: "white",
+    width: 500,
+    height: '100%',
+
+    top: 0,
+    right: 0
+  },
+  icon: {
+    position: 'fixed',
+    top: 0,
+    right: 0,
+    color: 'blue'
+  }
+});
+
+
+
+
+export function RejectModal(params: ClaimMessagesProps) {
+    const [open, setOpen] = React.useState(false);
+
+    const handleOpen = () => setOpen(true);
+    const handleClose = () => setOpen(false);
+    const classes = useStyles();
+    console.log('params=', params);
+    const { messages1 } = useClaimMessages(params);
+    console.log(messages1);
+
+
+
+  return (
+
+    <div>
+
+      <Dialog
+        classes={{paper: classes.paper}}
+        aria-labelledby="customized-dialog-title"
+        open={true}
+        onBackdropClick={handleClose}
+        onClose={handleClose}
+      >
+        <DialogTitle sx={{ marginLeft: 10, p: 2,color: 'red !important' }} id="customized-dialog-title">
+          Rejection Details
+        </DialogTitle>
+        <IconButton
+          aria-label="close"
+          classes={classes.icon}
+        >
+        </IconButton>
+        <DialogContent dividers>
+          <Typography gutterBottom>
+            Reject codes
+          </Typography>
+          <Typography gutterBottom>
+            <p>81</p>
+            <p>Reject code</p>
+          </Typography>
+          {((messages1.rejectMessages?.map( (messageItem:any,i:any) => {
+            return (
+          <Typography gutterBottom>
+          Here is the reject code: {messageItem.rejectCd}
+          Here is the reject message: {messageItem.rejectMessage}
+
+          </Typography>
+          )
+
+            })))}
+        </DialogContent>
+        <DialogActions>
+          <Button autoFocus onClick={handleClose} classes={classes.icon}>
+            Close
+          </Button>
+        </DialogActions>
+
+      </Dialog>
+
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+    )
+}
+
+export default RejectModal;
+==
+
+
+import React from 'react';
+import { Grid, Card, CardContent, Typography} from '@mui/material';
+import '../claims-detail.css';
+import {evaluateString} from "../../../common/common-utils";
+import RejectModal from '../../../claim-messages/ClaimMessages/RejectCodes'
+import { ClaimMessagesProps } from '../../../claim-messages/ClaimMessages/claim-messages.types';
+import { RxClaimLiteContext } from '../../../common/model-types';
+import useClaimsDetails from '../../useClaimsDetails/use-claims-details';
+import useClaimMessages from '../../../claim-messages/useClaimMessages/use-claim-messages';
+import Button from "@mui/material/Button";
+export const labelHeadingStyle = {
+  fontWeight: 'bold',
+  color: 'black'
+};
+
+export const labelStyle = {
+  fontWeight: 'bold',
+  color: '#3F51B5'
+};
+
+
+interface HeaderComponentProps {
+  data: any;
+  props: any;
+  labels: any;
+  layout: any;
+  style?: any;
+}
+
+const HeaderComponent: React.FC<HeaderComponentProps> = ({ data, props, labels, layout }) => {
+
+  console.log("HERE IS THE DATA" + JSON.stringify(data));
+  console.log("HERE IS PROPS" + JSON.stringify(props));
+  console.log(JSON.stringify(data))
+  const {details} = useClaimsDetails( new RxClaimLiteContext({
+    rxClaimNbr: data.rxClaimNbr,
+    rxSeq: data.rxSeq,
+    memberId: data.memberId,
+    rxNumber: data.rxNumber,
+    tenantId: props.context.tenantId ? props.context.tenantId : data.tenantId,
+    authType: props.context.authtype,
+    sid: props.context.sid
+  }));
+  console.log('In ClaimsDetails: details', details);
+  const request: ClaimMessagesProps = {
+    rxClaimNbr: data.rxClaimNbr as number,
+    rxSeq: data.rxSeq as number,
+    memberId: data.memberId as string,
+    rxNumber: data.rxNumber as string,
+    tenantId: data.tenantId as string,
+    sid: props.context.sid as string,
+    authType: props.context.authtype as string,
+    claimStatus: data.claimStatus as string,
+    expanded: true
+  };
+
+  const [open, setOpen] = React.useState(false);
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  return (
+    <Grid container spacing={2} >
+      <Grid item xs={12} spacing={2}>
+        <Typography variant="h6" style={{ marginBottom: '10px' }}>  {evaluateString(layout.title, data)}</Typography>
+      </Grid>
+      <Grid item xs={9} spacing={2}>
+          {layout.leftLayout.map((group:{heading: string, fields: string[]}, index: number) => (
+        <Card key={index} elevation={3}  style={{ marginBottom: '5px' }}>
+         <CardContent >
+           <Typography variant="h6" style={{ marginBottom: '10px' }}>
+             {evaluateString(group.heading, data)}
+           </Typography>
+           <Grid container spacing={1}>
+              {group.fields.map((field: string) => (
+              <Grid key={field} item xs={12} sm={4} md={3}>
+                <div style={{ marginBottom: '15px' }}>
+                  <Typography variant="subtitle1" style={labelStyle}>
+                    {labels[field]}
+                  </Typography>
+                  <Typography variant="body1">{data[field]}</Typography>
+                </div>
+              </Grid>
+            ))}
+        </Grid>
+         </CardContent>
+        </Card>
+      ))}
+      </Grid>
+      <Grid item xs={3} spacing={1} >
+        {layout.rightLayout.map((group:{heading: string, fields: string[]}, index: number) => (
+          <Card key={index} elevation={3}  style={{ marginBottom: '5px',  marginRight: '5px' }}>
+            <CardContent >
+              <Typography variant="h6" style={{ marginBottom: '10px' }}>
+                {evaluateString(group.heading, data)}
+              </Typography>
+              <Grid container spacing={1}>
+                {group.fields.map((field: string) => (
+                  <Grid key={field} item xs={12} sm={12} md={12}>
+                    <div style={{ marginBottom: '15px', marginRight: '15px' }}>
+                      <Typography variant="subtitle1" style={labelStyle}>
+                        {labels[field]}
+                      </Typography>
+                      <Typography variant="body1">{data[field]}</Typography>
+                    </div>
+                  </Grid>
+                ))}
+              </Grid>
+              <Button onClick={handleOpen}>Reject details</Button>
+              { open && <RejectModal {...request}></RejectModal>}
+            </CardContent>
+          </Card>
+        ))}
+      </Grid>
+    </Grid>
+  );
+};
+
+export default HeaderComponent;
