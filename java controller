@@ -21,3 +21,42 @@
         MemberSearchResp response = claimService.searchMbrClaims(mbrRequest, clause);
         return response;
     }
+==
+public class MemberSearchRq {
+    private String memberId;
+    private Long fillDtFrom;
+    private Long fillDtThru;
+    private String tenantId;
+
+    public String getMemberId() {
+        return memberId;
+    }
+
+    public void setMemberId(String memberId) {
+        this.memberId = memberId;
+    }
+
+    public Long getFillDtFrom() {
+        return fillDtFrom;
+    }
+
+    public void setFillDtFrom(Long fillDtFrom) {
+        this.fillDtFrom = fillDtFrom;
+    }
+
+    public String getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
+    }
+
+    public Long getFillDtThru() {
+        return fillDtThru;
+    }
+
+    public void setFillDtThru(Long fillDtThru) {
+        this.fillDtThru = fillDtThru;
+    }
+}
