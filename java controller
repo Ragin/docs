@@ -1,0 +1,23 @@
+  @PostMapping(value = "/search")
+    public MemberSearchResp search(@RequestBody MemberSearchRq mbrRequest, @RequestHeader HttpHeaders headers) {
+
+        if (!securityDisabled) {
+            List<String> sId = (headers.get("sid"));
+            String authType = "msid";
+            String sessionId = sId.get(0);
+            String moduleName = ((mbrRequest.getTenantId()));
+            Map<String, String> columnFieldNameMapping = new HashMap<>();
+            columnFieldNameMapping.put("CARRIER", "TCD_CARRIER_ID");
+
+            // UserInfo userInfo = authUserRoleService.fetchUserRoleFromPortunus(sessionId, authType, moduleName);
+            // userInfo.setAllAbilities(userInfo.getAbilities().getAllAbilities());
+            UserInfo userInfo = new UserInfo();
+            DACRoles roles = authUserRoleService.fetchDGRoles(sessionId, authType);
+            userInfo.setDgRoles(roles.getRoles());
+            clause = dacLibraryService.cagClause(moduleName, userInfo.getDgRoles(), columnFieldNameMapping,
+                    sessionId, authType);
+        }
+
+        MemberSearchResp response = claimService.searchMbrClaims(mbrRequest, clause);
+        return response;
+    }
