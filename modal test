@@ -1,116 +1,4 @@
-
-import * as React from 'react';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
-import './RejectStyle.css'
-import CloseIcon from '@mui/icons-material/Close';
-
-import { Dialog, DialogActions, DialogContent, DialogTitle, IconButton} from '@mui/material';
-import { makeStyles } from "@material-ui/core/styles";
-import {useClaimMessages} from '../useClaimMessages/use-claim-messages';
-import { ClaimMessagesProps } from './claim-messages.types';
-import { red } from '@mui/material/colors';
-
-
-
-const useStyles = makeStyles({
-  paper: {
-    position: "fixed",
-    backgroundColor: "white",
-    width: 500,
-    height: '100%',
-
-    top: 0,
-    right: 0
-  },
-  icon: {
-    position: 'fixed',
-    top: 0,
-    right: 0,
-    color: 'blue'
-  }
-});
-
-
-
-
-export function RejectModal(params: ClaimMessagesProps) {
-    const [open, setOpen] = React.useState(false);
-
-    const handleOpen = () => setOpen(true);
-    const handleClose = () => setOpen(false);
-    const classes = useStyles();
-    console.log('params=', params);
-    const { messages1 } = useClaimMessages(params);
-    console.log(messages1);
-
-
-
-  return (
-
-    <div>
-
-      <Dialog
-        classes={{paper: classes.paper}}
-        aria-labelledby="customized-dialog-title"
-        open={true}
-        onBackdropClick={handleClose}
-        onClose={handleClose}
-      >
-        <DialogTitle sx={{ marginLeft: 10, p: 2,color: 'red !important' }} id="customized-dialog-title">
-          Rejection Details
-        </DialogTitle>
-        <IconButton
-          aria-label="close"
-          classes={classes.icon}
-        >
-        </IconButton>
-        <DialogContent dividers>
-          <Typography gutterBottom>
-            Reject codes
-          </Typography>
-          <Typography gutterBottom>
-            <p>81</p>
-            <p>Reject code</p>
-          </Typography>
-          {((messages1.rejectMessages?.map( (messageItem:any,i:any) => {
-            return (
-          <Typography gutterBottom>
-          Here is the reject code: {messageItem.rejectCd}
-          Here is the reject message: {messageItem.rejectMessage}
-
-          </Typography>
-          )
-
-            })))}
-        </DialogContent>
-        <DialogActions>
-          <Button autoFocus onClick={handleClose} classes={classes.icon}>
-            Close
-          </Button>
-        </DialogActions>
-
-      </Dialog>
-
-    </div>
-
-
-
-
-
-
-
-
-
-
-
-
-    )
-}
-
-export default RejectModal;
-==
-
+// HeaderComponent.tsx
 
 import React from 'react';
 import { Grid, Card, CardContent, Typography} from '@mui/material';
@@ -221,7 +109,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({ data, props, labels, 
                 ))}
               </Grid>
               <Button onClick={handleOpen}>Reject details</Button>
-              { open && <RejectModal {...request}></RejectModal>}
+              { open && <RejectModal open={open} handleClose={handleClose} {...request}></RejectModal>}
             </CardContent>
           </Card>
         ))}
@@ -231,3 +119,94 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({ data, props, labels, 
 };
 
 export default HeaderComponent;
+===
+// RejectModal.tsx
+
+import React from 'react';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import './RejectStyle.css'
+import CloseIcon from '@mui/icons-material/Close';
+
+import { Dialog, DialogActions, DialogContent, DialogTitle, IconButton} from '@mui/material';
+import { makeStyles } from "@material-ui/core/styles";
+import {useClaimMessages} from '../useClaimMessages/use-claim-messages';
+import { ClaimMessagesProps } from './claim-messages.types';
+import { red } from '@mui/material/colors';
+
+
+
+const useStyles = makeStyles({
+  paper: {
+    position: "fixed",
+    backgroundColor: "white",
+    width: 500,
+    height: '100%',
+
+    top: 0,
+    right: 0
+  },
+  icon: {
+    position: 'fixed',
+    top: 0,
+    right: 0,
+    color: 'blue'
+  }
+});
+
+
+
+
+export function RejectModal(params: ClaimMessagesProps) {
+    const classes = useStyles();
+    console.log('params=', params);
+    const { messages1 } = useClaimMessages(params);
+    console.log(messages1);
+
+  return (
+    <div>
+      <Dialog
+        classes={{paper: classes.paper}}
+        aria-labelledby="customized-dialog-title"
+        open={props.open}
+        onBackdropClick={props.handleClose}
+        onClose={props.handleClose}
+      >
+        <DialogTitle sx={{ marginLeft: 10, p: 2,color: 'red !important' }} id="customized-dialog-title">
+          Rejection Details
+        </DialogTitle>
+        <IconButton
+          aria-label="close"
+          classes={classes.icon}
+          onClick={props.handleClose}
+        >
+          <CloseIcon />
+        </IconButton>
+        <DialogContent dividers>
+          <Typography gutterBottom>
+            Reject codes
+          </Typography>
+          <Typography gutterBottom>
+            <p>81</p>
+            <p>Reject code</p>
+          </Typography>
+          {((messages1.rejectMessages?.map( (messageItem:any,i:any) => {
+            return (
+              <Typography gutterBottom key={i}>
+                Here is the reject code: {messageItem.rejectCd}
+                Here is the reject message: {messageItem.rejectMessage}
+              </Typography>
+            )
+          })))}
+        </DialogContent>
+        <DialogActions>
+          <Button autoFocus onClick={props.handleClose} classes={classes.icon}>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  )
+}
+
+export default RejectModal;
