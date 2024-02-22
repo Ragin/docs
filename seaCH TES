@@ -1,0 +1,20 @@
+select  
+  DQS5CD ,
+  DQBBDA ,
+  DQK8TX ,
+  DQK7TX ,
+  DQUJCD,
+  DQUKCD ,
+  DQULCD ,
+  DQS6ST ,
+  DQP2NB ,
+  DQOINB,
+  DQS6CD
+FROM CLMV25FIL.RCTCDP  
+  WHERE 
+  DQS5CD  LIKE  CONCAT(CONCAT('%' , :memberId), '%')  -- :memberId 
+  or ( :submitFromDate <> 0 and DQBBDA  >= :submitFromDate)
+  or ( :submitThruDate <> 0 and DQBBDA  <= :submitThruDate)
+  or (:tcdCarrier is not null  and DQS6CD LIKE :tcdCarrier )
+  
+                
