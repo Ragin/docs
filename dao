@@ -1,0 +1,16 @@
+	"select \n" +
+            "common.DQC4DT as dateSubmitted, \n" +
+            "common.DQLEST as tcdReimbursementFlag, \n" +
+            "common.DQBPOD as tcdLineOfBusiness, \n" +
+            "common.DQKXST as tcdSbmPatientGend, \n" +
+            "common.DQABDA as tcdSbmRxWrittenDate, \n" +
+            "common.DQSOC4 as tcdCobClaimIndicator, \n" +
+            "submit.RISJIE as noBillNoPayIndicator,\n" +
+            "submit.RIVTID as networkQualifier,\n" +
+            "pricing.HGIIBK as tc4IRASubsidyAmount,\n" +
+            "pricing.HGIGBK as tc4SecondaryDiffAmount,\n" +
+            "pricing.HGEIHZ as tc4LICSAmount\n" +
+            "from  RCTC4P pricing  \n" +
+            "join CLMV25FIL.RCTCDP common on pricing.HGP2NB = common.DQP2NB and pricing.HGOINB = common.DQOINB \n" +
+            "join RCTCDP rebill on submit.RIP2NB = rebill.DQP2NB and \n" +
+          "where common.DQP2NB = :rxClaimNbr and common.DQOINB = :rxSeqNbr"
