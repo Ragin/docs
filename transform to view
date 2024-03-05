@@ -1,0 +1,175 @@
+public class ClaimDetailsMapper {
+    @Column(name="DQP2NB")
+    private Long rxClaimNbr = 0L;
+
+    @Column(name="DQOINB")
+    private Long clmSeqNbr = 0L;
+    @Column(name="DQS6CD")
+    private String carrier;
+
+    @Column(name="DQS7CD")
+    private String account;
+
+    @Column(name="DQS8CD")
+    private String group;
+
+    @Column(name="DQTJCD")
+    private String planCode;
+
+    @Column(name="DQS5CD")
+    private String memberId;
+
+    @Column(name="DQK8TX")
+    private String mbrLastName;
+
+    @Column(name="DQK7TX")
+    private String mbrFirstName;
+
+    @Column(name="DQALDT")
+    private Long dob;
+
+    @Column(name="DQUJCD")
+    private String pharmacyId;
+
+    @Column(name="DQUKCD")
+    private String rxNumber;
+
+    @Column(name="DQULCD")
+    private String refillNumber;
+
+    @Column(name="DQBBDA")
+    private Long fillDate;
+
+    @Column(name="DQRIC4")
+    private String productId;
+
+    @Column(name="DQPECD")
+    private String gpi;
+
+    @Column(name="DQLRST")
+    private String genInd;
+
+    @Column(name="DQLOST")
+    private String msc;
+
+    @Column(name="DQIONB")
+    private Long qtyDispensed;
+
+    @Column(name="DQIMNB")
+    private Long daySupply;
+
+    @Column(name="DQK2ST")
+    private String compoundCode;
+
+    @Column(name="DQK3ST")
+    private String psc;
+
+    @Column(name="DQTCCD")
+    private String prescriberNpi;
+
+    @Column(name="DQS6ST")
+    private String claimStatus;
+
+    @Column(name="DQUGST")
+    private String priorAuthCd;
+
+    @Column(name="DQTECD")
+    private String priorAuthNumber;
+
+    @Column(name = "RISJIE")
+    private String noBillNoPayIndicator;
+
+    @Column(name = "RIVTID")
+    private String networkQualifier;
+
+    @Column(name = "HGIIBK")
+    private BigDecimal subsidiaryAmount;
+
+    @Column(name = "HGIGBK")
+    private BigDecimal secondaryDiffAmount;
+
+    @Column(name = "HGEIHZ")
+    private BigDecimal tc4LICSAmount;
+
+    @Column(name = "DQC4DT")
+    private Long dateSubmitted;
+
+    @Column(name="DQLEST")
+    private String tcdReimbursementFlag;
+
+    @Column(name="DQBPOD")
+    private String tcdLineOfBusiness;
+
+    @Column(name="DQKXST")
+    private String tcdSbmPatientGend;
+
+    @Column(name="DQABDA")
+    private String tcdSbmRxWrittenDate;
+
+    @Column(name="DQSOC4")
+    private String tcdCobClaimIndicator;
+
+    @Column(name = "DQHUPR")
+    private BigDecimal totalAmount;
+
+
+    @Column(name = "RIHAHS")
+    private BigDecimal tc3Tier;
+}
+
+ @Query(nativeQuery = true, value = "select  "
+                + "       common.DQP2NB ,"
+                + "       common.DQOINB ,"
+                + "       common.DQS6CD ,"
+                + "       common.DQS7CD ,"
+                + "       common.DQS8CD ,"
+                + "       common.DQTJCD ,"
+                + "       common.DQS5CD ,"
+                + "       common.DQK8TX ,"
+                + "       common.DQK7TX ,"
+                + "       common.DQALDT ,"
+                + "       common.DQUJCD ,"
+                + "       common.DQUKCD ,"
+                + "       common.DQULCD ,"
+                + "       common.DQBBDA ,"
+                + "       common.DQRIC4 ,"
+                + "       common.DQPECD ,"
+                + "       common.DQLRST ,"
+                + "       common.DQLOST ,"
+                + "       common.DQIONB ,"
+                + "       common.DQIMNB ,"
+                + "       common.DQK2ST ,"
+                + "       common.DQK3ST ,"
+                + "       common.DQTCCD ,"
+                + "       common.DQS6ST ,"
+                + "       common.DQUGST ,"
+                + "       common.DQTECD ,"
+                + "       common.DQC4DT ,"
+                + "       common.DQLEST,"
+                + "       common.DQBPOD,"
+                + "       common.DQKXST,"
+                + "       common.DQABDA,"
+                + "       common.DQSOC4,"
+
+                + "       common.DQLEST,"
+                + "       common.DQHUPR,"
+
+                + "       submit.RISJIE,"
+                + "       submit.RIVTID,"
+                + "       submit.RIHAHS,"
+
+                + "       pricing.HGIIBK,"
+                + "       pricing.HGIGBK,"
+                + "       pricing.HGEIHZ, "
+
+                + "       pricing.HGIIBK, "
+                + "       pricing.HGIGBK"
+
+                + " FROM RCTCDP common "
+                + " LEFT JOIN RCTC4P pricing ON pricing.HGP2NB = common.DQP2NB  AND pricing.HGOINB = common.DQOINB "
+                + " LEFT JOIN RCTC3P submit ON common.DQP2NB = submit.RIP2NB  AND common.DQOINB = submit.RIOINB "
+                + " WHERE  "
+                + " DQP2NB = :rxClaimNbr "
+                + " AND DQOINB = :clmSeqNbr "
+                + " AND DQS5CD = :memberId "
+                + " AND DQUKCD = :rxNumber "
