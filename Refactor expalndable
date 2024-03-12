@@ -377,3 +377,93 @@ export function useDurPpsDetails(request: DurppsInfoDetailsProps) : any {
 }
 
 export default useDurPpsDetails;
+
+
+
+====converted===
+import React from 'react';
+
+interface ExpandableTableProps {
+  data: any[]; // Data to be displayed in the table
+  detailsComponent: React.ComponentType<any>; // Details component to be rendered
+  detailsConfig: any; // Configuration for the details component
+  columns: string[]; // Array of column keys from data object
+  columnLabels: string[]; // Array of column labels to be displayed in the table
+}
+
+const ExpandableTable: React.FC<ExpandableTableProps> = ({ data, detailsComponent, detailsConfig, columns, columnLabels }) => {
+  return (
+    <table>
+      <thead>
+        <tr>
+          {columnLabels.map((label, index) => (
+            <th key={index}>{label}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {data.map((row: any, rowIndex: number) => (
+          <tr key={rowIndex}>
+            {columns.map((column, colIndex) => (
+              <td key={colIndex}>
+                {row[column]}
+              </td>
+            ))}
+            <td>
+              <detailsComponent {...detailsConfig} rowData={row} />
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+};
+
+export default ExpandableTable;
+
+
+===
+import React, { useEffect, useState } from 'react';
+import { getData } from '../../model/service/claimService'; // Adjust path as needed
+
+interface DetailsComponentProps {
+  apiUrl: string; // URL for fetching data
+  requestParams: any; // Parameters to be passed for detail page
+  layout: { label: string; key: string }[]; // Layout of the detail page
+  rowData: any; // Data of the selected row
+}
+
+const DetailsComponent: React.FC<DetailsComponentProps> = ({ apiUrl, requestParams, layout, rowData }) => {
+  const [data, setData] = useState<any>({});
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await getData(apiUrl, { ...requestParams, ...rowData });
+        setData(response.data);
+      } catch (error) {
+        setError('Error fetching data');
+      }
+    }
+
+    fetchData();
+  }, [apiUrl, requestParams, rowData]);
+
+  if (error) {
+    return <div>{error}</div>;
+  }
+
+  return (
+    <div>
+      {layout.map((field, index) => (
+        <div key={index}>
+          <strong>{field.label}</strong>: {data[field.key]}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default DetailsComponent;
+
