@@ -1,0 +1,379 @@
+import React from 'react';
+
+import {useClaimDURResponse} from '../useClaimDURResponse/use-claim-durresponse';
+import {useClaimDURResponseProps} from "../useClaimDURResponse/use-claim-durresponse.types";
+import DurPpsInfoTable from "./components/dur-pps-info-table";
+
+export function ClaimDURResponse(params: useClaimDURResponseProps) {
+  console.log('In ClaimDURResponse', 'params=', params);
+  const { durppsInfoResponse } = useClaimDURResponse(params);
+  return (
+    <>
+      {
+        durppsInfoResponse && durppsInfoResponse.durPpsInfo ?
+          (<DurPpsInfoTable conflictDetected ={Number(durppsInfoResponse.conflictsDetected)} durPpsInfo={durppsInfoResponse.durPpsInfo}   tenantId ={params.tenantId} sid ={params.sid} authType={params.authType} rxClaimNbr ={params.rxClaimNbr} rxSeqNbr ={params.rxSeq} />)
+          :  (<div>No DUR Record</div>)
+      }
+    </>
+  );
+}
+
+export default ClaimDURResponse;
+
+===
+export interface DurDetailsResponse {
+  durPpsSeq: number,
+  databaseInd: string,
+  reasonForSrvCde: string,
+  response: string,
+  clinicalSignificance: string,
+  otherPharmacyInd: string,
+  otherPrescriberInd: string,
+  prevDateOfFill: string,
+  qtyofPrevFill: string,
+  freeText: string,
+  additionalText: string,
+  added: string,
+  changed: string,
+  User: string
+}
+
+export interface DurppsInfoDetailsProps {
+  durPpsSeq: number;
+  tenantId: string;
+  sid: string;
+  authType: string;
+  rxClaimNbr: number;
+  rxSeqNbr: number;
+}
+===
+
+import React from 'react';
+import TableContainer from "@mui/material/TableContainer";
+import Paper from "@mui/material/Paper";
+import Table from "@mui/material/Table";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import TableCell from "@mui/material/TableCell";
+import TableBody from "@mui/material/TableBody";
+import IconButton from "@mui/material/IconButton";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import Collapse from "@mui/material/Collapse";
+import Box from "@mui/material/Box";
+import {DurPpsDetails} from "./dur-pps-details";
+
+import {Grid} from "@mui/material";
+import {DurppsInfoDetailsProps} from "../claim-durresponse.types";
+import {DurPpsInfo} from "../../useClaimDURResponse/use-claim-durresponse.types";
+
+
+interface DurPpsInfoTableProp {
+  durPpsInfo: DurPpsInfo[];
+  conflictDetected: number;
+  tenantId: string;
+  sid: string;
+  authType: string;
+  rxClaimNbr: number;
+  rxSeqNbr: number;
+}
+
+class Row extends React.Component<{ row: DurPpsInfo, detailsProps: DurppsInfoDetailsProps }, any> {
+  constructor(props: any) {
+    super(props);
+    this.state = {
+      open: false,
+    };
+  }
+
+  handleToggle = () => {
+    this.setState((prevState: any) => ({ open: !prevState['open'] }));
+  }
+
+  render() {
+    return <React.Fragment>
+      <TableRow sx={{"& > *": {borderBottom: "unset"}}}>
+        <TableCell>
+          <IconButton
+            aria-label="expand row"
+            size="small"
+            onClick={this.handleToggle}
+          >
+            {this.state['open'] ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon/>}
+          </IconButton>
+        </TableCell>
+        <TableCell align="left">{this.props.row.durPPsSeq}</TableCell>
+        <TableCell align="left">{this.props.row.response}</TableCell>
+        <TableCell align="left">{this.props.row.reasonForSrvCde}</TableCell>
+        <TableCell align="left">{this.props.row.clinicalSignificance}</TableCell>
+        <TableCell align="left">{this.props.row.qtyofPrevFill}</TableCell>
+        <TableCell align="left">{this.props.row.prevDateOfFill}</TableCell>
+
+      </TableRow>
+      <TableRow>
+        <TableCell style={{paddingBottom: 0, paddingTop: 0}} colSpan={12}>
+          <Collapse in={this.state['open']} timeout="auto" unmountOnExit>
+            <Box sx={{margin: 1}}>
+              {<DurPpsDetails {...this.props.detailsProps}/>}
+            </Box>
+          </Collapse>
+        </TableCell>
+      </TableRow>
+    </React.Fragment>;
+  }
+}
+
+
+const DurPpsInfoTable: React.FC<DurPpsInfoTableProp> = ({ durPpsInfo, conflictDetected, tenantId, sid, authType, rxClaimNbr, rxSeqNbr }) => {
+  console.log('In DurPpsInfoTable', 'durPpsInfo=', durPpsInfo);
+
+  const getDetailsProps = (row: DurPpsInfo) => {
+    const detailProps : DurppsInfoDetailsProps = {
+      durPpsSeq: row.durPPsSeq,
+      tenantId: tenantId,
+      sid: sid,
+      authType: authType,
+      rxClaimNbr: rxClaimNbr,
+      rxSeqNbr: rxSeqNbr
+    };
+    return detailProps;
+  }
+  return (
+    <>
+      <Grid container spacing={2} alignItems="start">
+        <Grid item xs={12}>
+      <TableContainer component={Paper}>
+        <Table aria-label="collapsible table">
+          <TableHead>
+            <TableRow>
+              <TableCell/>
+              <TableCell align="left">Seq #</TableCell>
+              <TableCell align="left">Response</TableCell>
+              <TableCell align="left">Reason for service</TableCell>
+              <TableCell align="left">Clinical significance</TableCell>
+              <TableCell align="left">Previous fill quantity</TableCell>
+              <TableCell align="left">Previous fill date</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody style={{ flexGrow: 1 }}>
+            {durPpsInfo.map((row: DurPpsInfo) => (
+              <Row key={row.durPPsSeq} row={row} detailsProps={getDetailsProps(row)}/>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+        </Grid>
+      </Grid>
+    </>
+  );
+}
+
+export default DurPpsInfoTable;
+
+===
+import * as React from 'react';
+
+import SimpleLayoutComponent from "../../../claims-details/ClaimsDetails/components/simple-layout-compoent";
+import labels from "../../../common/labels.json";
+
+import { DurppsInfoDetailsProps } from "../claim-durresponse.types";
+import useDurPpsDetails from "../../useClaimDURResponse/use-durPps-details";
+
+const durDetailLayout = [
+  {
+    heading: 'DUR Detail Record',
+    fields: [
+      "durPpsSeq",
+      "databaseInd",
+      "reasonForSrvCde",
+      "clinicalSignificance",
+      "otherPharmacyInd",
+      "otherPrescriberInd",
+      "prevDateOfFill",
+      "qtyofPrevFill",
+      "freeText",
+      "additionalText",
+      "editType",
+      "conflictingClaim",
+      "conflictingSeq",
+      "response",
+      "overrideListInd",
+      "otherPrescriberInd",
+      "added",
+      "changed",
+      "user"
+    ]
+  }
+];
+
+const durDetailLayoutWithNoConflicts = [
+  {
+    heading: 'DUR Detail Record',
+    fields: [
+      "durPpsSeq",
+      "databaseInd",
+      "reasonForSrvCde",
+      "clinicalSignificance",
+      "otherPharmacyInd",
+      "otherPrescriberInd",
+      "prevDateOfFill",
+      "qtyofPrevFill",
+      "freeText",
+      "additionalText",
+      "editType",
+      "response",
+      "overrideListInd",
+      "otherPrescriberInd",
+      "added",
+      "changed",
+      "user"
+    ]
+  }
+];
+
+export function DurPpsDetails(params: DurppsInfoDetailsProps) {
+  console.log('DurPpsDetails: params=', params);
+  const { durPpsDetailsResponse } = useDurPpsDetails(params);
+
+  console.log('durPpsDetailsResponse =', durPpsDetailsResponse);
+  return (
+    <SimpleLayoutComponent
+      layout = {durPpsDetailsResponse?.durPpsDetails?.conflictingClaim > 0 ? durDetailLayout : durDetailLayoutWithNoConflicts}
+      data = {durPpsDetailsResponse.durPpsDetails}
+      labels = {labels}></SimpleLayoutComponent>
+  );
+}
+
+===
+import React, {useState} from 'react';
+import {getData} from "../../model/service/claimService";
+
+import {useClaimDURResponseProps, useClaimDURResponseReturn} from "./use-claim-durresponse.types";
+export function useClaimDURResponse(request: useClaimDURResponseProps) : any {
+  const [durppsInfoResponse, setDurppsInfoResponse] = useState<useClaimDURResponseReturn>({
+    conflictsDetected: "",
+    durPpsInfo: [],
+    rxClaimNbr: 0, rxSeqNbr: 0, message: ''});
+  React.useEffect(() => {
+    console.log('In useClaimDURResponse: in useEffect');
+    async function fetchData() {
+      try {
+        const response = await getData(`/get-durpps-info?rxClaimNbr=${request.rxClaimNbr}&rxSeqNbr=${request.rxSeq}&tenantId=${request.tenantId}`,
+          {sid: request.sid, 'auth-type': undefined});
+        console.log('In useClaimDURResponse: response.data', response.data);
+        setDurppsInfoResponse(response.data);
+      } catch (error) {
+        console.error('In useClaimDURResponse: Error fetching data:', error);
+        setDurppsInfoResponse({
+          'rxClaimNbr': request.rxClaimNbr,
+          "rxSeqNbr": request.rxSeq,
+          "message": "error",
+          conflictsDetected: "",
+          durPpsInfo: []
+        });
+      }
+    }
+
+    fetchData();
+  }, [request]);
+
+  console.log('In useClaimDURResponse: messages=', durppsInfoResponse);
+  return {
+    durppsInfoResponse
+  };
+}
+
+export default useClaimDURResponse;
+
+===
+
+export interface useClaimDURResponseProps {
+  rxClaimNbr: number;
+  rxSeq: number;
+  tenantId: string;
+  sid: string;
+  authType: string;
+  expanded: boolean;
+}
+
+export interface DurPpsInfo {
+  durPPsSeq: number;
+  response: string;
+  reasonForSrvCde: string;
+  clinicalSignificance: string;
+  qtyofPrevFill: number;
+  prevDateOfFill: string;
+  conflictDetected?: number;
+}
+
+export interface useClaimDURResponseReturn {
+  rxClaimNbr: number;
+  rxSeqNbr: number;
+  conflictsDetected: string;
+  message: string;
+  durPpsInfo: DurPpsInfo[];
+}
+
+export interface DurPpsDetails {
+  durPpsSeq: number;
+  databaseInd: string;
+  reasonForSrvCde: string;
+  editType: string;
+  clinicalSignificance: string;
+  otherPharmacyInd: string;
+  prevDateOfFill: string;
+  qtyofPrevFill: number;
+  freeText: string;
+  additionalText: string;
+  conflictingClaim: number;
+  conflictingSeq: number;
+  response: string;
+  overrideListInd: string;
+  otherPrescriberInd: string;
+}
+
+export interface DurPpsDetailsResponse {
+  rxClaimNbr: number;
+  rxSeqNbr: number;
+  message: string;
+  durPpsDetails: DurPpsDetails[];
+}
+
+===
+import { useEffect, useState } from 'react';
+import { getData } from "../../model/service/claimService";
+import {DurppsInfoDetailsProps} from "../ClaimDURResponse/claim-durresponse.types";
+
+export function useDurPpsDetails(request: DurppsInfoDetailsProps) : any {
+  const [durPpsDetailsResponse, setDurPpsDetailsResponse] = useState({});
+
+  useEffect(() => {
+    async function fetchData() {
+      const { durPpsSeq, tenantId, rxClaimNbr, rxSeqNbr, sid } = request;
+      try {
+        const response: any = await getData(`/get-durpps-details?rxClaimNbr=${rxClaimNbr}&drdSeq=${durPpsSeq}&rxSeqNbr=${rxSeqNbr}&tenantId=${tenantId}`,
+          {sid, 'auth-type': undefined});
+        console.log('In useDurPpsDetails: response.data', response.data)
+        const durPpsDetail: any = response.data?.durPpsDetails && response.data.durPpsDetails.length > 0 ? response.data.durPpsDetails[0] : undefined;
+        if (!durPpsDetail) {
+          setDurPpsDetailsResponse({
+            "message": "error"
+          });
+        }
+        setDurPpsDetailsResponse(response.data);
+      } catch (error) {
+        setDurPpsDetailsResponse({
+          "message": "error"
+        });
+      }
+    }
+
+    fetchData();
+  }, [request]);
+
+  return {
+    durPpsDetailsResponse: durPpsDetailsResponse
+  };
+}
+
+export default useDurPpsDetails;
