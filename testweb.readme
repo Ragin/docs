@@ -1,0 +1,1 @@
+  <member-mp ref={ref}  view={viewName}  id="member-webcomponent" text="Member" context={memberContext}/>
