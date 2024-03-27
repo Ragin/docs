@@ -758,4 +758,166 @@ export interface UseClaimsReturn {
   onClickLink?: (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => void;
   onClickDetails: (data: any) => void;
 }
+==============================**********==============================
+
+
+
+
+export interface IMemberSearchFilter {
+  searchBy: string;
+  memberId?: string;
+  memberName?: string;
+  tenantId?: string;
+}
+
+// MemberSearch.tsx
+import React, { useContext, useState, forwardRef } from 'react';
+import { Button, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { IMemberSearchFilter } from './IMemberSearchFilter';
+import { useMembersTable } from './useMembersTable'; // This hook needs to be created
+import { GlobalContext } from './GlobalContext'; // Assuming a global context
+
+export const MemberSearch = forwardRef((props, ref) => {
+  const globalContext = useContext(GlobalContext);
+  const [filters, setFilters] = useState<IMemberSearchFilter>({ searchBy: '' });
+
+  const { setMemberSearchState } = useMembersTable(globalContext);
+
+  const handleSearchClick = () => {
+    setMemberSearchState(filters);
+  };
+
+  const handleSearchByChange = (event) => {
+    setFilters({ ...filters, searchBy: event.target.value });
+  };
+
+  return (
+    <div ref={ref}>
+      <FormControl fullWidth>
+        <InputLabel>Search By</InputLabel>
+        <Select value={filters.searchBy} label="Search By" onChange={handleSearchByChange}>
+          <MenuItem value="memberId">Member ID</MenuItem>
+          <MenuItem value="memberName">Member Name</MenuItem>
+        </Select>
+      </FormControl>
+      {filters.searchBy === 'memberId' && (
+        <TextField
+          label="Member ID"
+          onChange={(e) => setFilters({ ...filters, memberId: e.target.value })}
+        />
+      )}
+      {filters.searchBy === 'memberName' && (
+        <TextField
+          label="Member Name"
+          onChange={(e) => setFilters({ ...filters, memberName: e.target.value })}
+        />
+      )}
+      <Button onClick={handleSearchClick}>Search</Button>
+    </div>
+  );
+});
+
+export default MemberSearch;
+
+// MemberSearch.tsx
+import React, { useContext, useState, forwardRef } from 'react';
+import { Button, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { IMemberSearchFilter } from './IMemberSearchFilter';
+import { useMembersTable } from './useMembersTable'; // This hook needs to be created
+import { GlobalContext } from './GlobalContext'; // Assuming a global context
+
+export const MemberSearch = forwardRef((props, ref) => {
+  const globalContext = useContext(GlobalContext);
+  const [filters, setFilters] = useState<IMemberSearchFilter>({ searchBy: '' });
+
+  const { setMemberSearchState } = useMembersTable(globalContext);
+
+  const handleSearchClick = () => {
+    setMemberSearchState(filters);
+  };
+
+  const handleSearchByChange = (event) => {
+    setFilters({ ...filters, searchBy: event.target.value });
+  };
+
+  return (
+    <div ref={ref}>
+      <FormControl fullWidth>
+        <InputLabel>Search By</InputLabel>
+        <Select value={filters.searchBy} label="Search By" onChange={handleSearchByChange}>
+          <MenuItem value="memberId">Member ID</MenuItem>
+          <MenuItem value="memberName">Member Name</MenuItem>
+        </Select>
+      </FormControl>
+      {filters.searchBy === 'memberId' && (
+        <TextField
+          label="Member ID"
+          onChange={(e) => setFilters({ ...filters, memberId: e.target.value })}
+        />
+      )}
+      {filters.searchBy === 'memberName' && (
+        <TextField
+          label="Member Name"
+          onChange={(e) => setFilters({ ...filters, memberName: e.target.value })}
+        />
+      )}
+      <Button onClick={handleSearchClick}>Search</Button>
+    </div>
+  );
+});
+
+export default MemberSearch;
+
+
+// useMembersTable.js
+import { useState, useEffect } from 'react';
+import { IMemberSearchFilter } from './IMemberSearchFilter';
+
+export const useMembersTable = (context) => {
+  const [members, setMembers] = useState([]);
+  const [searchState, setSearchState] = useState<IMemberSearchFilter>({ searchBy: '' });
+
+  useEffect(() => {
+    // Implement fetching logic based on searchState
+    // Placeholder for fetch logic
+    console.log('Search state updated', searchState);
+  }, [searchState]);
+
+  return {
+    members,
+    setMemberSearchState: setSearchState,
+  };
+};
+
+// MemberTable.tsx
+import React from 'react';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+
+const MemberTable = ({ members }) => {
+  return (
+    <TableContainer component={Paper}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>Member ID</TableCell>
+            <TableCell>Member Name</TableCell>
+            {/* Add more headers as needed */}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {members.map((member) => (
+            <TableRow key={member.id}>
+              <TableCell>{member.memberId}</TableCell>
+              <TableCell>{member.memberName}</TableCell>
+              {/* Add more cells as needed */}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+};
+
+export default MemberTable;
+
 
