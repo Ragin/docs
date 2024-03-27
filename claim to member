@@ -1,0 +1,761 @@
+import React, {forwardRef, useContext, useEffect, useState} from 'react';
+import {MedicationsTable} from '../../medications-table/MedicationsTable/medications-table';
+import {ClaimsSearchProps} from './claims-search.types';
+import {Button, TextField, InputLabel, FormControl, SelectChangeEvent} from '@mui/material';
+import {useMedicationsTable} from '../../medications-table/useMedicationsTable/use-medications-table';
+import {SearchFilter} from '../../medications-table/useMedicationsTable/use-medications-table.types';
+import Select from '@mui/material/Select';
+import './claims-search.css';
+import {GlobalContext} from '../../Claims/Contexts';
+
+export interface IClaimSearchFilter {
+  searchBy: any;
+  memberId: string | undefined;
+  fillDtFrom: string | undefined;
+  fillDtThru: string | undefined;
+  tenantId: string | undefined;
+  pharmacyId?: string | undefined;
+  rxNumber?: string | undefined;
+  refillNumber?: string | undefined;
+  claimNumber?: string | undefined;
+}
+
+export const MEMBER_ID = '0';
+export const PHARMACY_ID = '1';
+export const CLAIM_NUMBER = '2';
+export const ClaimsSearch = forwardRef((props: ClaimsSearchProps, ref: React.Ref<HTMLDivElement>) => {
+  const {context, onClickDetails} = props;
+  let globalContext = useContext(GlobalContext);
+  const [claimContext, setClaimContext] = React.useState(context);
+  console.log('In Claims Search :context props ==', props);
+  console.log('In Claims Search :globalContext context ==', globalContext);
+
+  const [filters, setFilters] = useState<IClaimSearchFilter>({
+    searchBy: MEMBER_ID,
+    memberId: '',
+    fillDtFrom: '',
+    fillDtThru: '',
+    tenantId: '',
+    refillNumber: '',
+    rxNumber: ''
+  });
+
+  // const context = useContext(GlobalContext);
+  console.log('In Claims Search :Claims before useMedicationsTable context  = ', claimContext);
+
+  let {setSearchState, rows, headers, resetRows} = useMedicationsTable(claimContext);
+
+  useEffect(() => {
+    // Access count value from session storage
+    let claimSearchFilter: any = sessionStorage.getItem('claimSearchFilter');
+    console.log('In Claims Search :useEffect filters=', filters);
+    console.log('In Claims Search :useEffect claimSearchFilter ==', claimSearchFilter);
+    let claimSearchFilterObj: IClaimSearchFilter | undefined = undefined;
+    try {
+      claimSearchFilterObj = JSON.parse(claimSearchFilter);
+    } catch (error) {
+      console.log('filter in session not valid JSON');
+    }
+    console.log('In Claims Search :useEffect claimSearchFilterObj=', claimSearchFilterObj);
+    if (claimSearchFilterObj) {
+      filters.fillDtThru = claimSearchFilterObj.fillDtThru;
+      filters.fillDtFrom = claimSearchFilterObj.fillDtFrom;
+      filters.memberId = claimSearchFilterObj.memberId;
+      filters.pharmacyId = claimSearchFilterObj.pharmacyId;
+      filters.claimNumber = claimSearchFilterObj.claimNumber;
+      filters.searchBy = claimSearchFilterObj.searchBy;
+      filters.tenantId = props.context?.tenantId ? props?.context?.tenantId : claimContext?.tenantId;
+      setFilters({...filters});
+      console.log('In Claims Search : useEffect filters end=', filters);
+      handleSearchClick();
+    }
+  }, [props.context]); //No dependency to trigger in each page load
+
+  const isSearchEnabled = () => {
+    return (
+      (claimContext?.tenantId || filters.tenantId) &&
+      ((filters.searchBy === MEMBER_ID && filters.memberId && filters.memberId !== '') ||
+        (filters.searchBy === PHARMACY_ID && filters.pharmacyId && filters.pharmacyId !== '') ||
+        (filters.searchBy === CLAIM_NUMBER &&
+          filters.claimNumber &&
+          filters.claimNumber !== '' &&
+          filters.claimNumber.length === 15))
+    );
+  };
+
+  const handleSearchClick = () => {
+    console.log('In Claims Search :handleSearchClick filters=', filters);
+    const fromDt: any = filters.fillDtFrom?.split('-').join('');
+    const thruDt: any = filters.fillDtThru?.split('-').join('');
+
+    const newSearchState: SearchFilter = {
+      searchBy: filters.searchBy,
+      memberId: filters.searchBy === MEMBER_ID ? filters.memberId : undefined,
+      pharmacyId: filters.searchBy === PHARMACY_ID ? filters.pharmacyId : undefined,
+      rxNumber: filters.searchBy === PHARMACY_ID ? (filters.rxNumber ? filters.rxNumber : '') : '',
+      refillNumber: filters.searchBy === PHARMACY_ID ? (filters.refillNumber ? filters.refillNumber : '') : '',
+      fillDtFrom: filters.fillDtFrom ? Number(fromDt) : undefined,
+      fillDtThru: filters.fillDtThru ? Number(thruDt) : undefined,
+      claimNumber: filters.searchBy === CLAIM_NUMBER ? (filters.claimNumber ? filters.claimNumber : '') : '',
+      tenantId: filters.tenantId ? filters.tenantId : claimContext?.tenantId
+    };
+
+    if (isSearchEnabled()) {
+      sessionStorage.setItem('claimSearchFilter', JSON.stringify(newSearchState));
+      setSearchState({...newSearchState});
+    } else {
+      console.log('In Claims Search : please enter all search parameters before search');
+    }
+    console.log('In Claims Search : handleSearchClick before calling setClaimContext=');
+    setClaimContext(props.context);
+  };
+  const handleSearchByChange = (event: SelectChangeEvent<any>) => {
+    setFilters({...filters, searchBy: event.target.value});
+    resetRows();
+  };
+
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && isSearchEnabled()) {
+        handleSearchClick();
+      }
+    };
+    window.addEventListener('keypress', handleKeyPress);
+    return () => {
+      window.removeEventListener('keypress', handleKeyPress);
+    };
+  }, [isSearchEnabled, handleSearchClick]);
+
+  ///
+  return (
+    claimContext && (
+      <>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-start',
+            flexWrap: 'wrap',
+            margin: '0 10px',
+            maxWidth: filters.searchBy === '2' ? '600px' : filters.searchBy === '0' ? '1000px' : undefined
+          }}
+        >
+          <div style={{flex: 1, margin: '0 10px'}}>
+            <FormControl>
+              <InputLabel id="demo-simple-select-label">Search By</InputLabel>
+              <Select
+                native={true}
+                onChange={handleSearchByChange}
+                MenuProps={{
+                  classes: {
+                    paper: 'skyline-custom-select'
+                  }
+                }}
+                label="Search By"
+                value={filters.searchBy}
+              >
+                <option value="0">Member ID</option>
+                <option value="1">Pharmacy ID</option>
+                <option value="2">Claim Number</option>
+              </Select>
+            </FormControl>
+          </div>
+
+          {filters.searchBy === MEMBER_ID && (
+            <div style={{flex: 1, margin: '0 10px'}}>
+              <TextField
+                label="Member ID"
+                value={filters.memberId}
+                inputProps={{style: {textTransform: 'uppercase'}, maxLength: 20}}
+                onChange={(e) => setFilters({...filters, memberId: e.target.value})}
+              />
+            </div>
+          )}
+          {filters.searchBy === PHARMACY_ID && (
+            <>
+              <div style={{flex: 1, margin: '0 10px'}}>
+                <TextField
+                  label="Pharmacy ID"
+                  inputProps={{style: {textTransform: 'uppercase'}, maxLength: 15}}
+                  value={filters.pharmacyId}
+                  onChange={(e) => setFilters({...filters, pharmacyId: e.target.value})}
+                />
+              </div>
+            </>
+          )}
+
+          {filters.searchBy === CLAIM_NUMBER && (
+            <div style={{flex: 1, margin: '0 10px'}}>
+              <TextField
+                label="Claim number"
+                inputProps={{style: {textTransform: 'uppercase'}, minLength: 15, maxLength: 15}}
+                value={filters.claimNumber}
+                onChange={(e) => setFilters({...filters, claimNumber: e.target.value})}
+              />
+            </div>
+          )}
+          {filters.searchBy !== CLAIM_NUMBER && (
+            <>
+              <div style={{flex: 1, margin: '0 10px'}}>
+                <TextField
+                  type="date"
+                  label="Fill date from"
+                  value={filters.fillDtFrom}
+                  onChange={(e) =>
+                    setFilters({
+                      ...filters,
+                      fillDtFrom: e.target.value.length > 10 ? e.target.value.slice(0, 10) : e.target.value
+                    })
+                  }
+                />
+              </div>
+              <div style={{flex: 1, margin: '0 10px'}}>
+                <TextField
+                  type="date"
+                  label="Fill date thru"
+                  value={filters.fillDtThru}
+                  onChange={(e) =>
+                    setFilters({
+                      ...filters,
+                      fillDtThru: e.target.value.length > 10 ? e.target.value.slice(0, 10) : e.target.value
+                    })
+                  }
+                />
+              </div>
+            </>
+          )}
+
+          {filters.searchBy === PHARMACY_ID && (
+            <>
+              <div style={{flex: 1, margin: '0 10px'}}>
+                <TextField
+                  label="Rx number"
+                  value={filters.rxNumber}
+                  inputProps={{style: {textTransform: 'uppercase'}, maxLength: 12}}
+                  onChange={(e) => setFilters({...filters, rxNumber: e.target.value})}
+                />
+              </div>
+              <div style={{flex: 1, margin: '0 10px'}}>
+                <TextField
+                  label="Refill number"
+                  value={filters.refillNumber}
+                  inputProps={{style: {textTransform: 'uppercase'}, maxLength: 2}}
+                  onChange={(e) => setFilters({...filters, refillNumber: e.target.value})}
+                />
+              </div>
+            </>
+          )}
+          {!claimContext?.tenantId && (
+            <div style={{flex: 1, margin: '0 10px'}}>
+              <TextField
+                label="Tenant ID"
+                value={filters.tenantId}
+                inputProps={{style: {textTransform: 'uppercase'}}}
+                onChange={(e) => setFilters({...filters, tenantId: e.target.value})}
+              />
+            </div>
+          )}
+          <div style={{flex: 1, margin: '0 10px'}}>
+            <Button
+              style={{marginTop: '20px'}}
+              href="#"
+              disabled={!isSearchEnabled()}
+              onClick={handleSearchClick}
+              variant="contained"
+              color="primary"
+            >
+              Search
+            </Button>
+          </div>
+        </div>
+        <div style={{display: 'flex', overflowY: 'scroll', maxHeight: '600px', justifyContent: 'flex-start'}}>
+          <MedicationsTable
+            title="Claim Result"
+            context={claimContext}
+            filters={filters}
+            onClickDetails={onClickDetails}
+            rows={rows}
+            headers={headers}
+          />
+        </div>
+      </>
+    )
+  );
+});
+
+export default ClaimsSearch;
+
+
+
+import {UseClaimsSearchReturn} from '../useClaimsSearch/use-claims-search.types';
+import {IClaimSearchFilter} from './claims-search';
+
+export interface ClaimsSearchProps extends UseClaimsSearchReturn {
+  context: IClaimSearchFilter;
+  text?: string;
+}
+
+
+
+import {useClickLink} from '../../useClickLink/use-click-link';
+
+import useClickDetails from '../../useClickDetails/use-click-details';
+import {UseClaimsSearchProps, UseClaimsSearchReturn} from './use-claims-search.types';
+export function useClaimsSearch(props: UseClaimsSearchProps): UseClaimsSearchReturn {
+  const {ref} = props;
+  const {onClickLink} = useClickLink({ref});
+  const {onClickDetails} = useClickDetails({ref});
+  return {
+    onClickLink,
+    onClickDetails
+  };
+}
+
+export default useClaimsSearch;
+
+
+
+
+import React from 'react';
+
+export interface UseClaimsSearchProps {
+  ref: React.RefObject<HTMLDivElement>;
+}
+
+export interface UseClaimsSearchReturn {
+  onClickLink?: (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => void;
+  onClickDetails: (detail: any) => void;
+}
+
+
+
+import React from 'react';
+import Paper from '@mui/material/Paper';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import {Link} from '@mui/material';
+import {styled} from '@mui/material/styles';
+import TableCell, {tableCellClasses} from '@mui/material/TableCell';
+import TablePagination from '@mui/material/TablePagination';
+import TableSortLabel from '@mui/material/TableSortLabel';
+import {MedicationsTableProps} from './medications-table.types';
+import {ClaimsRecord} from '../useMedicationsTable/use-medications-table.types';
+import NoRecordsFound from '../../no-records-found/NoRecordsFound/no-records-found';
+
+export function MedicationsTable(props: MedicationsTableProps) {
+  console.log('In MedicationsTable: props=', props);
+  const {rows, headers, context, filters, onClickDetails} = props;
+  const [order, setOrder] = React.useState<'asc' | 'desc'>('asc');
+  const [orderBy, setOrderBy] = React.useState<keyof (typeof rows)[0] | ''>('');
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(25);
+
+  const handleRequestSort = (property: keyof (typeof rows)[0]) => {
+    const isAsc = orderBy === property && order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
+    setOrderBy(property);
+  };
+
+  const sortedRows = React.useMemo(() => {
+    console.log('orderBy, order=', orderBy, ',', order);
+    if (orderBy === '') {
+      return rows;
+    }
+    setPage(0);
+    console.log('orderBy not empty');
+    const orderByColName: any = headers.filter((col) => col.code === orderBy)[0]?.code;
+    if (!orderByColName) {
+      return rows;
+    }
+    return [...rows].sort((a, b) => {
+      const valueA = a[orderByColName as keyof ClaimsRecord];
+      const valueB = b[orderByColName as keyof ClaimsRecord];
+      if (typeof valueA === 'string' && typeof valueB === 'string') {
+        return order === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+      } else {
+        return order === 'asc' ? (valueA as number) - (valueB as number) : (valueB as number) - (valueA as number);
+      }
+    });
+  }, [rows, orderBy, order]);
+
+  const StyledTableCell = styled(TableCell)(({theme}) => ({
+    [`&.${tableCellClasses.head}`]: {
+      backgroundColor: theme.palette.common.white,
+      color: theme.palette.common.black,
+      cursor: 'pointer'
+    },
+    [`&.${tableCellClasses.body}`]: {
+      fontSize: 14
+    }
+  }));
+
+  const StyledTableRow = styled(TableRow)(({theme}) => ({
+    '&:nth-of-type(odd)': {
+      backgroundColor: theme.palette.action.hover
+    },
+    // hide last border
+    '&:last-child td, &:last-child th': {
+      border: 0
+    }
+  }));
+
+  const headersMap = (header: any) => {
+    return (
+      <StyledTableCell key={header?.code} align="left" onClick={() => handleRequestSort(header?.code)}>
+        <TableSortLabel active={orderBy === header?.code} direction={orderBy === header?.code ? order : 'asc'}>
+          {header?.label}
+        </TableSortLabel>
+      </StyledTableCell>
+    );
+  };
+
+  const rowsMap = (row: (typeof rows)[0]) => {
+    return (
+      <StyledTableRow>
+        <StyledTableCell>{row.memberId}</StyledTableCell>
+        <StyledTableCell>{row.name}</StyledTableCell>
+        <StyledTableCell>{row.pharmacyId}</StyledTableCell>
+        <StyledTableCell>{row.sbmDt}</StyledTableCell>
+        <StyledTableCell>{row.rxNumber}</StyledTableCell>
+        <StyledTableCell>{row.refillNumber}</StyledTableCell>
+        <StyledTableCell>{row.claimStatus}</StyledTableCell>
+        <StyledTableCell>
+          <Link
+            data-id={`${row.rxSeq}`}
+            data-rxClaimNbr={`${row.rxClaimNbr}`}
+            data-rxSeq={`${row.rxSeq}`}
+            onClick={() =>
+              onClickDetails({
+                rxClaimNbr: row.rxClaimNbr,
+                rxSeq: row.rxSeq,
+                rxNumber: row.rxNumber,
+                fillDtFrom: filters.fillDtFrom,
+                fillDtThru: filters.fillDtThru,
+                memberId: row.memberId,
+                tenantId: context.tenantId ? context.tenantId : filters.tenantId,
+                viewName: 'claimsDetails'
+              })
+            }
+            id={`account-details-link-${row.rxClaimNbr}`}
+          >
+            {row.rxClaimNbr}
+          </Link>
+          {/*          <a href={`/claims-details?id=${row.rxSeq}&rxClaimNbr=${row.rxClaimNbr}&rxSeq=${row.rxSeq}&rxNumber=${row.rxNumber}&fillDtFrom=${filters.fillDtFrom}&fillDtThru=${filters.fillDtThru}&memberId=${row.memberId}&tenantId=${context.tenantId?context.tenantId:filters.tenantId}&viewName='claimsDetails'`}
+
+          > {row.rxClaimNbr}</a>*/}
+          {/*  <a href={`/claim-detail/${row.rxSeq}`} onClick={onClickLink} data-analytics={{category: 'homepage'}}>test</a>*/}
+        </StyledTableCell>
+        <StyledTableCell>{ 1000 - (row.rxSeq)}</StyledTableCell>
+      </StyledTableRow>
+    );
+  };
+
+  return (
+    <>
+      <TableContainer component={Paper} sx={{minHeight: '90px'}}>
+        <Table sx={{minWidth: '650px'}} aria-label="simple table">
+          <TableHead>
+            <StyledTableRow>{headers?.map(headersMap)}</StyledTableRow>
+          </TableHead>
+          <TableBody>
+            {rows &&
+              rows.length > 0 &&
+              sortedRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(rowsMap)}
+          </TableBody>
+        </Table>
+        {rows && rows.length > 0 && (
+          <TablePagination
+            component="div"
+            count={rows.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            rowsPerPageOptions={[]}
+            onPageChange={(_, newPage) => setPage(newPage)}
+            labelDisplayedRows={({from, to, count}) => `${from}-${to} of ${count}`}
+            onRowsPerPageChange={(event) => {
+              setRowsPerPage(parseInt(event.target.value, 10));
+              setPage(0);
+            }}
+          />
+        )}
+        {!rows || (rows.length == 0 && <NoRecordsFound></NoRecordsFound>)}
+      </TableContainer>
+    </>
+  );
+}
+
+export default MedicationsTable;
+
+
+
+import {ClaimsRecord, Column} from '../../medications-table/useMedicationsTable/use-medications-table.types';
+import {UseClaimsReturn} from '../../useClaims/use-claims.types';
+import {IClaimSearchFilter} from '../../claims-search/ClaimsSearch/claims-search';
+
+export interface MedicationsTableProps extends UseClaimsReturn {
+  title: string;
+  rows: ClaimsRecord[];
+  headers: Column[];
+  tenantId?: string | undefined;
+  context: any;
+  filters: IClaimSearchFilter;
+}
+
+
+
+import {useEffect, useState} from 'react';
+import {ClaimsRecord, Column, SearchFilter} from './use-medications-table.types';
+import {getData, postData} from '../../model/service/claimService';
+import {CLAIM_NUMBER, MEMBER_ID, PHARMACY_ID} from '../../claims-search/ClaimsSearch/claims-search';
+
+interface UseMedicationsTableResult {
+  headers: Column[];
+  reloadTable: () => void;
+  resetRows: () => void;
+  setSearchState: (value: any) => void;
+  loading: boolean;
+  rows: Array<ClaimsRecord>;
+}
+
+export function useMedicationsTable(context: any): UseMedicationsTableResult {
+  console.log('In useMedicationsTable : context =', context);
+  const headers = [
+    {label: 'Member ID', code: 'memberId'},
+    {label: 'Member Name', code: 'name'},
+    {label: 'Pharmacy ID', code: 'pharmacyId'},
+    {label: 'Fill Date', code: 'sbmDt'},
+    {label: 'Rx Number', code: 'rxNumber'},
+    {label: 'Refill Number', code: 'refillNumber'},
+    {label: 'Claim Status', code: 'claimStatus'},
+    {label: 'RxClaim Number', code: 'rxClaimNbr'},
+    {label: 'Sequence Number', code: 'rxSeq'}
+  ];
+  const [rows, setRows] = useState<Array<ClaimsRecord>>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [searchState, setSearchState] = useState<SearchFilter>({
+    searchBy: '',
+    memberId: '',
+    fillDtFrom: undefined,
+    fillDtThru: undefined,
+    tenantId: ''
+  });
+  const fetchData = async () => {
+    try {
+      let url = '/search';
+      let response: any = {};
+      if (searchState.searchBy === PHARMACY_ID) {
+        url = `/search-by-pha?pharmacy=${searchState.pharmacyId}&frmFillDt=${
+          searchState.fillDtFrom ? searchState.fillDtFrom : 0
+        }&thruFillDt=${searchState.fillDtThru ? searchState.fillDtThru : 0}&rxNumber=${
+          searchState.rxNumber
+        }&refillNumber=${searchState.refillNumber}&tenantId=${searchState.tenantId}`;
+        response = await getData(url, {sid: context.sid, authtype: context.authtype});
+      } else if (searchState.searchBy === CLAIM_NUMBER) {
+        url = `/search-by-claim?claimNumber=${searchState.claimNumber}&tenantId=${searchState.tenantId}`;
+        response = await getData(url, {sid: context.sid, authtype: context.authtype});
+      } else {
+        let searchStateAdjusted = {...searchState};
+        searchStateAdjusted.fillDtFrom = searchState.fillDtFrom ? searchState.fillDtFrom : 0;
+        searchStateAdjusted.fillDtThru = searchState.fillDtThru ? searchState.fillDtThru : 0;
+        response = await postData(url, {sid: context.sid, authtype: context.authtype}, searchStateAdjusted);
+      }
+      console.log('In useMedicationsTable: searchState=', searchState, 'url=', url);
+      const data = response?.data?.memberSrchInfoResp ? response?.data?.memberSrchInfoResp : [];
+      console.log(data);
+      setRows([...data]);
+      setLoading(false);
+      return data;
+    } catch (error) {
+      console.error('In useMedicationsTable: Error fetching data:', error);
+      setLoading(false);
+    }
+    return [];
+  };
+
+  function isSearchable() {
+    return (
+      searchState.tenantId &&
+      ((searchState.searchBy === MEMBER_ID && searchState.memberId && searchState.memberId !== '') ||
+        (searchState.searchBy === PHARMACY_ID && searchState.pharmacyId && searchState.pharmacyId !== '') ||
+        (searchState.searchBy === CLAIM_NUMBER && searchState.claimNumber && searchState.claimNumber !== ''))
+    );
+  }
+
+  useEffect(() => {
+    if (isSearchable()) {
+      fetchData();
+    }
+  }, [searchState]);
+
+  return {
+    headers,
+    loading,
+    rows,
+    setSearchState,
+    resetRows: () => {
+      setRows([]);
+    },
+    reloadTable: () => {
+      setSearchState((searchState) => ({...searchState}));
+    }
+  };
+}
+
+export default useMedicationsTable;
+
+
+export interface UseMedicationsTableProps {}
+
+export interface UseMedicationsTableReturn {
+  headers: Array<string>;
+  loading: boolean;
+  rows: Array<ClaimsRecord>;
+}
+
+export interface MedicationsTableItem {
+  id: string;
+  code: string;
+  name: string;
+  status: string;
+}
+
+export interface ClaimsRecord {
+  memberId: string;
+  sbmDt: number;
+  name: string;
+  status: string;
+  rxNumber: number;
+  refillNumber: string;
+  claimStatus: string;
+  rxClaimNbr: string;
+  pharmacyId: string;
+  rxSeq: number;
+}
+
+export interface SearchFilter {
+  searchBy: string | undefined;
+  memberId?: string | undefined;
+  fillDtFrom: number | undefined;
+  fillDtThru: number | undefined;
+  tenantId: string | undefined;
+  pharmacyId?: string | undefined;
+  rxNumber?: string | undefined;
+  refillNumber?: string | undefined;
+  claimNumber?: string | undefined;
+}
+
+export interface Column {
+  label: string;
+  code: string;
+}
+
+
+import axios, {AxiosError} from 'axios';
+import {getBasePath} from './commonService';
+
+export function postData(feature: string, headers: any, userSelectedValues: any): Promise<any> {
+  const basePath = getBasePath();
+
+  const url = `${basePath}${feature}`;
+
+  const config = {
+    headers
+  };
+  console.log('in getData config=', config, ' url=', url);
+  const requestData = {
+    ...userSelectedValues
+  };
+
+  return new Promise((resolve, reject) => {
+    axios
+      .post<{data: any}>(url, requestData, config)
+      .then((response) => {
+        resolve(response);
+      })
+      .catch((error: AxiosError) => {
+        if (error.response) {
+          console.error('Server responded with an error status:', error.response.status);
+          console.error('Response data:', error.response.data);
+          reject(error.response);
+        } else if (error.request) {
+          console.error('No response received from the server.');
+          reject(error.request);
+        } else {
+          console.error('Error setting up the request:', error.message);
+          reject(error.message);
+        }
+      });
+  });
+}
+
+export function getData(feature: string, headers: any): Promise<any> {
+  const basePath = getBasePath();
+
+  const url = `${basePath}${feature}`;
+
+  const config = {
+    headers
+  };
+  console.log('in getData config= url=', url);
+
+  return new Promise((resolve, reject) => {
+    axios
+      .get<{data: any}>(url, config)
+      .then((response) => {
+        resolve(response);
+      })
+      .catch((error: AxiosError) => {
+        if (error.response) {
+          console.error('Server responded with an error status:', error.response.status);
+          console.error('Response data:', error.response.data);
+          reject(error.response);
+        } else if (error.request) {
+          console.error('No response received from the server.');
+          reject(error.request);
+        } else {
+          console.error('Error setting up the request:', error.message);
+          reject(error.message);
+        }
+      });
+  });
+}
+
+
+export function getBasePath(): string {
+  console.log(window.location.host);
+  return 'https://claims-microproduct-service-qa-ctc.optum.com/rxclaim-lite';
+}
+
+
+
+import {useClickLink} from '../useClickLink/use-click-link';
+
+import {UseClaimsProps, UseClaimsReturn} from './use-claims.types';
+import useClickDetails from '../useClickDetails/use-click-details';
+
+export function useClaims(props: UseClaimsProps): UseClaimsReturn {
+  const {ref} = props;
+  const {onClickLink} = useClickLink({ref});
+  const {onClickDetails} = useClickDetails({ref});
+  return {
+    onClickLink,
+    onClickDetails
+  };
+}
+
+export default useClaims;
+
+
+import React from 'react';
+
+export interface UseClaimsProps {
+  ref: React.RefObject<HTMLDivElement>;
+}
+
+export interface UseClaimsReturn {
+  onClickLink?: (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => void;
+  onClickDetails: (data: any) => void;
+}
+
