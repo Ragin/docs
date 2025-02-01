@@ -725,3 +725,695 @@ export function scrollToTop() {
 
 export default layout;
 export { leftLayout, eligibilityLayout, memEligHeadingLayoutFields, memEligExpandedLayout };
+
+===
+
+import React, { useMemo, useState, useEffect } from 'react';
+import { AppBar, Button, Grid, Toolbar, Typography, Box } from '@mui/material';
+import useMemberDetail, { MemberDetailContext } from '../useMemberDetail/use-member-detail';
+import labels from '../../common/labels.json';
+import { MemberDetailSearchRecord } from '../useMemberDetail/use-member-detail.types';
+import { MemberContext, RxMemberLiteContext } from '../../common/model-types';
+import StatusFilter from '../../common/status-filter';
+import { isFromClientPortal, setAuthTypeClientPortal } from '../../common/common-utils';
+import { useMemberModalContext } from '../../Member/Components/AddmemberModal/useMemberModal';
+import { postData2, getData } from '../../model/service/memberService';
+import MemberDetailTabs from './components/member-detail-tabs';
+import HeaderComponent from './components/header-component';
+import { ElgData, MemberDetailsProps, MemberNamesInputs } from './member-detail.types';
+import MemberEligibilityModal from './MemberEligibilityModal';
+import MemEligibilityExpandableTable from './components/member-eligibility/member-eligibility-expandable-table';
+import layout, { leftLayout, eligibilityLayout, memEligHeadingLayoutFields, memEligExpandedLayout } from './SimpleLayoutComponent';
+
+const title = '${memberId} (${lastName}, ${firstName} ${middleName})';
+
+const MemberDetail: React.FC<MemberDetailsProps> = (props) => {
+  const { context, onClickLink, editPermissions } = props;
+  const contextObj = context;
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const openModal = () => setModalOpen(true);
+  const closeModal = () => setModalOpen(false);
+
+  const { isAddMode, isEditMode, setIsEditMode } = useMemberModalContext();
+  const [memberEligStatus, setMemberEligStatus] = useState<string>('A');
+  const [filteredElig, setFilteredElig] = useState<any>([]);
+  const [refreshKey, setRefreshKey] = useState<number>(0);
+  const detail: MemberDetailSearchRecord = context?.searchDetailParam || '';
+  const [currentLayout, setCurrentLayout] = useState(layout);
+
+  useEffect(() => {
+    // Inject the eligibility layout if in add mode and not already present.
+    if (
+      isAddMode &&
+      !currentLayout.leftLayout.some(
+        (group: { heading: string }) => group.heading === eligibilityLayout.heading
+      )
+    ) {
+      setCurrentLayout((prevLayout: any) => ({
+        ...prevLayout,
+        leftLayout: [...prevLayout.leftLayout, eligibilityLayout]
+      }));
+    }
+    console.log('Current layout:', currentLayout);
+  }, [isAddMode, currentLayout]);
+
+  async function fetchRequiredFields() {
+    try {
+      const response = await getData(
+        `/required-fields?carrierId=${sessionStorage.getItem('carrierId')}&accountId=${sessionStorage.getItem(
+          'accountId'
+        )}&groupId=${sessionStorage.getItem('groupId')}`,
+        { sid: sessionStorage.getItem('sid'), authtype: contextObj.authtype }
+      );
+      const { data } = response;
+      console.log('Required fields:', data);
+      // Update required fields for first two groups.
+      for (let i = 0; i < 2; i++) {
+        for (let j = 0; j < leftLayout[i].fields.length; j++) {
+          const fieldApikey = leftLayout[i].fields[j].apikey;
+          leftLayout[i].fields[j].required = data[fieldApikey];
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching required fields', error);
+    }
+  }
+  useEffect(() => {
+    fetchRequiredFields();
+  }, []);
+
+  const [memberSavedFlag, setMemberSavedFlag] = useState(false);
+  const [savedResponse, setNewSavedMem] = useState<Record<string, string> | null>(null);
+
+  const memberParam = useMemo(() => {
+    if (isAddMode && !savedResponse) return null;
+    if (!isAddMode && memberSavedFlag) {
+      return {
+        memberId: savedResponse?.['memberId'] || '',
+        carrierId: savedResponse?.['carrierId'] || '',
+        accountId: savedResponse?.['accountId'] || '',
+        groupId: savedResponse?.['groupId'] || '',
+        status: '',
+        tenantId: sessionStorage.getItem('tenantId') || '',
+        authType: contextObj.authType || '',
+        sid: contextObj.sid || sessionStorage.getItem('sid') || ''
+      };
+    }
+    return {
+      memberId: detail.memberId,
+      carrierId: detail.carrierId,
+      accountId: detail.accountId,
+      groupId: detail.groupId,
+      status: detail.status,
+      tenantId: detail.tenantId,
+      authType: contextObj.authType,
+      sid: contextObj.sid
+    };
+  }, [isAddMode, memberSavedFlag, detail, savedResponse]);
+
+  const stableContext = useMemo(() => {
+    if (!memberParam) return null;
+    return new RxMemberLiteContext(memberParam);
+  }, [memberParam]);
+
+  const { details, elig, fetchMemberEligibility } = useMemberDetail(stableContext);
+  const stringDets = JSON.stringify(details);
+
+  useEffect(() => {
+    if (!isAddMode || (!isEditMode && detail?.memberId)) {
+      filterActiveRecords('A', setMemberEligStatus, elig.memberElig, setFilteredElig);
+    }
+    if (!context.tenantId) {
+      context.tenantId = detail.tenantId;
+    }
+  }, [elig, detail?.memberId, context]);
+
+  useEffect(() => {
+    const fetchEligibility = async () => {
+      try {
+        await fetchMemberEligibility();
+      } catch (error) {
+        console.error('Error fetching eligibility:', error);
+      }
+    };
+    fetchEligibility();
+  }, [refreshKey]);
+
+  useEffect(() => {
+    console.debug('Saved response:', savedResponse);
+  }, [savedResponse]);
+
+  const filterActiveRecords = (
+    status: string,
+    setStatus: (s: string) => void,
+    fullList: any[],
+    setFilteredDetails: (d: any[]) => void
+  ) => {
+    if (!fullList) return;
+    const filteredData = fullList.filter(
+      (record) => record.status === status || status === 'ALL'
+    );
+    setFilteredDetails(filteredData);
+    setStatus(status);
+  };
+
+  const [saving, setSaving] = useState(false);
+  const [elgData, setElgData] = useState<ElgData | null>(null);
+  const [AddMemberNames, setErrors] = useState({});
+  const [dmErrors, setdmErrors] = useState({});
+  const [requiredFields, setRequiredFields] = useState<Record<string, any>>({});
+  const [memberNamesInputs, setMemberNamesInput] = useState<MemberNamesInputs>({
+    mbrFirstName: '',
+    mbrLastName: '',
+    mbrMiddleInitial: ''
+  });
+  const handleElgData = (str: string) => {
+    const parsed = JSON.parse(str);
+    setElgData(parsed);
+  };
+  const [addMemberFormData, setAddMemberFormData] = useState<{ [key: string]: any }>(() => {
+    const state: Record<string, any> = {};
+    currentLayout.leftLayout.forEach((group: Group) => {
+      group.fields.forEach((field) => {
+        if (typeof field === 'string') {
+          state[field] = '';
+        } else if (typeof field === 'object' && field.apikey) {
+          state[field.apikey] = '';
+        }
+      });
+    });
+    return state;
+  });
+
+  const handleAddMmberChange = (fieldName: string, value: any) => {
+    setAddMemberFormData((prevState) => ({
+      ...prevState,
+      [fieldName]: value
+    }));
+  };
+
+  const handleMemberNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setMemberNamesInput((prevState) => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
+
+  const createEligibility = (demogr: Record<string, any>) => {
+    const eligibility = {
+      melSeqNbr: '',
+      melEffDate: demogr['melEffDate'],
+      melThruDate: demogr['melThruDate'],
+      planCode: '',
+      planEffDate: undefined,
+      melCopayBrand: '',
+      melCopayGeneric: '',
+      melCopay3: '',
+      melCopay4: '',
+      melClientProductCode: demogr['melClientProductCode'],
+      melClientRiderCode: demogr['melClientRiderCode'],
+      addUserName: '',
+      chgUserName: '',
+      spendDownAmount: ''
+    };
+    delete demogr['melEffDate'];
+    delete demogr['melThruDate'];
+    delete demogr['melClientProductCode'];
+    delete demogr['melClientRiderCode'];
+    return eligibility;
+  };
+
+  const generateDataStruct = (names: unknown, formData: Record<any, any>) => {
+    let tenantId = sessionStorage.getItem('tenantId');
+    if (tenantId === null) {
+      tenantId = contextObj.tenantId;
+    }
+    const demogr = { ...formData };
+    const eligibilityData = createEligibility(demogr);
+    return {
+      carCarrierId: sessionStorage.getItem('carrierId'),
+      accAccountId: sessionStorage.getItem('accountId'),
+      grpGroupId: sessionStorage.getItem('groupId'),
+      mbrMemberId: sessionStorage.getItem('memberId'),
+      tenantId,
+      memberDemographics: {
+        ...demogr,
+        ...(typeof names === 'object' && names !== null ? names : {}),
+        mbrFamilyType: '',
+        mbrMedicareCvgType: '',
+        mbrMedicareHic: '',
+        mbrAltInsuranceFlag: '',
+        mbrAltInsuranceId: '',
+        mbrAltInsuranceMbrId: '',
+        mbrZip3: '',
+        mbrCountry: '',
+        mbrDurProcessFlag: '',
+        mbrDurKey: '',
+        addUserName: '',
+        chgUserName: ''
+      },
+      eligibility: {
+        ...eligibilityData
+      }
+    };
+  };
+
+  const formatDateStr = (dateString: string) => {
+    const [month, day, year] = dateString.split('/');
+    return `${year}-${(month ?? '').padStart(2, '0')}-${(day ?? '').padStart(2, '0')}`;
+  };
+
+  const generateEditDataStruct = (names: unknown, demogr: Record<any, any>) => {
+    let tenantId = sessionStorage.getItem('tenantId');
+    if (tenantId === null) {
+      tenantId = contextObj.tenantId;
+    }
+    let formattedPhone =
+      demogr['mbrPhone'] === '' ? details.phone : demogr['mbrPhone'];
+    formattedPhone = formattedPhone.replace(/\D/g, '');
+    const formattedDate =
+      demogr['mbrDateOfBirth'] === '' ? formatDateStr(details.dob) : demogr['mbrDateOfBirth'];
+    let formattedMemberType =
+      demogr['mbrMemberType'] === '' ? details.memberType.charAt(0) : demogr['mbrMemberType'];
+    if (formattedMemberType === 'Blank') {
+      formattedMemberType = '';
+    }
+    return {
+      carCarrierId: contextObj.searchDetailParam.carrierId,
+      accAccountId: contextObj.searchDetailParam.accountId,
+      grpGroupId: contextObj.searchDetailParam.groupId,
+      mbrMemberId: contextObj.searchDetailParam.memberId,
+      tenantId,
+      memberDemographics: {
+        ...(typeof names === 'object' && names !== null ? names : {}),
+        mbrSs:
+          demogr['mbrSs'] === '' ? details.ssn.trim() : demogr['mbrSs'],
+        mbrSex:
+          demogr['mbrSex'] === '' ? details.sex.charAt(0) : demogr['mbrSex'].charAt(0),
+        mbrDateOfBirth: formattedDate,
+        mbrEmailAddress:
+          demogr['mbrEmailAddress'] === ''
+            ? details.email.trim()
+            : demogr['mbrEmailAddress'],
+        mbrPhone: formattedPhone,
+        mbrPersonCode:
+          demogr['mbrPersonCode'] === ''
+            ? details.personCd.trim()
+            : demogr['mbrPersonCode'],
+        mbrRelationshipCode:
+          demogr['mbrRelationshipCode'] === ''
+            ? details.relationshipCd.trim()
+            : demogr['mbrRelationshipCode'],
+        mbrMemberType: formattedMemberType,
+        mbrFamilyType: '',
+        mbrFamilyIndicator:
+          demogr['mbrFamilyIndicator'] === ''
+            ? details.familyInd.charAt(0)
+            : demogr['mbrFamilyIndicator'].charAt(0),
+        mbrFamilyId:
+          demogr['mbrFamilyId'] === ''
+            ? details.familyId.trim()
+            : demogr['mbrFamilyId'],
+        mbrMultipleBirthCode:
+          demogr['mbrMultipleBirthCode'] === ''
+            ? details.multiBirthCd.trim()
+            : demogr['mbrMultipleBirthCode'],
+        mbrLanguageCode:
+          demogr['mbrLanguageCode'] === ''
+            ? details.language.trim()
+            : demogr['mbrLanguageCode'],
+        mbrMedicareCvgType: '',
+        mbrMedicareHic: '',
+        mbrAltInsuranceFlag: '',
+        mbrAltInsuranceId: '',
+        mbrAltInsuranceMbrId: '',
+        mbrAddress1:
+          demogr['mbrAddress1'] === ''
+            ? details.address1.trim()
+            : demogr['mbrAddress1'],
+        mbrAddress2:
+          demogr['mbrAddress2'] === ''
+            ? details.address2.trim()
+            : demogr['mbrAddress2'],
+        mbrAddress3:
+          demogr['mbrAddress3'] === ''
+            ? details.address3.trim()
+            : demogr['mbrAddress3'],
+        mbrCity:
+          demogr['mbrCity'] === ''
+            ? details.city.trim()
+            : demogr['mbrCity'],
+        mbrState:
+          demogr['mbrState'] === ''
+            ? details.state.trim()
+            : demogr['mbrState'],
+        mbrZip:
+          demogr['mbrZip'] === ''
+            ? details.zip1.trim()
+            : demogr['mbrZip'],
+        mbrZip2:
+          demogr['mbrZip2'] === ''
+            ? details.zip2.trim()
+            : demogr['mbrZip2'],
+        mbrZip3:
+          demogr['mbrZip3'] === ''
+            ? details.zip3.trim()
+            : demogr['mbrZip3'],
+        mbrCountry:
+          demogr['mbrCountry'] === ''
+            ? details.country.trim()
+            : demogr['mbrCountry'],
+        mbrDurProcessFlag: '',
+        mbrDurKey:
+          demogr['mbrDurKey'] === ''
+            ? details.durKey.trim()
+            : demogr['mbrDurKey'],
+        addUserName: '',
+        chgUserName: ''
+      }
+    };
+  };
+
+  function validateForm() {
+    const errors: { [key: string]: boolean } = {};
+    currentLayout?.leftLayout.forEach((group: Group) => {
+      group.fields.forEach((field) => {
+        if (
+          typeof field === 'object' &&
+          field.required &&
+          !addMemberFormData[field.apikey]?.trim()
+        ) {
+          errors[field.apikey] = true;
+        }
+      });
+    });
+    setdmErrors(errors);
+    return Object.keys(errors).length === 0;
+  }
+
+  function postMemberBody(dataObj: any) {
+    let authHeader = '';
+    if (isFromClientPortal()) {
+      authHeader = setAuthTypeClientPortal();
+    } else {
+      authHeader = contextObj?.authType;
+    }
+    const raw = dataObj;
+    try {
+      postData2(
+        '/detail/add',
+        {
+          sid: contextObj?.sid,
+          authtype: `${authHeader}`,
+          'Content-Type': 'application/json'
+        },
+        raw
+      )
+        .then((response) => {
+          if (response.data?.messages !== null) {
+            alert(
+              `Member was not added successfully. Violations: ${JSON.stringify(
+                response.data?.messages?.violations
+              )}`
+            );
+          } else {
+            setNewSavedMem(response.data);
+            setMemberSavedFlag(true);
+            setIsAddMode(false);
+            alert('Member was added successfully.');
+          }
+        })
+        .catch((error) => console.log(error));
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  function postMemberEdit(dataObj: any) {
+    let authHeader = '';
+    if (isFromClientPortal()) {
+      authHeader = setAuthTypeClientPortal();
+    } else {
+      authHeader = contextObj?.authType;
+    }
+    const raw = dataObj;
+    postData2(
+      '/detail/edit',
+      {
+        sid: contextObj?.sid,
+        authtype: `${authHeader}`,
+        'Content-Type': 'application/json'
+      },
+      raw
+    )
+      .then((response) => {
+        if (response.data?.active === null) {
+          alert(
+            `Member was not edited successfully. Violations: ${JSON.stringify(
+              response.data?.messages?.violations
+            )}`
+          );
+        } else {
+          alert('Member was edited successfully.');
+          setIsEditMode(false);
+        }
+      })
+      .catch((error) => console.log(error));
+    setSaving(false);
+    // Refresh details by re-calling useMemberDetail (if needed).
+  }
+
+  const handleOnClickSave = () => {
+    setErrors({});
+    setSaving(true);
+    if (requiredFields['mbrLastName'] && (!memberNamesInputs.mbrLastName || memberNamesInputs.mbrLastName.trim() === '')) {
+      setErrors((prevState) => ({ ...prevState, mbrLastName: true }));
+    }
+    if (requiredFields['mbrFirstName'] && (!memberNamesInputs.mbrFirstName || memberNamesInputs.mbrFirstName.trim() === '')) {
+      setErrors((prevState) => ({ ...prevState, mbrFirstName: true }));
+    }
+    if (requiredFields['mbrMiddleInitial'] && (!memberNamesInputs.mbrMiddleInitial || memberNamesInputs.mbrMiddleInitial.trim() === '')) {
+      setErrors((prevState) => ({ ...prevState, mbrMiddleInitial: true }));
+    }
+    if (validateForm() && isAddMode) {
+      const dataObj = generateDataStruct(memberNamesInputs, addMemberFormData);
+      if (dataObj.eligibility === undefined && !isEditMode) {
+        alert('Member eligibility is required');
+        setSaving(false);
+        return;
+      }
+      postMemberBody(dataObj);
+    } else if (isEditMode) {
+      const dataObj = generateEditDataStruct(memberNamesInputs, addMemberFormData);
+      postMemberEdit(dataObj);
+    } else {
+      setSaving(false);
+    }
+  };
+
+  function onClickLinkBack() {
+    props.setViewName('memberSearch');
+  }
+
+  useEffect(() => {
+    console.log('Add member form data:', addMemberFormData);
+  }, [details]);
+
+  return (
+    <>
+      {isFromClientPortal() ? (
+        <Grid container spacing={2} alignItems="start" sx={{ margin: '5px' }}>
+          <Grid item xs={12}>
+            <AppBar position="static" sx={{ background: '#faf9f3', marginBottom: '10px' }}>
+              <Toolbar>
+                <Grid container spacing={2} sx={{ marginTop: '5px' }}>
+                  <Grid item xs={12} sm={4} md={3}>
+                    <Typography>
+                      <Button href="#" data-viewName="memberSearch" onClick={onClickLinkBack}>
+                        Back
+                      </Button>
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={3}>
+                    <Typography>
+                      {!isAddMode && !isEditMode && editPermissions && (
+                        <Button
+                          href="#"
+                          data-viewName="memberSearch"
+                          onClick={() => setIsEditMode(true)}
+                        >
+                          Edit
+                        </Button>
+                      )}
+                      {(isAddMode || isEditMode) && (
+                        <Button
+                          href="#"
+                          data-viewName="memberSearch"
+                          disabled={saving}
+                          onClick={handleOnClickSave}
+                        >
+                          Save
+                        </Button>
+                      )}
+                    </Typography>
+                    <Button href="#" data-viewName="helpButton" onClick={() => openHelp()} sx={{ float: 'right' }}>
+                      Help
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Toolbar>
+            </AppBar>
+            <Grid item xs={12} sx={{ marginTop: '10px', marginBottom: '10px' }}>
+              <HeaderComponent
+                data={details}
+                props={props}
+                labels={labels}
+                addMemberFormData={addMemberFormData}
+                handleAddMmberChange={handleAddMmberChange}
+                handleMemberNameChange={handleMemberNameChange}
+                layout={currentLayout}
+                style={{ margin: '5px', maxWidth: 'inherit' }}
+                inputErrors={AddMemberNames}
+                dmErrors={dmErrors}
+                isEdit={isEditMode}
+                requiredFields={requiredFields}
+              />
+            </Grid>
+            {!isAddMode && (
+              <Grid item xs={12} sx={{ marginTop: '10px' }}>
+                <Typography variant="h6" sx={{ marginTop: '15px' }}>
+                  Member eligibility
+                </Typography>
+                <Box sx={{ marginBottom: '20px' }} />
+                {props.addPermissions && <Button onClick={openModal}>Add</Button>}
+                <StatusFilter
+                  fullList={elig?.memberElig}
+                  setFilteredDetails={setFilteredElig}
+                  status={memberEligStatus}
+                  setStatus={setMemberEligStatus}
+                />
+                <MemEligibilityExpandableTable
+                  context={contextObj}
+                  details={filteredElig}
+                  headingLayout={memEligHeadingLayoutFields}
+                  expandedLayout={memEligExpandedLayout}
+                  editPermissions={props.editPermissions}
+                  deletePermissions={props.deletePermissions}
+                  refreshKey={refreshKey}
+                  setRefreshKey={setRefreshKey}
+                />
+              </Grid>
+            )}
+          </Grid>
+          {!isAddMode && (
+            <Grid item xs={12}>
+              <MemberDetailTabs {...props} />
+            </Grid>
+          )}
+        </Grid>
+      ) : (
+        <Grid
+          id="scrollingMemberDiv"
+          container
+          spacing={2}
+          alignItems="start"
+          sx={{ overflowY: 'scroll', maxHeight: '650px', margin: '5px' }}
+        >
+          <Grid item xs={12}>
+            <AppBar position="static" sx={{ background: '#faf9f3', marginBottom: '10px' }}>
+              <Toolbar>
+                <Grid container spacing={2} justifyContent="space-between">
+                  <Grid item xs={12} sm={4} md={3}>
+                    <Typography>
+                      <Button href="#" data-viewName="memberSearch" onClick={onClickLinkBack}>
+                        Back
+                      </Button>
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={3}>
+                    <Typography>
+                      {!isAddMode && !isEditMode && (
+                        <Button
+                          href="#"
+                          data-viewName="memberSearch"
+                          onClick={() => setIsEditMode(true)}
+                        >
+                          Edit
+                        </Button>
+                      )}
+                      {(isAddMode || isEditMode) && (
+                        <Button
+                          href="#"
+                          data-viewName="memberSearch"
+                          onClick={handleOnClickSave}
+                        >
+                          Save
+                        </Button>
+                      )}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Toolbar>
+            </AppBar>
+            <Grid item xs={12} sx={{ marginTop: '10px', marginBottom: '10px' }}>
+              <HeaderComponent
+                data={details}
+                labels={labels}
+                layout={currentLayout}
+              />
+            </Grid>
+            {!isAddMode && (
+              <Grid item xs={12} sx={{ marginTop: '10px' }}>
+                <Typography variant="h6" sx={{ marginTop: '15px' }}>
+                  Member eligibility
+                </Typography>
+                <Box sx={{ marginBottom: '20px' }} />
+                <Button onClick={openModal}>Add</Button>
+                <StatusFilter
+                  fullList={props.elig?.memberElig}
+                  setFilteredDetails={setFilteredElig}
+                  status={memberEligStatus}
+                  setStatus={setMemberEligStatus}
+                />
+                <MemEligibilityExpandableTable
+                  context={contextObj}
+                  details={filteredElig}
+                  headingLayout={memEligHeadingLayoutFields}
+                  expandedLayout={memEligExpandedLayout}
+                  editPermissions={props.editPermissions}
+                  deletePermissions={props.deletePermissions}
+                  refreshKey={refreshKey}
+                  setRefreshKey={setRefreshKey}
+                />
+              </Grid>
+            )}
+          </Grid>
+          {!isAddMode && (
+            <Grid item xs={12}>
+              <MemberDetailContext.Provider value={details}>
+                <MemberDetailTabs {...props} />
+              </MemberDetailContext.Provider>
+            </Grid>
+          )}
+          <Button sx={{ marginBottom: '12%', marginLeft: '85%' }} onClick={scrollToTop}>
+            Scroll to Top
+          </Button>
+        </Grid>
+      )}
+      {modalOpen && (
+        <MemberEligibilityModal
+          open={modalOpen}
+          handleClose={closeModal}
+          context={context}
+          setRefreshKey={setRefreshKey}
+          handleElgData={handleElgData}
+          isEditMode={false}
+        />
+      )}
+    </>
+  );
+};
+
+export default MemberDetail;
+
