@@ -54,7 +54,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = React.memo(
     const [options, setOptions] = React.useState<any[]>([]);
 
     React.useEffect(() => {
-      // Ensure that the value is set initially
+      // Set the initial value for the field if needed.
       handleInputChange(
         field.apikey || field,
         !data?.[field.name] || data?.[field.name].trim() === '' ? '' : data?.[field.name].trim()
@@ -184,7 +184,6 @@ const FieldRenderer: React.FC<FieldRendererProps> = React.memo(
             ? ''
             : data?.[field.name].trim();
         dobFormatted = formatDate(dobFormatted);
-
         return (
           <TextField
             type={field.type || 'text'}
@@ -282,7 +281,7 @@ const SimpleLayoutComponent: React.FC<SimpleLayoutComponentProps> = ({
   handleInputChange,
   dmErrors
 }) => {
-  // Instead of keeping layout in local state, memoize the layout prop.
+  // Instead of storing the layout in state, simply memoize it.
   const computedLayout = useMemo(() => layout, [layout]);
 
   const { isAddMode, isEditMode } = useMemberModalContext();
@@ -295,7 +294,7 @@ const SimpleLayoutComponent: React.FC<SimpleLayoutComponentProps> = ({
             <Grid item xs={12} spacing={2}>
               {computedLayout.leftLayout.map((group: { heading: string; fields: any[] }) => (
                 <StyledCard elevation={3} key={group.heading}>
-                  <Card elevation={3} key={group.heading}>
+                  <Card elevation={3}>
                     <CardContent>
                       <Grid container spacing={1}>
                         <Grid item xs={12}>
@@ -361,9 +360,7 @@ const SimpleLayoutComponent: React.FC<SimpleLayoutComponentProps> = ({
 };
 
 export default SimpleLayoutComponent;
-
-
-=====
+====
 
 
 import React, { useMemo, useState, useEffect } from 'react';
@@ -391,6 +388,7 @@ import MemEligibilityExpandableTable from './components/member-eligibility/membe
 
 const title = '${memberId} (${lastName}, ${firstName} ${middleName})';
 
+// Define the left layout sections.
 const leftLayout = [
   {
     heading: 'Member information ${}',
@@ -421,7 +419,7 @@ const leftLayout = [
         maxLength: 3,
         label: 'Person code'
       },
-      // ... other member information fields
+      // ... (include additional member information fields as needed)
       {
         name: 'familyInd',
         label: 'Family ind',
@@ -445,7 +443,7 @@ const leftLayout = [
         maxLength: 40,
         required: false
       },
-      // ... other address fields
+      // ... (include additional address fields as needed)
       {
         name: 'country',
         label: 'Country',
@@ -468,6 +466,7 @@ const leftLayout = [
   }
 ];
 
+// Define the eligibility layout that should be added in add mode.
 const eligibilityLayout: any = {
   heading: 'Add Member Eligibility',
   fields: [
@@ -538,7 +537,7 @@ export function MemberDetail(props: MemberDetailsProps) {
   const [refreshKey, setRefreshKey] = useState<number>(0);
   const detail: MemberDetailSearchRecord = context?.searchDetailParam || '';
 
-  // Create a memoized final layout: if in add mode, inject the eligibility layout if not already present.
+  // Create a memoized final layout: in add mode, inject the eligibility layout if not already present.
   const finalLayout = useMemo(() => {
     if (isAddMode) {
       const hasElig = layout.leftLayout.some(
@@ -554,15 +553,18 @@ export function MemberDetail(props: MemberDetailsProps) {
     return layout;
   }, [isAddMode]);
 
-  // … Other MemberDetail logic (fetching details, eligibility, etc.) …
+  // (Assume additional hooks and effects for fetching member details and eligibility here.)
+  // For example:
+  // const { details, elig, fetchMemberEligibility } = useMemberDetail(stableContext);
+  // useEffect(() => { fetchMemberEligibility(); }, [refreshKey]);
 
-  // Example: handling save action (edit or add)
+  // Example save handler (needs to be filled in with your validation and API call logic)
   const handleOnClickSave = () => {
-    // ... validate and create data struct, then call postData2 accordingly.
+    // Validate the form and post data using postData2.
+    // This is just a stub for illustration.
+    console.log('Save clicked. Implement validation and save logic here.');
   };
 
-  // Render the header using the finalLayout (which will eventually be passed to the HeaderComponent,
-  // which then renders the SimpleLayoutComponent)
   return (
     <>
       {isFromClientPortal() ? (
@@ -570,7 +572,7 @@ export function MemberDetail(props: MemberDetailsProps) {
           <Grid item xs={12}>
             <AppBar position="static" sx={{ background: '#faf9f3', marginBottom: '10px' }}>
               <Toolbar>
-                <Grid container spacing={2} style={{ marginTop: '5px !important' }}>
+                <Grid container spacing={2} sx={{ marginTop: '5px' }}>
                   <Grid item xs={12} sm={4} md={3}>
                     <Typography>
                       <Button href="#" data-viewName="memberSearch">
@@ -599,7 +601,12 @@ export function MemberDetail(props: MemberDetailsProps) {
                         </Button>
                       )}
                     </Typography>
-                    <Button href="#" data-viewName="helpButton" onClick={openHelp} style={{ float: 'right' }}>
+                    <Button
+                      href="#"
+                      data-viewName="helpButton"
+                      onClick={openHelp}
+                      sx={{ float: 'right' }}
+                    >
                       Help
                     </Button>
                   </Grid>
@@ -610,8 +617,8 @@ export function MemberDetail(props: MemberDetailsProps) {
               <HeaderComponent
                 data={detail}
                 labels={labels}
-                layout={finalLayout} // Pass the memoized final layout here.
-                // ... pass other required props (e.g., addMemberFormData, handleInputChange, dmErrors, etc.)
+                layout={finalLayout} // Passing the memoized final layout.
+                // Pass any other props required by HeaderComponent (such as addMemberFormData, handleInputChange, dmErrors, etc.)
               />
             </Grid>
             {!isAddMode && (
@@ -630,7 +637,6 @@ export function MemberDetail(props: MemberDetailsProps) {
                 <MemEligibilityExpandableTable
                   context={context}
                   details={filteredElig}
-                  // ... other props as needed
                   refreshKey={refreshKey}
                   setRefreshKey={setRefreshKey}
                 />
@@ -691,8 +697,8 @@ export function MemberDetail(props: MemberDetailsProps) {
               <HeaderComponent
                 data={detail}
                 labels={labels}
-                layout={finalLayout} // Using the memoized layout.
-                // ... pass additional required props.
+                layout={finalLayout}
+                // Pass additional required props as needed.
               />
             </Grid>
             {!isAddMode && (
@@ -711,7 +717,6 @@ export function MemberDetail(props: MemberDetailsProps) {
                 <MemEligibilityExpandableTable
                   context={context}
                   details={filteredElig}
-                  // ... additional props as needed.
                   refreshKey={refreshKey}
                   setRefreshKey={setRefreshKey}
                 />
@@ -725,7 +730,7 @@ export function MemberDetail(props: MemberDetailsProps) {
               </MemberDetailContext.Provider>
             </Grid>
           )}
-          <Button style={{ marginBottom: '12%', marginLeft: '85%' }} onClick={scrollToTop}>
+          <Button sx={{ marginBottom: '12%', marginLeft: '85%' }} onClick={scrollToTop}>
             Scroll to Top
           </Button>
         </Grid>
@@ -736,7 +741,6 @@ export function MemberDetail(props: MemberDetailsProps) {
           handleClose={closeModal}
           context={context}
           setRefreshKey={setRefreshKey}
-          // ... other modal props as needed.
           isEditMode={false}
         />
       )}
