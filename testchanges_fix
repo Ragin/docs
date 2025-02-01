@@ -1,0 +1,747 @@
+import React, { useMemo } from 'react';
+import {
+  Grid,
+  Card,
+  CardContent,
+  Typography,
+  FormControl,
+  Select,
+  FormHelperText,
+  TextField
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
+import { useMemberModalContext } from '../../../Member/Components/AddmemberModal/useMemberModal';
+import { getData } from '../../../model/service/memberService';
+import { FieldType } from './header-component';
+
+export const labelHeadingStyle = {
+  fontWeight: 'bold',
+  color: 'black'
+};
+
+export const labelStyle = {
+  fontWeight: 'bold',
+  color: '#3F51B5'
+};
+
+const StyledCard = styled(Card)`
+  margin-bottom: 10px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+const formatDate = (dateString: string) => {
+  const [month, day, year] = dateString.split('/');
+  return `${year}-${(month ?? '').padStart(2, '0')}-${(day ?? '').padStart(2, '0')}`;
+};
+
+// Define the props for FieldRenderer
+interface FieldRendererProps {
+  field: any;
+  value: any;
+  data: any;
+  handleInputChange: (fieldName: string, value: any) => void;
+  dmErrors: any;
+  isAddMode: boolean;
+  isEditMode: boolean;
+}
+
+// Extract field rendering into a memoized component so hooks can be used properly.
+const FieldRenderer: React.FC<FieldRendererProps> = React.memo(
+  ({ field, value, data, handleInputChange, dmErrors, isAddMode, isEditMode }) => {
+    const [options, setOptions] = React.useState<any[]>([]);
+
+    React.useEffect(() => {
+      // Ensure that the value is set initially
+      handleInputChange(
+        field.apikey || field,
+        !data?.[field.name] || data?.[field.name].trim() === '' ? '' : data?.[field.name].trim()
+      );
+
+      if (field?.optionsUrl) {
+        getData(field.optionsUrl, { sid: data?.sid, 'auth-type': undefined })
+          .then((response) => {
+            setOptions(response?.data?.optionsList || []);
+          })
+          .catch((error) => {
+            console.error('Error fetching options:', error);
+          });
+      } else {
+        setOptions(field?.options || []);
+      }
+    }, [field, data, handleInputChange]);
+
+    // --- Add Mode ---
+    if (isAddMode && !field.readOnly) {
+      if (field.type === 'select') {
+        return (
+          <FormControl sx={{ width: '70%' }}>
+            <Select
+              native
+              name={field.apikey}
+              onChange={(e) => handleInputChange(field.apikey || field, e.target.value)}
+              error={Boolean(dmErrors?.[field.apikey])}
+              MenuProps={{
+                classes: {
+                  paper: 'skyline-custom-select'
+                }
+              }}
+              label="Status"
+            >
+              <option value="">Select</option>
+              {options.map((current: any, idx: number) => {
+                const optionName = typeof current === 'string' ? current : current.name;
+                const optionValue = typeof current === 'string' ? current : current.value;
+                return (
+                  <option key={idx} value={optionName}>
+                    {optionValue}
+                  </option>
+                );
+              })}
+            </Select>
+            <FormHelperText error={Boolean(dmErrors?.[field.apikey])}>
+              {dmErrors?.[field.apikey] ? `${field.label} is required` : ''}
+            </FormHelperText>
+          </FormControl>
+        );
+      } else {
+        return (
+          <TextField
+            type={field.type || 'text'}
+            variant="outlined"
+            name={field.apikey || field}
+            inputProps={{ maxLength: field?.maxLength }}
+            error={Boolean(dmErrors?.[field.apikey])}
+            helperText={dmErrors?.[field.apikey] ? `${field.label} is required` : ''}
+            onChange={(e) => handleInputChange(field.apikey || field, e.target.value)}
+            sx={{
+              width: '70%',
+              '& legend': { display: 'none' },
+              '& fieldset': { top: 0 }
+            }}
+          />
+        );
+      }
+    }
+
+    // --- Edit Mode ---
+    if (isEditMode && !field.readOnly) {
+      if (field.type === 'select') {
+        const [selectedName] = (data?.[field.name] || '').includes(' - ')
+          ? (data?.[field.name] || '').split(' - ')
+          : [data?.[field.name], ''];
+        return (
+          <FormControl sx={{ width: '70%' }}>
+            <Select
+              native
+              name={field.apikey}
+              value={selectedName}
+              onChange={(e) => handleInputChange(field.apikey || field, e.target.value)}
+              error={Boolean(dmErrors?.[field.apikey])}
+              MenuProps={{
+                classes: {
+                  paper: 'skyline-custom-select'
+                }
+              }}
+              label="Status"
+            >
+              <option value="">Select</option>
+              {options.map((current: any, idx: number) => {
+                const optionName = typeof current === 'string' ? current : current.name;
+                const optionValue = typeof current === 'string' ? current : current.value;
+                return (
+                  <option key={idx} value={optionName}>
+                    {optionValue}
+                  </option>
+                );
+              })}
+            </Select>
+            <FormHelperText error={Boolean(dmErrors?.[field.apikey])}>
+              {dmErrors?.[field.apikey] ? `${field.label} is required` : ''}
+            </FormHelperText>
+          </FormControl>
+        );
+      }
+      if (field.name === 'originalEffDate') {
+        return (
+          <div style={{ marginBottom: '15px', marginRight: '15px' }}>
+            <Typography variant="body1">{data?.originalEffDate}</Typography>
+          </div>
+        );
+      }
+      if (field.name === 'benefitResetDate') {
+        return (
+          <div style={{ marginBottom: '15px', marginRight: '15px' }}>
+            <Typography variant="body1">{data?.benefitResetDate}</Typography>
+          </div>
+        );
+      }
+      if (field.name === 'dob') {
+        let dobFormatted =
+          !data?.[field.name] || data?.[field.name].trim() === ''
+            ? ''
+            : data?.[field.name].trim();
+        dobFormatted = formatDate(dobFormatted);
+
+        return (
+          <TextField
+            type={field.type || 'text'}
+            variant="outlined"
+            name={field.apikey || field}
+            inputProps={{
+              maxLength: field?.maxLength,
+              defaultValue: dobFormatted,
+              style: { textTransform: 'uppercase' }
+            }}
+            error={Boolean(dmErrors?.[field.apikey])}
+            helperText={dmErrors?.[field.apikey] ? 'This field is required' : ''}
+            onChange={(e) => handleInputChange(field.apikey || field, e.target.value)}
+            sx={{
+              width: '70%',
+              '& legend': { display: 'none' },
+              '& fieldset': { top: 0 }
+            }}
+          />
+        );
+      }
+      if (field.name === 'familyInd') {
+        return (
+          <TextField
+            type={field.type || 'text'}
+            variant="outlined"
+            name={field.apikey || field}
+            inputProps={{
+              maxLength: field?.maxLength,
+              defaultValue:
+                !data?.[field.name] || data?.[field.name].trim() === ''
+                  ? ''
+                  : data?.[field.name].trim().charAt(0),
+              style: { textTransform: 'uppercase' }
+            }}
+            error={Boolean(dmErrors?.[field.apikey])}
+            helperText={dmErrors?.[field.apikey] ? 'This field is required' : ''}
+            onChange={(e) => handleInputChange(field.apikey || field, e.target.value)}
+            sx={{
+              width: '70%',
+              '& legend': { display: 'none' },
+              '& fieldset': { top: 0 }
+            }}
+          />
+        );
+      }
+      // Default text field for edit mode.
+      return (
+        <TextField
+          type={field.type || 'text'}
+          variant="outlined"
+          name={field.apikey || field}
+          inputProps={{
+            maxLength: field?.maxLength,
+            defaultValue:
+              !data?.[field.name] || data?.[field.name].trim() === ''
+                ? ''
+                : data?.[field.name].trim(),
+            style: { textTransform: 'uppercase' }
+          }}
+          error={Boolean(dmErrors?.[field.apikey])}
+          helperText={dmErrors?.[field.apikey] ? 'This field is required' : ''}
+          onChange={(e) => handleInputChange(field.apikey || field, e.target.value)}
+          sx={{
+            width: '70%',
+            '& legend': { display: 'none' },
+            '& fieldset': { top: 0 }
+          }}
+        />
+      );
+    }
+
+    // Default: read-only display.
+    return <Typography variant="body2">{value || ''}</Typography>;
+  }
+);
+
+interface SimpleLayoutComponentProps {
+  data: any;
+  labels: FieldType;
+  layout: any;
+  style?: any;
+  cols?: number;
+  addMemberFormData: any;
+  dmErrors: any;
+  handleInputChange: (fieldName: string, value: any) => void;
+  isEdit?: boolean;
+}
+
+const SimpleLayoutComponent: React.FC<SimpleLayoutComponentProps> = ({
+  data,
+  labels,
+  layout,
+  cols = 3,
+  handleInputChange,
+  dmErrors
+}) => {
+  // Instead of keeping layout in local state, memoize the layout prop.
+  const computedLayout = useMemo(() => layout, [layout]);
+
+  const { isAddMode, isEditMode } = useMemberModalContext();
+
+  return (
+    <Grid container spacing={2}>
+      <Grid item xs={12} spacing={2}>
+        <Card elevation={3}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} spacing={2}>
+              {computedLayout.leftLayout.map((group: { heading: string; fields: any[] }) => (
+                <StyledCard elevation={3} key={group.heading}>
+                  <Card elevation={3} key={group.heading}>
+                    <CardContent>
+                      <Grid container spacing={1}>
+                        <Grid item xs={12}>
+                          <span />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <Typography variant="h6" style={labelHeadingStyle}>
+                            {labels[group.heading as keyof typeof labels] ||
+                              group.heading.replace(/\${(.*?)}/g, '')}
+                          </Typography>
+                        </Grid>
+                        {group.fields.map((field: any, idx: number) => {
+                          if (typeof field === 'string') {
+                            return (
+                              <Grid item xs={12} sm={cols} md={cols} key={idx}>
+                                <div style={{ marginBottom: '15px' }}>
+                                  <Typography variant="subtitle1" style={labelStyle}>
+                                    {(labels as Record<string, string>)[field] || ''}
+                                  </Typography>
+                                  <Typography variant="body1" sx={{ display: 'block' }}>
+                                    {data?.[field]}
+                                  </Typography>
+                                </div>
+                              </Grid>
+                            );
+                          } else {
+                            return (
+                              <Grid item xs={12} sm={cols} md={cols} key={idx}>
+                                <div style={{ marginBottom: '15px' }}>
+                                  <Typography variant="subtitle1" style={labelStyle}>
+                                    {(labels as Record<string, string>)[field.name] || field.name}
+                                    {(isAddMode || isEditMode) && field.required && (
+                                      <span style={{ color: 'red' }}>*</span>
+                                    )}
+                                  </Typography>
+                                  <Typography variant="body1">
+                                    <FieldRenderer
+                                      field={field}
+                                      value={data?.[field.name] || ''}
+                                      data={data}
+                                      handleInputChange={handleInputChange}
+                                      dmErrors={dmErrors}
+                                      isAddMode={isAddMode}
+                                      isEditMode={isEditMode}
+                                    />
+                                  </Typography>
+                                </div>
+                              </Grid>
+                            );
+                          }
+                        })}
+                      </Grid>
+                    </CardContent>
+                  </Card>
+                </StyledCard>
+              ))}
+            </Grid>
+          </Grid>
+        </Card>
+      </Grid>
+    </Grid>
+  );
+};
+
+export default SimpleLayoutComponent;
+
+
+=====
+
+
+import React, { useMemo, useState, useEffect } from 'react';
+import {
+  AppBar,
+  Button,
+  Grid,
+  Toolbar,
+  Typography,
+  Box
+} from '@mui/material';
+import useMemberDetail, { MemberDetailContext } from '../useMemberDetail/use-member-detail';
+import labels from '../../common/labels.json';
+import { MemberDetailSearchRecord } from '../useMemberDetail/use-member-detail.types';
+import { MemberContext, RxMemberLiteContext } from '../../common/model-types';
+import StatusFilter from '../../common/status-filter';
+import { isFromClientPortal, setAuthTypeClientPortal } from '../../common/common-utils';
+import { useMemberModalContext } from '../../Member/Components/AddmemberModal/useMemberModal';
+import { postData2, getData } from '../../model/service/memberService';
+import MemberDetailTabs from './components/member-detail-tabs';
+import HeaderComponent from './components/header-component';
+import { ElgData, MemberDetailsProps, MemberNamesInputs } from './member-detail.types';
+import MemberEligibilityModal from './MemberEligibilityModal';
+import MemEligibilityExpandableTable from './components/member-eligibility/member-eligibility-expandable-table';
+
+const title = '${memberId} (${lastName}, ${firstName} ${middleName})';
+
+const leftLayout = [
+  {
+    heading: 'Member information ${}',
+    fields: [
+      {
+        name: 'dob',
+        required: false,
+        readOnly: false,
+        type: 'date',
+        apikey: 'mbrDateOfBirth',
+        label: 'Date of birth'
+      },
+      {
+        name: 'sex',
+        required: false,
+        readOnly: false,
+        type: 'select',
+        apikey: 'mbrSex',
+        label: 'Gender',
+        optionsUrl: '/lookup-url?lookupType=GENDER'
+      },
+      {
+        name: 'personCd',
+        readOnly: false,
+        required: false,
+        type: 'text',
+        apikey: 'mbrPersonCode',
+        maxLength: 3,
+        label: 'Person code'
+      },
+      // ... other member information fields
+      {
+        name: 'familyInd',
+        label: 'Family ind',
+        readOnly: false,
+        type: 'select',
+        apikey: 'mbrFamilyIndicator',
+        required: false,
+        options: ['Y - Yes', 'N - No']
+      }
+    ]
+  },
+  {
+    heading: 'Address ${}',
+    fields: [
+      {
+        name: 'address1',
+        label: 'Address 1',
+        type: 'text',
+        readOnly: false,
+        apikey: 'mbrAddress1',
+        maxLength: 40,
+        required: false
+      },
+      // ... other address fields
+      {
+        name: 'country',
+        label: 'Country',
+        type: 'select',
+        readOnly: false,
+        apikey: 'mbrCountry',
+        maxLength: 4,
+        required: false,
+        optionsUrl: '/lookup-url?lookupType=COUNTRY'
+      }
+    ]
+  },
+  {
+    heading: 'Medicare ${}',
+    fields: ['supplementalId', 'msiFromDate', 'msiThruDate', 'msiStatus']
+  },
+  {
+    heading: 'Alternate insurance ${}',
+    fields: ['insuranceFlag', 'insuranceId', 'insuranceCode']
+  }
+];
+
+const eligibilityLayout: any = {
+  heading: 'Add Member Eligibility',
+  fields: [
+    {
+      name: 'melEffDate',
+      label: 'melEffDate',
+      type: 'date',
+      required: true,
+      readOnly: false,
+      apikey: 'melEffDate'
+    },
+    {
+      name: 'melThruDate',
+      label: 'melThruDate',
+      type: 'date',
+      required: true,
+      readOnly: false,
+      apikey: 'melThruDate'
+    },
+    {
+      name: 'melClientProductCode',
+      label: 'melClientProductCode',
+      type: 'text',
+      readOnly: false,
+      apikey: 'melClientProductCode',
+      maxLength: 6
+    },
+    {
+      name: 'melClientRiderCode',
+      label: 'melClientRiderCode',
+      type: 'text',
+      readOnly: false,
+      apikey: 'melClientRiderCode',
+      maxLength: 6
+    }
+  ]
+};
+
+const layout = { title, leftLayout };
+
+export function openHelp() {
+  const helpPage =
+    'https://rxclaim-lite.optum.com/rxclaimlite/help/RxClaim_Lite/index.htm#t=Topics%2FManage_members%2FMember_information_detail.htm';
+  window.open(helpPage, 'Help');
+}
+
+export function scrollToTop() {
+  const scrollingDiv = document
+    .querySelector('member-mp')
+    ?.querySelector('div')
+    ?.querySelector('div')
+    ?.querySelector('div')
+    ?.shadowRoot?.querySelector('div')
+    ?.querySelector('#scrollingMemberDiv');
+  console.log('scrollingDiv', scrollingDiv);
+  scrollingDiv?.scrollTo(0, 0);
+}
+
+export function MemberDetail(props: MemberDetailsProps) {
+  const { context, editPermissions } = props;
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const openModal = () => setModalOpen(true);
+  const closeModal = () => setModalOpen(false);
+
+  const { isAddMode, isEditMode, setIsEditMode, setIsAddMode } = useMemberModalContext();
+  const [memberEligStatus, setMemberEligStatus] = useState<string>('A');
+  const [filteredElig, setFilteredElig] = useState<any>({});
+  const [refreshKey, setRefreshKey] = useState<number>(0);
+  const detail: MemberDetailSearchRecord = context?.searchDetailParam || '';
+
+  // Create a memoized final layout: if in add mode, inject the eligibility layout if not already present.
+  const finalLayout = useMemo(() => {
+    if (isAddMode) {
+      const hasElig = layout.leftLayout.some(
+        (group) => group.heading === eligibilityLayout.heading
+      );
+      if (!hasElig) {
+        return {
+          ...layout,
+          leftLayout: [...layout.leftLayout, eligibilityLayout]
+        };
+      }
+    }
+    return layout;
+  }, [isAddMode]);
+
+  // … Other MemberDetail logic (fetching details, eligibility, etc.) …
+
+  // Example: handling save action (edit or add)
+  const handleOnClickSave = () => {
+    // ... validate and create data struct, then call postData2 accordingly.
+  };
+
+  // Render the header using the finalLayout (which will eventually be passed to the HeaderComponent,
+  // which then renders the SimpleLayoutComponent)
+  return (
+    <>
+      {isFromClientPortal() ? (
+        <Grid container spacing={2} alignItems="start" sx={{ margin: '5px' }}>
+          <Grid item xs={12}>
+            <AppBar position="static" sx={{ background: '#faf9f3', marginBottom: '10px' }}>
+              <Toolbar>
+                <Grid container spacing={2} style={{ marginTop: '5px !important' }}>
+                  <Grid item xs={12} sm={4} md={3}>
+                    <Typography>
+                      <Button href="#" data-viewName="memberSearch">
+                        Back
+                      </Button>
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={3}>
+                    <Typography>
+                      {!isAddMode && !isEditMode && editPermissions && (
+                        <Button
+                          href="#"
+                          data-viewName="memberSearch"
+                          onClick={() => setIsEditMode(true)}
+                        >
+                          Edit
+                        </Button>
+                      )}
+                      {(isAddMode || isEditMode) && (
+                        <Button
+                          href="#"
+                          data-viewName="memberSearch"
+                          onClick={handleOnClickSave}
+                        >
+                          Save
+                        </Button>
+                      )}
+                    </Typography>
+                    <Button href="#" data-viewName="helpButton" onClick={openHelp} style={{ float: 'right' }}>
+                      Help
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Toolbar>
+            </AppBar>
+            <Grid item xs={12} sx={{ marginTop: '10px', marginBottom: '10px' }}>
+              <HeaderComponent
+                data={detail}
+                labels={labels}
+                layout={finalLayout} // Pass the memoized final layout here.
+                // ... pass other required props (e.g., addMemberFormData, handleInputChange, dmErrors, etc.)
+              />
+            </Grid>
+            {!isAddMode && (
+              <Grid item xs={12} sx={{ marginTop: '10px' }}>
+                <Typography variant="h6" sx={{ marginTop: '15px' }}>
+                  Member eligibility
+                </Typography>
+                <Box sx={{ marginBottom: '20px' }} />
+                <Button onClick={openModal}>Add</Button>
+                <StatusFilter
+                  fullList={props.elig?.memberElig}
+                  setFilteredDetails={setFilteredElig}
+                  status={memberEligStatus}
+                  setStatus={setMemberEligStatus}
+                />
+                <MemEligibilityExpandableTable
+                  context={context}
+                  details={filteredElig}
+                  // ... other props as needed
+                  refreshKey={refreshKey}
+                  setRefreshKey={setRefreshKey}
+                />
+              </Grid>
+            )}
+          </Grid>
+          {!isAddMode && (
+            <Grid item xs={12}>
+              <MemberDetailTabs {...props} />
+            </Grid>
+          )}
+        </Grid>
+      ) : (
+        <Grid
+          id="scrollingMemberDiv"
+          container
+          spacing={2}
+          alignItems="start"
+          sx={{ overflowY: 'scroll', maxHeight: '650px', margin: '5px' }}
+        >
+          <Grid item xs={12}>
+            <AppBar position="static" sx={{ background: '#faf9f3', marginBottom: '10px' }}>
+              <Toolbar>
+                <Grid container spacing={2} justifyContent="space-between">
+                  <Grid item xs={12} sm={4} md={3}>
+                    <Typography>
+                      <Button href="#" data-viewName="memberSearch">
+                        Back
+                      </Button>
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={3}>
+                    <Typography>
+                      {!isAddMode && !isEditMode && (
+                        <Button
+                          href="#"
+                          data-viewName="memberSearch"
+                          onClick={() => setIsEditMode(true)}
+                        >
+                          Edit
+                        </Button>
+                      )}
+                      {(isAddMode || isEditMode) && (
+                        <Button
+                          href="#"
+                          data-viewName="memberSearch"
+                          onClick={handleOnClickSave}
+                        >
+                          Save
+                        </Button>
+                      )}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Toolbar>
+            </AppBar>
+            <Grid item xs={12} sx={{ marginTop: '10px', marginBottom: '10px' }}>
+              <HeaderComponent
+                data={detail}
+                labels={labels}
+                layout={finalLayout} // Using the memoized layout.
+                // ... pass additional required props.
+              />
+            </Grid>
+            {!isAddMode && (
+              <Grid item xs={12} sx={{ marginTop: '10px' }}>
+                <Typography variant="h6" sx={{ marginTop: '15px' }}>
+                  Member eligibility
+                </Typography>
+                <Box sx={{ marginBottom: '20px' }} />
+                <Button onClick={openModal}>Add</Button>
+                <StatusFilter
+                  fullList={props.elig?.memberElig}
+                  setFilteredDetails={setFilteredElig}
+                  status={memberEligStatus}
+                  setStatus={setMemberEligStatus}
+                />
+                <MemEligibilityExpandableTable
+                  context={context}
+                  details={filteredElig}
+                  // ... additional props as needed.
+                  refreshKey={refreshKey}
+                  setRefreshKey={setRefreshKey}
+                />
+              </Grid>
+            )}
+          </Grid>
+          {!isAddMode && (
+            <Grid item xs={12}>
+              <MemberDetailContext.Provider value={detail}>
+                <MemberDetailTabs {...props} />
+              </MemberDetailContext.Provider>
+            </Grid>
+          )}
+          <Button style={{ marginBottom: '12%', marginLeft: '85%' }} onClick={scrollToTop}>
+            Scroll to Top
+          </Button>
+        </Grid>
+      )}
+      {modalOpen && (
+        <MemberEligibilityModal
+          open={modalOpen}
+          handleClose={closeModal}
+          context={context}
+          setRefreshKey={setRefreshKey}
+          // ... other modal props as needed.
+          isEditMode={false}
+        />
+      )}
+    </>
+  );
+}
+
+export default MemberDetail;
