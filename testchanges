@@ -1,0 +1,1318 @@
+import React, { useEffect, useState } from 'react';
+import { Grid, Card, CardContent, Typography, FormControl, Select, FormHelperText, TextField } from '@mui/material';
+import {styled} from '@mui/material/styles';
+
+import {useMemberModalContext} from '../../../Member/Components/AddmemberModal/useMemberModal';
+import {FieldType} from './header-component';
+import {getData} from '../../../model/service/memberService';
+
+interface SimpleLayoutComponentProps {
+  data: any;
+  labels: FieldType;
+  layout: any;
+  style?: any;
+  cols?: number;
+  addMemberFormData: any;
+  dmErrors: any;
+  handleInputChange: (fieldName: string, value: any) => void;
+  isEdit?: boolean;
+}
+
+export const labelHeadingStyle = {
+  fontWeight: 'bold',
+  color: 'black'
+};
+
+export const labelStyle = {
+  fontWeight: 'bold',
+  color: '#3F51B5'
+};
+
+const StyledCard = styled(Card)`
+  margin-bottom: 10px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+const formatDate = (dateString: string) => {
+  const [month, day, year] = dateString.split('/');
+  return `${year}-${(month ?? '').padStart(2, '0')}-${(day ?? '').padStart(2, '0')}`;
+};
+
+
+const SimpleLayoutComponent: React.FC<SimpleLayoutComponentProps> = ({
+  data,
+  labels,
+  layout,
+  cols,
+  addMemberFormData,
+  handleInputChange,
+  dmErrors,
+  isEdit
+}) => {
+   console.log('In SimpleLayoutComponent: data=', data, addMemberFormData);
+   console.log('In SimpleLayoutComponent: initial layout=', layout);
+
+
+  const [currentLayout, setCurrentLayout] = useState(layout);
+
+  useEffect(() => {
+    setCurrentLayout(layout);
+    // console.log('In SimpleLayoutComponentLayout: has changed:', layout);
+  }, [layout]);
+
+  const { isAddMode } = useMemberModalContext();
+  const { isEditMode } = useMemberModalContext();
+
+  const renderField = (field: any, value: any) => {
+    console.log('In SimpleLayoutComponentLayout:renderField:', field);
+
+    const [options, setOptions] = useState<any[]>([]);
+    useEffect(() => {
+      handleInputChange(field.apikey || field, (!data?.[field.name] || data?.[field.name].trim() === '') ? '' : data?.[field.name].trim());
+      if (field?.optionsUrl) {
+        getData(field?.optionsUrl, { sid: data?.sid, 'auth-type': undefined })
+          .then((response) => {
+            setOptions(response?.data?.optionsList || []);
+          })
+          .catch((error) => {
+            console.error('Error fetching options:', error);
+          });
+      } else {
+        setOptions(field?.options || []);
+      }
+    }, [field?.value]);
+
+    if (isAddMode && !field.readOnly) {
+      if (field.type === 'select' && options) {
+        return (
+          <FormControl sx={{ width: '70%' }}>
+            <Select
+              native
+              name={field.apikey}
+              onChange={(e) => handleInputChange(field?.apikey || field, e.target.value)}
+              error={dmErrors?.[field.apikey]}
+              MenuProps={{
+                classes: {
+                  paper: 'skyline-custom-select'
+                }
+              }}
+              label="Status"
+            >
+              <option value="">Select</option>
+              {options?.map((current: { name: string; value: string } | string) => {
+                return (
+                  <option value={typeof current === 'string' ? current : current.name}>
+                    {typeof current === 'string' ? current : current.value}
+                  </option>
+                );
+              })}
+            </Select>
+            <FormHelperText error={dmErrors?.[field.apikey]}>{dmErrors?.[field.apikey] ? field.label + ' is required' : ''}</FormHelperText>
+          </FormControl>
+        );
+      } else {
+        return (
+          <TextField
+            type={field.type || 'text'}
+            variant="outlined"
+            name={field.apikey || field}
+            inputProps={{
+              maxLength: field?.maxLength
+            }}
+            error={dmErrors?.[field.apikey]}
+            helperText={dmErrors?.[field.apikey] ? field.label + ' is required' : ''}
+            onChange={(e) => handleInputChange(field.apikey || field, e.target.value)}
+            sx={{
+              width: '70%',
+              '& legend': { display: 'none' },
+              '& fieldset': { top: 0 }
+            }}
+          />
+        );
+      }
+    }
+    if (isEditMode && !field.readOnly) {
+      if (field.type === 'select' && options) {
+        const [selectedName] = (data?.[field.name] || '').includes(' - ')
+          ? (data?.[field.name] || '').split(' - ')[0]
+          : [data?.[field.name], ''];
+        return (
+          <FormControl sx={{ width: '70%' }}>
+            <Select
+              native
+              name={field.apikey}
+              value={selectedName}
+              onChange={(e) => handleInputChange(field?.apikey || field, e.target.value)}
+              error={dmErrors?.[field.apikey]}
+              MenuProps={{
+                classes: {
+                  paper: 'skyline-custom-select'
+                }
+              }}
+              label="Status"
+            >
+              <option value="">Select</option>
+              {options?.map((current: { name: string; value: string } | string) => {
+                const optionName = typeof current === 'string' ? current : current.name;
+                const optionValue = typeof current === 'string' ? current : current.value;
+                return (
+                  <option value={optionName}>
+                    {optionValue}
+                  </option>
+                );
+              })}
+            </Select>
+            <FormHelperText error={dmErrors?.[field.apikey]}>{dmErrors?.[field.apikey] ? field.label + ' is required' : ''}</FormHelperText>
+          </FormControl>
+        );
+      }
+      if (field.name === 'originalEffDate') {
+        return (
+          <div style={{ marginBottom: '15px', marginRight: '15px' }}>
+            <Typography variant="body1">{data?.originalEffDate}</Typography>
+          </div>
+        )
+      }
+      if (field.name === 'benefitResetDate') {
+        return (
+          <div style={{ marginBottom: '15px', marginRight: '15px' }}>
+            <Typography variant="body1">{data?.benefitResetDate}</Typography>
+          </div>
+        )
+      }
+      if (field.name === 'dob') {
+        let dobFormatted = (!data?.[field.name] || data?.[field.name].trim() === '') ? '' : data?.[field.name].trim();
+        dobFormatted = formatDate(dobFormatted);
+
+        return (
+          <TextField
+            type={field.type || 'text'}
+            variant="outlined"
+            name={field.apikey || field}
+            inputProps={{
+              maxLength: field?.maxLength,
+              defaultValue: dobFormatted,
+              style: { textTransform: 'uppercase' }
+            }}
+            error={dmErrors?.[field.apikey]}
+            helperText={dmErrors?.[field.apikey] ? 'This field is required' : ''}
+            onChange={(e) => handleInputChange(field.apikey || field, e.target.value)}
+            sx={{
+              width: '70%',
+              '& legend': { display: 'none' },
+              '& fieldset': { top: 0 }
+            }}
+          />
+        )
+      }
+      if (field.name === 'familyInd') {
+        return (
+          <TextField
+            type={field.type || 'text'}
+            variant="outlined"
+            name={field.apikey || field}
+            inputProps={{
+              maxLength: field?.maxLength,
+              defaultValue: (!data?.[field.name] || data?.[field.name].trim() === '') ? '' : data?.[field.name].trim().charAt(0),
+              style: { textTransform: 'uppercase' }
+            }}
+            error={dmErrors?.[field.apikey]}
+            helperText={dmErrors?.[field.apikey] ? 'This field is required' : ''}
+            onChange={(e) => handleInputChange(field.apikey || field, e.target.value)}
+            sx={{
+              width: '70%',
+              '& legend': { display: 'none' },
+              '& fieldset': { top: 0 }
+            }}
+          />
+        )
+      }
+      else {
+        return (
+          <TextField
+            type={field.type || 'text'}
+            variant="outlined"
+            name={field.apikey || field}
+            inputProps={{
+              maxLength: field?.maxLength,
+              defaultValue: (!data?.[field.name] || data?.[field.name].trim() === '') ? '' : data?.[field.name].trim(),
+              style: { textTransform: 'uppercase' }
+            }}
+            error={dmErrors?.[field.apikey]}
+            helperText={dmErrors?.[field.apikey] ? 'This field is required' : ''}
+            onChange={(e) => handleInputChange(field.apikey || field, e.target.value)}
+            sx={{
+              width: '70%',
+              '& legend': { display: 'none' },
+              '& fieldset': { top: 0 }
+            }}
+          />
+        );
+      }
+    }
+
+    return <Typography variant="body2">{value || ''}</Typography>;
+  };
+
+  if (!cols) {
+    cols = 3;
+  }
+  return (
+    <Grid container spacing={2}>
+      <Grid item xs={12} spacing={2}>
+        <Card elevation={3}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} spacing={2}>
+              {currentLayout.map((group: { heading: string; fields: string[] }) => (
+                <StyledCard elevation={3} key={group.heading}>
+                  <Card elevation={3} key={group.heading}>
+                    <CardContent>
+                      <Grid container spacing={1}>
+                        <Grid item xs={12}>
+                          <span />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <Typography variant="h6" style={labelHeadingStyle}>
+                            {labels[group.heading as keyof typeof labels] || group.heading.replace(/\${(.*?)}/g, '')}
+                          </Typography>
+                        </Grid>
+
+                        {group.fields.map(
+                          (
+                            field:
+                              | string
+                              | {
+                                required: any;
+                                name: string;
+                              }
+                          ) => {
+                            if (typeof field === 'string') {
+                              return (
+                                <Grid item xs={12} sm={cols} md={cols}>
+                                  <div style={{ marginBottom: '15px' }}>
+                                    <Typography variant="subtitle1" style={labelStyle}>
+                                      {(labels as unknown as Record<string, string>)[field] || ''}
+                                    </Typography>
+                                    <Typography variant="body1" sx={{ display: 'block' }}>
+                                      {' '}
+                                      {data?.[field]}
+                                    </Typography>
+                                  </div>
+                                </Grid>
+                              );
+                            } else {
+                              return (
+                                <Grid item xs={12} sm={cols} md={cols}>
+                                  <div style={{ marginBottom: '15px' }}>
+                                    <Typography variant="subtitle1" style={labelStyle}>
+                                      {(labels as unknown as Record<string, string>)[field?.name] || field?.name}
+                                      {(isAddMode || isEditMode) && field?.required && <span style={{ color: 'red' }}>*</span>}
+                                    </Typography>
+                                    <Typography variant="body1">
+                                      {renderField(field, data?.[field.name] || '')}
+                                    </Typography>
+                                  </div>
+                                </Grid>
+                              );
+                            }
+                          }
+                        )}
+                      </Grid>
+                    </CardContent>
+                  </Card>
+                </StyledCard>
+              ))}
+            </Grid>
+          </Grid>
+        </Card>
+      </Grid>
+    </Grid>
+  );
+};
+
+export default SimpleLayoutComponent;
+
+
+
+== 
+
+import React, {useEffect, useMemo, useState} from 'react';
+import {AppBar, Button, Grid, Toolbar, Typography, Box} from '@mui/material';
+
+import useMemberDetail, {MemberDetailContext} from '../useMemberDetail/use-member-detail';
+import labels from '../../common/labels.json';
+import {MemberDetailSearchRecord} from '../useMemberDetail/use-member-detail.types';
+import {MemberContext, RxMemberLiteContext} from '../../common/model-types';
+import StatusFilter from '../../common/status-filter';
+import {isFromClientPortal, setAuthTypeClientPortal} from '../../common/common-utils';
+import {useMemberModalContext} from '../../Member/Components/AddmemberModal/useMemberModal';
+import {postData2, getData} from '../../model/service/memberService';
+
+import MemberDetailTabs from './components/member-detail-tabs';
+import HeaderComponent from './components/header-component';
+import {ElgData, MemberDetailsProps, MemberNamesInputs} from './member-detail.types';
+import MemberEligibilityModal from './MemberEligibilityModal';
+import MemEligibilityExpandableTable from './components/member-eligibility/member-eligibility-expandable-table';
+
+const title = '${memberId} (${lastName}, ${firstName} ${middleName})';
+
+const leftLayout = [
+  {
+    heading: 'Member information ${}',
+    fields: [
+      {name: 'dob', required: false, readOnly: false, type: 'date', apikey: 'mbrDateOfBirth', label: 'Date of birth'},
+      {
+        name: 'sex',
+        required: false,
+        readOnly: false,
+        type: 'select',
+        apikey: 'mbrSex',
+        label: 'Gender',
+        optionsUrl: '/lookup-url?lookupType=GENDER'
+      },
+      {
+        name: 'personCd',
+        readOnly: false,
+        required: false,
+        type: 'text',
+        apikey: 'mbrPersonCode',
+        maxLength: 3,
+        label: 'Person code'
+      },
+      {
+        name: 'relationshipCd',
+        readOnly: false,
+        type: 'select',
+        required: false,
+        apikey: 'mbrRelationshipCode',
+        label: 'Relationship code',
+        optionsUrl: '/lookup-url?lookupType=MEMBER_RELATIONSHIP_CODE'
+      },
+      {
+        name: 'memberType',
+        readOnly: false,
+        label: 'Member type',
+        type: 'select',
+        required: false,
+        apikey: 'mbrMemberType',
+        optionsUrl: '/lookup-url?lookupType=MEMBER_TYPE'
+      },
+      {
+        name: 'multiBirthCd',
+        label: 'Multiple birth code',
+        readOnly: false,
+        type: 'text',
+        apikey: 'mbrMultipleBirthCode',
+        required: false,
+        maxLength: 1
+      },
+      {
+        name: 'language',
+        label: 'Language',
+        readOnly: false,
+        type: 'select',
+        apikey: 'mbrLanguageCode',
+        required: false,
+        optionsUrl: '/lookup-url?lookupType=LANGUAGE'
+      },
+      {name: 'ssn', label: 'SSN', readOnly: false, type: 'text', apikey: 'mbrSs', required: false, maxLength: 11},
+      {
+        name: 'phone',
+        label: 'Phone',
+        readOnly: false,
+        type: 'text',
+        apikey: 'mbrPhone',
+        required: false,
+        maxLength: 10
+      },
+      {
+        name: 'email',
+        label: 'Email',
+        readOnly: false,
+        type: 'email',
+        apikey: 'mbrEmailAddress',
+        required: false,
+        maxLength: 80
+      },
+      {
+        name: 'originalEffDate',
+        label: 'Original from date',
+        readOnly: false,
+        type: 'date',
+        apikey: 'mbrOriginalEffDate',
+        required: false
+      },
+      {
+        name: 'benefitResetDate',
+        label: 'Benefit reset date',
+        readOnly: false,
+        type: 'date',
+        apikey: 'mbrBenefitResetDate',
+        required: false
+      },
+      {
+        name: 'familyInd',
+        label: 'Family ind',
+        readOnly: false,
+        type: 'select',
+        apikey: 'mbrFamilyIndicator',
+        required: false,
+        options: ['Y - Yes', 'N - No']
+      },
+      {
+        name: 'familyId',
+        label: 'Family ID',
+        readOnly: false,
+        type: 'text',
+        apikey: 'mbrFamilyId',
+        maxLength: 18,
+        required: false
+      },
+      {name: 'durKey', label: 'DUR', readOnly: false, type: 'text', apikey: 'mbrDurKey', maxLength: 18, required: false}
+    ]
+  },
+  {
+    heading: 'Address ${}',
+    fields: [
+      {
+        name: 'address1',
+        label: 'Address 1',
+        type: 'text',
+        readOnly: false,
+        apikey: 'mbrAddress1',
+        maxLength: 40,
+        required: false
+      },
+      {
+        name: 'address2',
+        label: 'Address 2',
+        type: 'text',
+        readOnly: false,
+        apikey: 'mbrAddress2',
+        maxLength: 40,
+        required: false
+      },
+      {
+        name: 'address3',
+        label: 'Address 3',
+        type: 'text',
+        readOnly: false,
+        apikey: 'mbrAddress3',
+        maxLength: 40,
+        required: false
+      },
+      {name: 'city', label: 'City', type: 'text', readOnly: false, apikey: 'mbrCity', maxLength: 20, required: false},
+      {
+        name: 'state',
+        label: 'State',
+        type: 'select',
+        readOnly: false,
+        apikey: 'mbrState',
+        required: false,
+        optionsUrl: '/lookup-url?lookupType=STATE'
+      },
+      {name: 'zip1', label: 'Zip 1', type: 'text', readOnly: false, apikey: 'mbrZip', maxLength: 5, required: false},
+      {name: 'zip2', label: 'Zip 2', type: 'text', readOnly: false, apikey: 'mbrZip2', maxLength: 4, required: false},
+      {name: 'zip3', label: 'Zip 3', type: 'text', readOnly: false, apikey: 'mbrZip3', maxLength: 2, required: false},
+      {
+        name: 'country',
+        label: 'Country',
+        type: 'select',
+        readOnly: false,
+        apikey: 'mbrCountry',
+        maxLength: 4,
+        required: false,
+        optionsUrl: '/lookup-url?lookupType=COUNTRY'
+      }
+    ]
+  },
+  {
+    heading: 'Medicare ${}',
+    fields: ['supplementalId', 'msiFromDate', 'msiThruDate', 'msiStatus']
+  },
+  {
+    heading: 'Alternate insurance ${}',
+    fields: ['insuranceFlag', 'insuranceId', 'insuranceCode']
+  }
+];
+
+const eligibilityLayout: any = {
+    heading: 'Add Member Eligibility',
+    fields: [
+      { name: 'melEffDate', label: 'melEffDate', type: 'date', required: true, readOnly: false, apikey: 'melEffDate' },
+      { name: 'melThruDate', label: 'melThruDate', type: 'date', required: true, readOnly: false, apikey: 'melThruDate' },
+      { name: 'melClientProductCode', label: 'melClientProductCode', type: 'text', readOnly: false, apikey: 'melClientProductCode',  maxLength: 6 },
+      { name: 'melClientRiderCode',label: 'melClientRiderCode',  type: 'text', readOnly: false, apikey: 'melClientRiderCode',  maxLength: 6 }
+    ]
+  };
+type Group = {
+  heading: string;
+  fields: string[] | Field[];
+};
+
+export type Field = {
+  name: string;
+  readOnly?: boolean;
+  type?: string;
+  apikey?: string;
+  required?: boolean;
+  maxLength?: number;
+};
+
+const layout = {
+  title,
+  leftLayout
+};
+
+const memEligHeadingLayoutFields = [
+  'effDate',
+  'thruDate',
+  'planCode',
+  'copayBrand',
+  'copayGen',
+  'copay3',
+  'copay4',
+  'status'
+];
+
+const memEligExpandedLayout = [
+  {
+    heading: '',
+    fields: ['clientProductCode', 'clientRiderCode', 'spendDownAmount', 'effDetDate', 'addDate', 'chgDate', 'user']
+  }
+];
+
+export function openHelp() {
+  const helpPage =
+    'https://rxclaim-lite.optum.com/rxclaimlite/help/RxClaim_Lite/index.htm#t=Topics%2FManage_members%2FMember_information_detail.htm';
+  window.open(helpPage, 'Help');
+}
+
+export function scrollToTop() {
+  const scrollingDiv = document
+    .querySelector('member-mp')
+    ?.querySelector('div')
+    ?.querySelector('div')
+    ?.querySelector('div')
+    ?.shadowRoot?.querySelector('div')
+    ?.querySelector('#scrollingMemberDiv');
+  console.log('scrollingDiv', scrollingDiv);
+  scrollingDiv?.scrollTo(0, 0);
+}
+
+export function MemberDetail(props: MemberDetailsProps) {
+  const {context, onClickLink, editPermissions} = props;
+  console.log('In MemberSearch: context=', context);
+  let rbacAccess = false;
+  if (context.rbac === 'access.grant') {
+    rbacAccess = true;
+  }
+
+  const contextObj = context;
+  console.log('In memberDetail: contextObj=', contextObj);
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const openModal = () => {
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+  };
+
+  const {isAddMode, isEditMode, setIsEditMode, setIsAddMode} = useMemberModalContext();
+  const [memberEligStatus, setMemberEligStatus] = useState<string>('A');
+  const [filteredElig, setFilteredElig] = useState<any>({});
+  const [refreshKey, setRefreshKey] = useState<number>(0);
+  const detail: MemberDetailSearchRecord = context?.searchDetailParam || '';
+  const [currentLayout, setCurrentLayout] = useState(layout);
+
+  // const tenantId = contextObj.tenantId ? contextObj.tenantId : detail.tenantId;
+  // context.searchDetailParam.tenantId = tenantId ? tenantId : 'RXDV1_PRD';
+
+  useEffect(() => {
+    if (isAddMode && !currentLayout.leftLayout.some(layout => currentLayout.heading === eligibilityLayout.heading)) {
+     setCurrentLayout((prevLayout) => ({
+             ...prevLayout,
+             leftLayout: [...prevLayout.leftLayout, eligibilityLayout]
+           }));
+    }
+  log('In memberDetail: currentLayout=', currentLayout);
+  }, [isAddMode]);
+
+
+  async function fetchRequiredFields() {
+    try {
+      let response: any = {};
+
+      response = await getData(
+        `/required-fields?carrierId=${sessionStorage.getItem('carrierId')}&accountId=${sessionStorage.getItem(
+          'accountId'
+        )}&groupId=${sessionStorage.getItem('groupId')}`,
+        {sid: sessionStorage.getItem('sid'), authtype: contextObj.authtype}
+      );
+
+      const {data} = response;
+
+      console.log('In memberValidation: data=', data);
+      setRequiredFields(data);
+
+      for (let i = 0; i < 2; i++) {
+        for (let j = 0; j < leftLayout[i].fields.length; j++) {
+          const field = layout.leftLayout[i].fields[j].apikey;
+          layout.leftLayout[i].fields[j].required = data[field];
+        }
+      }
+     /*  setCurrentLayout((prevLayout) => {
+        const updatedLayout = { ...prevLayout };
+        for (let i = 0; i < 2; i++) {
+          for (let j = 0; j < updatedLayout.leftLayout[i].fields.length; j++) {
+            const field = updatedLayout.leftLayout[i].fields[j].apikey;
+            updatedLayout.leftLayout[i].fields[j].required = data[field];
+          }
+        }
+        return updatedLayout;
+      }); */
+
+      // updateLayout(layout.leftLayout);
+    } catch (error) {
+      console.error('In fetchValidationLookup', error);
+    }
+  }
+  useEffect(() => {
+    fetchRequiredFields();
+  }, []);
+
+  const [memberSavedFlag, setmemberSavedFlag] = useState(false);
+  const [savedResponse, setnewSavedMem] = useState<Record<string, string> | null>(null);
+
+  const memberParam = useMemo(() => {
+    if (isAddMode && !savedResponse) return null;
+
+    if (!isAddMode && memberSavedFlag) {
+      return {
+        memberId: savedResponse?.['memberId'] || '',
+        carrierId: savedResponse?.['carrierId'] || '',
+        accountId: savedResponse?.['accountId'] || '',
+        groupId: savedResponse?.['groupId'] || '',
+        status: '',
+        tenantId: sessionStorage.getItem('tenantId') || '',
+        authType: contextObj.authType || '',
+        sid: contextObj.sid || sessionStorage.getItem('sid') || ''
+      };
+    }
+
+    return {
+      memberId: detail.memberId,
+      carrierId: detail.carrierId,
+      accountId: detail.accountId,
+      groupId: detail.groupId,
+      status: detail.status,
+      tenantId: detail.tenantId,
+      authType: contextObj.authType,
+      sid: contextObj.sid
+    };
+  }, [isAddMode, memberSavedFlag, detail, savedResponse]);
+
+  const stableContext = useMemo(() => {
+    console.debug('In Stbale Contxt', memberParam);
+    if (!memberParam) return null;
+    return memberParam ? new RxMemberLiteContext(memberParam) : null;
+  }, [memberParam]);
+
+  const {details, elig, fetchMemberEligibility} = useMemberDetail(stableContext);
+
+  const stringDets = JSON.stringify(details);
+
+  useEffect(() => {
+    if (!isAddMode || (!isEditMode && detail?.memberId)) {
+      filterActiveRecords('A', setMemberEligStatus, elig.memberElig, setFilteredElig);
+    }
+
+    if (!context.tenantId) {
+      context.tenantId = detail.tenantId;
+    }
+    if (details?.medDVal != null) {
+      props.medDVal = false;
+    } else {
+      props.medDVal = true;
+    }
+  }, [elig, detail?.memberId, context]);
+
+  useEffect(() => {
+    const fetchEligibility = async () => {
+      try {
+        await fetchMemberEligibility();
+      } catch (error) {
+        console.error('Error fetching eligibility:', error);
+      }
+    };
+
+    fetchEligibility();
+  }, [refreshKey]);
+
+  useEffect(() => {
+    console.debug('========================', savedResponse);
+  }, [savedResponse]);
+   //console.log(details);
+
+  if (stringDets !== '{}') {
+    console.log('not empty');
+
+    if (details?.claimStatus) {
+      console.log('claim status exists');
+    }
+  }
+
+  const filterActiveRecords = (status: string, setStatus: any, fullList: any[], setFilteredDetails: any) => {
+    if (!fullList) {
+      return;
+    }
+    const filteredData = fullList.filter((detail: any) => detail.status === status || status === 'ALL');
+    setFilteredDetails(filteredData);
+    setStatus(status);
+  };
+
+  // Add Edit Member
+  const [saving, setSaving] = useState(false);
+  const [elgData, setElgData] = useState<ElgData | null>(null);
+  const [AddMemberNames, setErrors] = useState({});
+  const [dmErrors, setdmErrors] = useState({});
+  const [requiredFields, setRequiredFields] = useState<Record<string, any>>({});
+  const [memberNamesInputs, setMemberNamesInput] = React.useState<MemberNamesInputs>({
+    mbrFirstName: '',
+    mbrLastName: '',
+    mbrMiddleInitial: ''
+  });
+  const handleElgData = (str: string) => {
+    const k = JSON.parse(str);
+    setElgData(k);
+  };
+  const [addMemberFormData, setAddMemberFormData] = React.useState<{[key: string]: any}>(() => {
+    const state: Record<string, any> = {};
+    currentLayout.leftLayout.forEach((group) => {
+      (group as Group).fields.forEach((field) => {
+        if (typeof field === 'string') {
+          state[field] = '';
+        } else if (typeof field === 'object' && field?.apikey) {
+          state[field?.apikey] = '';
+        }
+      });
+    });
+    return state;
+  });
+  // console.log(memberNamesInputs);
+
+  const handleAddMmberChange = (fieldName: string, value: any) => {
+    setAddMemberFormData((prevState) => ({
+      ...prevState,
+      [fieldName]: value
+    }));
+    // console.log(addMemberFormData);
+  };
+  const handleMemberNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const {name, value} = e.target;
+    setMemberNamesInput((prevState) => ({
+      ...prevState,
+      [name]: value
+    }));
+    console.debug(memberNamesInputs);
+  };
+
+const createEligibility = (demogr: Record<string, any>) => {
+  const eligibility: any = {
+    melSeqNbr: '',
+    melEffDate: demogr['melEffDate'],
+    melThruDate: demogr['melThruDate'],
+    planCode: '',
+    planEffDate: undefined,
+    melCopayBrand: '',
+    melCopayGeneric: '',
+    melCopay3: '',
+    melCopay4: '',
+    melClientProductCode: demogr['melClientProductCode'],
+    melClientRiderCode: demogr['melClientRiderCode'],
+    addUserName: '',
+    chgUserName: '',
+    spendDownAmount: ''
+  };
+
+  delete demogr['melEffDate'];
+  delete demogr['melThruDate'];
+  delete demogr['melClientProductCode'];
+  delete demogr['melClientRiderCode'];
+
+  return eligibility;
+};
+
+  const generateDataStruct = (names: unknown, formData: Record<any, any>) => {
+    let tenantId = sessionStorage.getItem('tenantId');
+    if (sessionStorage.getItem('tenantId') == null) {
+      tenantId = contextObj.tenantId;
+    }
+    const demogr = { ...formData };
+    const eligibility = createEligibility(demogr);
+    return {
+      carCarrierId: sessionStorage.getItem('carrierId'),
+      accAccountId: sessionStorage.getItem('accountId'),
+      grpGroupId: sessionStorage.getItem('groupId'),
+      mbrMemberId: sessionStorage.getItem('memberId'),
+      tenantId,
+      memberDemographics: {
+        ...demogr,
+        ...(typeof names === 'object' && names !== null ? names : {}),
+        mbrFamilyType: '',
+        mbrMedicareCvgType: '',
+        mbrMedicareHic: '',
+        mbrAltInsuranceFlag: '',
+        mbrAltInsuranceId: '',
+        mbrAltInsuranceMbrId: '',
+        mbrZip3: '',
+        mbrCountry: '',
+        mbrDurProcessFlag: '',
+        mbrDurKey: '',
+        addUserName: '',
+        chgUserName: ''
+      },
+      eligibility: {
+        ...eligibility
+      }
+    };
+  };
+
+  const formatDate = (dateString: string) => {
+    const [month, day, year] = dateString.split('/');
+    return `${year}-${(month ?? '').padStart(2, '0')}-${(day ?? '').padStart(2, '0')}`;
+  };
+
+  const generateEditDataStruct = (names: unknown, demogr: Record<any, any>) => {
+    let tenantId = sessionStorage.getItem('tenantId');
+    if (sessionStorage.getItem('tenantId') == null) {
+      tenantId = contextObj.tenantId;
+    }
+    let formattedPhone = demogr['mbrPhone'] === '' ? details.phone : demogr['mbrPhone'];
+    formattedPhone = formattedPhone.replace(/\D/g, ''); // Remove all non-numeric characters
+    const formattedDate = demogr['mbrDateOfBirth'] === '' ? formatDate(details.dob) : demogr['mbrDateOfBirth'];
+    let formattedMemberType = demogr['mbrMemberType'] === '' ? details.memberType.charAt(0) : demogr['mbrMemberType'];
+    if (formattedMemberType === 'Blank') {
+      formattedMemberType = '';
+    }
+
+    console.log('formattedDate', formattedDate);
+    console.log('details', details.dob);
+
+    return {
+      carCarrierId: contextObj.searchDetailParam.carrierId,
+      accAccountId: contextObj.searchDetailParam.accountId,
+      grpGroupId: contextObj.searchDetailParam.groupId,
+      mbrMemberId: contextObj.searchDetailParam.memberId,
+      tenantId,
+      memberDemographics: {
+        ...(typeof names === 'object' && names !== null ? names : {}),
+        mbrSs: demogr['mbrSs'] === '' ? details.ssn.trim() : demogr['mbrSs'],
+        mbrSex: demogr['mbrSex'] === '' ? details.sex.charAt(0) : demogr['mbrSex'].charAt(0),
+        mbrDateOfBirth: formattedDate,
+        mbrEmailAddress: demogr['mbrEmailAddress'] === '' ? details.email.trim() : demogr['mbrEmailAddress'],
+        mbrPhone: formattedPhone,
+        mbrPersonCode: demogr['mbrPersonCode'] === '' ? details.personCd.trim() : demogr['mbrPersonCode'],
+        mbrRelationshipCode:
+          demogr['mbrRelationshipCode'] === '' ? details.relationshipCd.trim() : demogr['mbrRelationshipCode'],
+        mbrMemberType: formattedMemberType,
+        mbrFamilyType: '',
+        mbrFamilyIndicator:
+          demogr['mbrFamilyIndicator'] === '' ? details.familyInd.charAt(0) : demogr['mbrFamilyIndicator'].charAt(0),
+        mbrFamilyId: demogr['mbrFamilyId'] === '' ? details.familyId.trim() : demogr['mbrFamilyId'],
+        mbrMultipleBirthCode:
+          demogr['mbrMultipleBirthCode'] === '' ? details.multiBirthCd.trim() : demogr['mbrMultipleBirthCode'],
+        mbrLanguageCode: demogr['mbrLanguageCode'] === '' ? details.language.trim() : demogr['mbrLanguageCode'],
+        mbrMedicareCvgType: '',
+        mbrMedicareHic: '',
+        mbrAltInsuranceFlag: '',
+        mbrAltInsuranceId: '',
+        mbrAltInsuranceMbrId: '',
+        mbrAddress1: demogr['mbrAddress1'] === '' ? details.address1.trim() : demogr['mbrAddress1'],
+        mbrAddress2: demogr['mbrAddress2'] === '' ? details.address2.trim() : demogr['mbrAddress2'],
+        mbrAddress3: demogr['mbrAddress3'] === '' ? details.address3.trim() : demogr['mbrAddress3'],
+        mbrCity: demogr['mbrCity'] === '' ? details.city.trim() : demogr['mbrCity'],
+        mbrState: demogr['mbrState'] === '' ? details.state.trim() : demogr['mbrState'],
+        mbrZip: demogr['mbrZip'] === '' ? details.zip1.trim() : demogr['mbrZip'],
+        mbrZip2: demogr['mbrZip2'] === '' ? details.zip2.trim() : demogr['mbrZip2'],
+        mbrZip3: demogr['mbrZip3'] === '' ? details.zip3.trim() : demogr['mbrZip3'],
+        mbrCountry: demogr['mbrCountry'] === '' ? details.country.trim() : demogr['mbrCountry'],
+        mbrDurProcessFlag: '',
+        mbrDurKey: demogr['mbrDurKey'] === '' ? details.durKey.trim() : demogr['mbrDurKey'],
+        addUserName: '',
+        chgUserName: ''
+      }
+    };
+  };
+
+  function validateForm() {
+    const errors: {[key: string]: boolean} = {};
+    currentLayout?.leftLayout.forEach((group) => {
+      group.fields.forEach((field: any) => {
+        if (typeof field === 'object' && field?.required && !addMemberFormData[field?.apikey]?.trim()) {
+          errors[field?.apikey] = true;
+        }
+      });
+    });
+    console.debug(errors);
+    setdmErrors(errors);
+    return Object.keys(errors).length === 0;
+  }
+
+  function postMemberBody(dataObj: any) {
+    // need to get session id
+    // var sessionHeader = params.context.sid;
+    let authHeader = '';
+
+    if (isFromClientPortal()) {
+        authHeader = setAuthTypeClientPortal();
+
+        console.log("authheader in cp", authHeader);
+    } else {
+      console.log('setting authtype in nextgen ui', memberParam?.authType);
+
+        authHeader = contextObj?.authType;
+
+    }
+
+    const raw = dataObj;
+
+    console.debug('raw=', raw);
+
+    try {
+      postData2('/detail/add', {sid: contextObj?.sid, authtype: `${authHeader}`, 'Content-Type': 'application/json'}, raw)
+        .then((response) => {
+          console.log('add new member response', response);
+          // check for violations and update messages
+          if (response.data?.messages !== null) {
+            console.log('there are violations', response.data?.messages?.violations);
+            alert(
+              `Member was not added successfully as there are violations with your form. Please correct the errors and re-submit. Violations: ${JSON.stringify(
+                response.data?.messages?.violations
+              )}`
+            );
+          } else {
+            setnewSavedMem(response.data);
+            setmemberSavedFlag(true);
+            setIsAddMode(false);
+            console.debug('new res =>', response);
+            alert('Member was added successfully.', response);
+          }
+        })
+        .catch((error) => console.log(error));
+    } catch (error) {}
+  }
+
+  function postMemberEdit(dataObj: any) {
+    // need to get session id
+    // var sessionHeader = params.context.sid;
+    let authHeader = '';
+
+    if (isFromClientPortal()) {
+
+
+      authHeader = setAuthTypeClientPortal();
+
+      console.log("authheader in cp", authHeader);
+    } else {
+      console.log('setting authtype in nextgen ui');
+      // need to retrieve authHeader from context
+      // authHeader = params.context.authtype;
+      authHeader = contextObj?.authType;
+    }
+
+    const raw = dataObj;
+
+    console.log('raw=', raw);
+
+    postData2('/detail/edit', {sid: contextObj?.sid, authtype: `${authHeader}`, 'Content-Type': 'application/json'}, raw)
+      .then((response) => {
+        console.log('edit new member response', response);
+        // check for violations and update messages
+        if (response.data?.active === null) {
+          console.log('there are violations', response.data?.messages?.violations);
+          alert(
+            `Member was not edited successfully as there are violations with your form. Please correct the errors and re-submit. Violations: ${JSON.stringify(
+              response.data?.messages?.violations
+            )}`
+          );
+        } else {
+          alert('Member was edited successfully.');
+          console.log('edited successfully');
+          setIsEditMode(false);
+        }
+      })
+      .catch((error) => console.log(error));
+    setSaving(false);
+    useMemberDetail(
+      new RxMemberLiteContext({
+        memberId: detail.memberId,
+        carrierId: detail.carrierId,
+        accountId: detail.accountId,
+        groupId: detail.groupId,
+        status: detail.status,
+        tenantId: detail.tenantId,
+        authType: contextObj.authtype,
+        sid: contextObj.sid
+      } as MemberContext)
+    );
+  }
+  const handleOnClickSave = () => {
+    setErrors({});
+    setSaving(true);
+    console.debug(generateDataStruct(memberNamesInputs, addMemberFormData));
+
+    if (requiredFields['mbrLastName']) {
+      if (!memberNamesInputs.mbrLastName || memberNamesInputs.mbrLastName.trim() === '') {
+        setErrors((prevState) => ({
+          ...prevState,
+          mbrLastName: true
+        }));
+      }
+    }
+
+    if (requiredFields['mbrFirstName']) {
+      if (!memberNamesInputs.mbrFirstName || memberNamesInputs.mbrFirstName.trim() === '') {
+        setErrors((prevState) => ({
+          ...prevState,
+          mbrFirstName: true
+        }));
+      }
+    }
+
+    if (requiredFields['mbrMiddleInitial']) {
+      if (!memberNamesInputs.mbrMiddleInitial || memberNamesInputs.mbrMiddleInitial.trim() === '') {
+        setErrors((prevState) => ({
+          ...prevState,
+          mbrMiddleInitial: true
+        }));
+      }
+    }
+
+    if (validateForm() && isAddMode) {
+      const dataObj = generateDataStruct(memberNamesInputs, addMemberFormData);
+      if (dataObj.eligibility === undefined && !isEditMode) {
+        alert('Member eligibility is required');
+        setSaving(false);
+        return;
+      }
+      console.debug(dataObj);
+      postMemberBody(dataObj);
+    } else if (isEditMode) {
+      const dataObj = generateEditDataStruct(memberNamesInputs, addMemberFormData);
+      console.debug(dataObj);
+      postMemberEdit(dataObj);
+    } else {
+      setSaving(false);
+    }
+  };
+
+  function onClickLinkBack() {
+    props.setViewName('memberSearch');
+  }
+
+  useEffect(() => {
+    console.log('demoGraphicInput', addMemberFormData);
+  }, [details]);
+
+  console.log('here is whats in details', details);
+  // console.log(layout);
+  return (
+    <>
+      {isFromClientPortal() && (
+        <Grid container spacing={2} alignItems="start" sx={{margin: '5px'}}>
+          <Grid item xs={12}>
+            <AppBar position="static" sx={{background: '#faf9f3', marginBottom: '10px'}}>
+              <Toolbar>
+                <Grid container spacing={2} style={{marginTop: '5px !important'}}>
+                  <Grid item xs={12} sm={4} md={3}>
+                    <Typography>
+                      <Button href="#" data-viewName="memberSearch" onClick={onClickLinkBack}>
+                        Back
+                      </Button>
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={3}>
+                    <Typography>
+                      {!isAddMode && !isEditMode && editPermissions && (
+                        <Button href="#" data-viewName="memberSearch" onClick={() => setIsEditMode(true)}>
+                          Edit
+                        </Button>
+                      )}
+                      {(isAddMode || isEditMode) && (
+                        <Button href="#" data-viewName="memberSearch" disabled={saving} onClick={handleOnClickSave}>
+                          Save
+                        </Button>
+                      )}
+                    </Typography>
+                    <Button href="#" data-viewName="helpButton" onClick={openHelp} style={{float: 'right'}}>
+                      Help
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Toolbar>
+            </AppBar>
+            <Grid item xs={12} style={{marginTop: '10px !important', marginBottom: '10px !important'}}>
+              <HeaderComponent
+                data={details}
+                props={props}
+                labels={labels}
+                addMemberFormData={addMemberFormData}
+                handleAddMmberChange={handleAddMmberChange}
+                handleMemberNameChange={handleMemberNameChange}
+                layout={currentLayout}
+                style={{margin: '5px', maxWidth: 'inherit'}}
+                inputErrors={AddMemberNames}
+                dmErrors={dmErrors}
+                isEdit={isEditMode}
+                requiredFields={requiredFields}
+              />
+            </Grid>
+             {!isAddMode ? (
+            <Grid item xs={12} style={{marginTop: '10px !important'}}>
+              <Typography variant="h6" sx={{marginTop: '15px !important'}}>
+                Member eligibility
+              </Typography>
+              <Box sx={{marginBottom: '20px'}} />
+              {props.addPermissions && <Button onClick={openModal}>Add</Button>}
+              <StatusFilter
+                fullList={elig?.memberElig}
+                setFilteredDetails={setFilteredElig}
+                status={memberEligStatus}
+                setStatus={setMemberEligStatus}
+              />
+
+              <MemEligibilityExpandableTable
+                context={contextObj}
+                details={filteredElig}
+                headingLayout={memEligHeadingLayoutFields}
+                expandedLayout={memEligExpandedLayout}
+                editPermissions={props.editPermissions}
+                deletePermissions={props.deletePermissions}
+                refreshKey={refreshKey}
+                setRefreshKey={setRefreshKey}
+              />
+            </Grid>
+             ) : (<> </>)
+                                      }
+          </Grid>
+          {!isAddMode ? (
+          <Grid item xs={12}>
+            <MemberDetailTabs {...props}> </MemberDetailTabs>
+          </Grid>
+             ) : (<> </>)
+          }
+        </Grid>
+      )}
+
+      {!isFromClientPortal() && (
+        <Grid
+          id="scrollingMemberDiv"
+          container
+          spacing={2}
+          alignItems="start"
+          sx={{overflowY: 'scroll', maxHeight: '650px', margin: '5px'}}
+        >
+          <Grid item xs={12}>
+            <AppBar position="static" sx={{background: '#faf9f3', marginBottom: '10px'}}>
+              <Toolbar>
+                <Grid container spacing={2} style={{marginTop: '5px !important'}} justifyContent="space-between">
+                  <Grid item xs={12} sm={4} md={3}>
+                    <Typography>
+                      <Button href="#" data-viewName="memberSearch" onClick={onClickLinkBack}>
+                        Back
+                      </Button>
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={3}>
+                    <Typography>
+                      {!isAddMode && !isEditMode && rbacAccess && (
+                        <Button href="#" data-viewName="memberSearch" onClick={() => setIsEditMode(true)}>
+                          Edit
+                        </Button>
+                      )}
+                      {(isAddMode || isEditMode) && (
+                        <Button href="#" data-viewName="memberSearch" disabled={saving} onClick={handleOnClickSave}>
+                          Save
+                        </Button>
+                      )}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Toolbar>
+            </AppBar>
+            <Grid item xs={12} style={{marginTop: '10px !important', marginBottom: '10px !important'}}>
+              <HeaderComponent
+                data={details}
+                addMemberFormData={addMemberFormData}
+                handleAddMmberChange={handleAddMmberChange}
+                handleMemberNameChange={handleMemberNameChange}
+                props={props}
+                labels={labels}
+                layout={currentLayout}
+                style={{margin: '5px', maxWidth: 'inherit'}}
+                inputErrors={AddMemberNames}
+                dmErrors={dmErrors}
+                isEdit={isEditMode}
+                requiredFields={requiredFields}
+              />
+            </Grid>
+           {!isAddMode ? (
+            <Grid item xs={12} style={{marginTop: '10px !important'}}>
+              <Typography variant="h6" sx={{marginTop: '15px !important'}}>
+                Member eligibility
+              </Typography>
+              <Box sx={{marginBottom: '20px'}} />
+              {props.addPermissions && <Button onClick={openModal}>Add</Button>}
+              <StatusFilter
+                fullList={elig?.memberElig}
+                setFilteredDetails={setFilteredElig}
+                status={memberEligStatus}
+                setStatus={setMemberEligStatus}
+              />
+              <MemEligibilityExpandableTable
+                context={contextObj}
+                details={filteredElig}
+                headingLayout={memEligHeadingLayoutFields}
+                expandedLayout={memEligExpandedLayout}
+                editPermissions={props.editPermissions}
+                deletePermissions={props.deletePermissions}
+                refreshKey={refreshKey}
+                setRefreshKey={setRefreshKey}
+              />
+            </Grid>
+            ) : (<> </>)
+            }
+          </Grid>
+          {!isAddMode ? (
+            <Grid item xs={12}>
+              <MemberDetailContext.Provider value={details}>
+                <MemberDetailTabs {...props} />
+              </MemberDetailContext.Provider>
+            </Grid>
+            ) : (<> </>)
+          }
+          <Button style={{marginBottom: '12%', marginLeft: '85%'}} onClick={scrollToTop}>
+            Scroll to Top
+          </Button>
+        </Grid>
+      )}
+      {modalOpen && (
+        <MemberEligibilityModal
+          open={modalOpen}
+          handleClose={closeModal}
+          context={context}
+          setRefreshKey={setRefreshKey}
+          handleElgData={handleElgData}
+          isEditMode={false}
+        />
+      )}
+    </>
+  );
+}
+
+export default MemberDetail;
