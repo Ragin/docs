@@ -423,3 +423,65 @@ const layout = [
 ];
 
 
+import React from 'react';
+import { SelectChangeEvent, SxProps, Theme, Switch, FormControlLabel, FormHelperText, FormControl } from '@mui/material';
+import { Check, Clear } from '@mui/icons-material';
+
+interface SwitchWrapperProps {
+    name: string;
+    value: string;
+    onChange: (event: SelectChangeEvent<string>) => void;
+    error?: boolean;
+    helperText?: string;
+    label?: string;
+    required?: boolean;
+    sx?: SxProps<Theme> | undefined;
+    readonly? : boolean;
+}
+
+const SwitchWrapper: React.FC<SwitchWrapperProps> = ({
+                                                         name,
+                                                         value,
+                                                         onChange,
+                                                         error,
+                                                         helperText,
+                                                         label,
+                                                         sx,
+                                                         readonly
+                                                     }) => {
+    const defaultSx: SxProps<Theme> = {};
+  console.log('value in switch wrapper', value);
+    return (
+      <FormControl error={error}>
+        <FormControlLabel
+          control={
+            <Switch
+              name={name}
+              disabled={readonly}
+              checked={value === 'Y'}
+              onChange={onChange}
+              style={{ overflow: 'auto' }}
+              sx={{ ...defaultSx, ...(sx || {}) }}
+              icon={<Clear style={{ color: 'red' }} />}
+              checkedIcon={<Check style={{ color: 'green' }} />}
+            />
+          }
+          label={label}
+          labelPlacement="start"
+          sx={{
+            '& .MuiFormControlLabel-label': {
+              marginRight: '16px',
+              fontWeight: 'bold',
+              color: 'rgb(63, 81, 181)'
+            }
+          }}
+        />
+        {error && <FormHelperText>{helperText}</FormHelperText>}
+      </FormControl>
+    );
+};
+
+export default SwitchWrapper;
+
+
+
