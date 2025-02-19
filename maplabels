@@ -483,5 +483,100 @@ const SwitchWrapper: React.FC<SwitchWrapperProps> = ({
 
 export default SwitchWrapper;
 
+-----
+updated
 
+
+import React from 'react';
+import { styled } from '@mui/material/styles';
+import { SelectChangeEvent, SxProps, Theme, FormControl, FormControlLabel, FormHelperText } from '@mui/material';
+import Switch from '@mui/material/Switch';
+
+const StyledSwitch = styled(Switch)(({ theme }) => ({
+  width: 44,
+  height: 24,
+  padding: 0,
+  display: 'flex',
+  alignItems: 'center',
+  '& .MuiSwitch-switchBase': {
+    padding: 2,
+    transition: theme.transitions.create(['transform'], {
+      duration: theme.transitions.duration.shortest,
+    }),
+    '&.Mui-checked': {
+      transform: 'translateX(20px)',
+      color: '#fff',
+      '& + .MuiSwitch-track': {
+        backgroundColor: '#90CAF9',
+        opacity: 1,
+      },
+    },
+  },
+  '& .MuiSwitch-thumb': {
+    width: 20,
+    height: 20,
+    backgroundColor: '#1976D2',
+    borderRadius: '50%',
+    boxShadow: '0px 2px 5px rgba(0, 0, 0, 0.2)',
+  },
+  '& .MuiSwitch-track': {
+    borderRadius: 12,
+    backgroundColor: '#E3F2FD',
+    opacity: 1,
+    transition: theme.transitions.create(['background-color'], {
+      duration: theme.transitions.duration.shortest,
+    }),
+  },
+}));
+
+interface SwitchWrapperProps {
+    name: string;
+    value: string;
+    onChange: (event: SelectChangeEvent<string>) => void;
+    error?: boolean;
+    helperText?: string;
+    label?: string;
+    required?: boolean;
+    sx?: SxProps<Theme> | undefined;
+    readonly?: boolean;
+}
+
+const SwitchWrapper: React.FC<SwitchWrapperProps> = ({
+    name,
+    value,
+    onChange,
+    error,
+    helperText,
+    label,
+    sx,
+    readonly
+}) => {
+    return (
+        <FormControl error={error}>
+            <FormControlLabel
+                control={
+                    <StyledSwitch
+                        name={name}
+                        disabled={readonly}
+                        checked={value === 'Y'}
+                        onChange={onChange}
+                        sx={sx}
+                    />
+                }
+                label={label}
+                labelPlacement="start"
+                sx={{
+                    '& .MuiFormControlLabel-label': {
+                        marginRight: '16px',
+                        fontWeight: 'bold',
+                        color: 'rgb(63, 81, 181)'
+                    }
+                }}
+            />
+            {error && <FormHelperText>{helperText}</FormHelperText>}
+        </FormControl>
+    );
+};
+
+export default SwitchWrapper;
 
